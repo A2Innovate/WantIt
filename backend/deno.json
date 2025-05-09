@@ -1,14 +1,19 @@
 {
   "imports": {
+    "@hono/zod-validator": "npm:@hono/zod-validator@^0.5.0",
+    "argon2": "npm:argon2@^0.43.0",
+    "dotenv": "npm:dotenv@^16.5.0",
     "drizzle-kit": "npm:drizzle-kit@^0.31.1",
     "drizzle-orm": "npm:drizzle-orm@^0.43.1",
-    "hono": "jsr:@hono/hono@^4.7.9",
+    "hono": "npm:hono@^4.7.9",
+    "nodemailer": "npm:nodemailer@^7.0.3",
     "pg": "npm:pg@^8.15.6",
-    "@/": "./"
+    "@/": "./",
+    "zod": "npm:zod@^3.24.4"
   },
   "tasks": {
-    "start": "deno run --allow-net main.ts",
-    "dev": "deno run --allow-net --watch main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read --allow-ffi --allow-sys main.ts",
+    "dev": "deno run --allow-net --allow-env --allow-read --allow-ffi --allow-sys --watch main.ts",
     "db:push": "drizzle-kit push"
   },
   "compilerOptions": {

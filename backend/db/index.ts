@@ -5,4 +5,4 @@ if (!Deno.env.get("DB_URL")) {
   throw new Error("DB_URL is not set");
 }
 
-export const db = drizzle(Deno.env.get("DB_URL")!, { schema });
+export const db = drizzle(Deno.env.get("DB_URL"), { schema });

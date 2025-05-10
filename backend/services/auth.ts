@@ -3,12 +3,27 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { db } from "@/db/index.ts";
 import { eq } from "drizzle-orm";
-import { usersTable } from "@/db/schema.ts";
-import { generateEmailVerificationToken } from "@/utils/generate.ts";
+import { userSessionsTable, usersTable } from "@/db/schema.ts";
+import {
+  generateEmailVerificationToken,
+  generateSessionToken,
+} from "@/utils/generate.ts";
 import argon2 from "argon2";
 import { sendMail } from "@/utils/mail.ts";
+import { setCookie } from "hono/cookie";
+import { authRequired } from "@/middleware/auth.ts";
 
 const app = new Hono();
+
+app.get("/", authRequired, (c) => {
+  const session = c.get("session");
+
+  return c.json({
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+  });
+});
 
 app.post(
   "/register",
@@ -37,7 +52,7 @@ app.post(
     });
 
     if (existingUser) {
-      return c.json({ error: "User with this email already exists" }, 400);
+      return c.json({ error: "User with this email already exists" }, 409);
     }
 
     const hashedPassword = await argon2.hash(password);
@@ -52,7 +67,9 @@ app.post(
 
       Thank you for registering to WantIt!
       To activate your account, click the link below:
-      ${Deno.env.get("BASE_URL")}/auth/verify-email/${emailVerificationToken}
+      ${
+        Deno.env.get("FRONTEND_URL")
+      }/auth/verify-email/${emailVerificationToken}
       
       If you did not register to WantIt, please ignore this email.
       
@@ -69,6 +86,60 @@ app.post(
     });
 
     return c.json({ message: "Registered successfully" }, 201);
+  },
+);
+
+app.post(
+  "/login",
+  zValidator(
+    "json",
+    z.object({
+      email: z.string().email("Invalid email"),
+      password: z.string().min(
+        8,
+        "Password must be at least 8 characters long",
+      ).max(
+        256,
+        "Password must be at most 256 characters long",
+      ),
+    }),
+  ),
+  async (c) => {
+    const { email, password } = c.req.valid("json");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, email),
+    });
+
+    if (!user) {
+      // Intentional, user should not know which one is wrong
+      return c.json({ error: "Incorrect email or password" }, 401);
+    }
+
+    if (!(await argon2.verify(user.password, password))) {
+      return c.json({ error: "Incorrect email or password" }, 401);
+    }
+
+    const sessionToken = await generateSessionToken();
+
+    await db.insert(userSessionsTable).values({
+      userId: user.id,
+      sessionToken,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+    });
+
+    setCookie(c, "session", sessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
+    return c.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    }, 200);
   },
 );
 

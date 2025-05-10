@@ -1,6 +1,6 @@
 <template>
   <div
-    class="p-4 rounded-lg border border-neutral-600 bg-neutral-950"
+    class="p-4 rounded-lg border border-neutral-700 bg-neutral-950"
     v-bind="$attrs"
   >
     <slot />

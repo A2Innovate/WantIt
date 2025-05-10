@@ -145,6 +145,7 @@ app.post(
     }, 200);
   },
 );
+
 app.post("/verify-email/:token", async (c) => {
   const token = c.req.param("token");
 
@@ -163,4 +164,5 @@ app.post("/verify-email/:token", async (c) => {
 
   return c.json({ message: "Email verified successfully" }, 200);
 });
+
 export default app;

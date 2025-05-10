@@ -5,3 +5,20 @@
   color: white;
   font-family: Inter, sans-serif;
 }
+
+.slide-up-blur-enter-active,
+.slide-up-blur-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.slide-up-blur-enter-from {
+  transform: translateY(10px);
+  filter: blur(2px);
+  opacity: 0;
+}
+
+.slide-up-blur-leave-to {
+  transform: translateY(-10px);
+  filter: blur(0);
+  opacity: 0;
+}

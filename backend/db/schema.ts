@@ -34,3 +34,18 @@ export const userSessionsRelations = relations(
     }),
   }),
 );
+
+export const requestsTable = pgTable("requests", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  content: text().notNull(),
+});
+
+export const requestsRelations = relations(requestsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [requestsTable.userId],
+    references: [usersTable.id],
+  }),
+}));

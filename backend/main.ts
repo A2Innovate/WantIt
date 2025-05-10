@@ -2,6 +2,7 @@ import "dotenv/config";
 import { Hono } from "hono";
 import auth from "./services/auth.ts";
 import { cors } from "hono/cors";
+import request from "./services/request.ts";
 
 const app = new Hono();
 
@@ -15,5 +16,6 @@ app.get("/", (c) => {
 });
 
 app.route("/api/auth", auth);
+app.route("/api/request", request);
 
 Deno.serve(app.fetch);

@@ -62,7 +62,6 @@ app.post(
       to: email,
       subject: "WantIt - Email verification",
 
-      // TODO: Update link when frontend for email verification is ready
       text: `Hi ${name}!
 
       Thank you for registering to WantIt!
@@ -146,5 +145,22 @@ app.post(
     }, 200);
   },
 );
+app.post("/verify-email/:token", async (c) => {
+  const token = c.req.param("token");
 
+  const user = await db.query.usersTable.findFirst({
+    where: eq(usersTable.emailVerificationToken, token),
+  });
+
+  if (!user) {
+    return c.json({ error: "Invalid token" }, 400);
+  }
+
+  await db.update(usersTable).set({
+    isEmailVerified: true,
+    emailVerificationToken: null,
+  }).where(eq(usersTable.id, user.id));
+
+  return c.json({ message: "Email verified successfully" }, 200);
+});
 export default app;

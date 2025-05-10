@@ -120,6 +120,10 @@ app.post(
       return c.json({ error: "Incorrect email or password" }, 401);
     }
 
+    if (!user.isEmailVerified) {
+      return c.json({ error: "Email is not verified" }, 401);
+    }
+
     const sessionToken = await generateSessionToken();
 
     await db.insert(userSessionsTable).values({

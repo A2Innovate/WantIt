@@ -11,12 +11,16 @@
           >
             <Icon name="material-symbols:add" />
           </div>
-          <div
-            class="flex gap-2 items-center bg-neutral-900 h-8 px-2 rounded-full"
-          >
-            <Icon name="material-symbols:account-circle" />
-            <p class="text-sm">{{ userStore.current.name }}</p>
-          </div>
+          <AccountDropdown>
+            <div
+              class="flex gap-2 items-center bg-neutral-900 h-8 px-2 rounded-full cursor-pointer"
+              role="button"
+              tabindex="0"
+            >
+              <Icon name="material-symbols:account-circle" />
+              <p class="text-sm">{{ userStore.current.name }}</p>
+            </div>
+          </AccountDropdown>
         </div>
         <div v-else class="flex items-center gap-2">
           <NuxtLink class="text-sm" to="/auth/sign-in">Sign in</NuxtLink>

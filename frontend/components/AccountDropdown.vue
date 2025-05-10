@@ -67,9 +67,9 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', closeDropdown);
 });
 
-// const userStore = useUserStore()
+const userStore = useUserStore();
 function signOut() {
-  // userStore.logout() // Adjust if you use a different logout method
+  userStore.logout();
   isOpen.value = false;
 }
 </script>

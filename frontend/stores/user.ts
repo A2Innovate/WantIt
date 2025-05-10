@@ -12,8 +12,14 @@ export const useUserStore = defineStore('user', () => {
     current.value = response.value;
   }
 
+  async function logout() {
+    await useApi().post('/auth/logout');
+    current.value = null;
+  }
+
   return {
     current,
-    fetchUser
+    fetchUser,
+    logout
   };
 });

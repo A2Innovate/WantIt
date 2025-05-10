@@ -165,4 +165,14 @@ app.post("/verify-email/:token", async (c) => {
   return c.json({ message: "Email verified successfully" }, 200);
 });
 
+app.post("/logout", authRequired, async (c) => {
+  const session = c.get("session");
+
+  await db.delete(userSessionsTable).where(
+    eq(userSessionsTable.sessionToken, session.sessionToken),
+  );
+
+  return c.json({ message: "Logged out successfully" }, 200);
+});
+
 export default app;

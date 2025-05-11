@@ -1,0 +1,98 @@
+name: Frontend
+
+on:
+  push:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend.yml"
+
+jobs:
+  lint-format:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        run: corepack enable pnpm
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: pnpm i --frozen-lockfile
+
+      - name: Run linting
+        working-directory: ./frontend
+        run: pnpm run lint:fix
+
+      - name: Run formatting
+        working-directory: ./frontend
+        run: pnpm run format
+
+      - name: Commit changes
+        if: github.actor != 'github-actions[bot]'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --staged --quiet; then
+            git commit -m "Frontend code formatting and linting"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    needs: lint-format
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Docker Tags
+        id: prep_tags
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          SHA_TAG="${{ github.sha }}"
+
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "TAG_PREFIX=main" >> $GITHUB_OUTPUT
+            echo "LATEST_TAG_SUFFIX=latest" >> $GITHUB_OUTPUT
+          else
+            echo "TAG_PREFIX=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "LATEST_TAG_SUFFIX=${{ github.ref_name }}-latest" >> $GITHUB_OUTPUT
+          fi
+
+          echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_OUTPUT
+          echo "SHA_TAG=${SHA_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/${{ steps.prep_tags.outputs.REPO_LOWER }}/frontend:${{ steps.prep_tags.outputs.TAG_PREFIX }}-${{ steps.prep_tags.outputs.SHA_TAG }}
+            ghcr.io/${{ steps.prep_tags.outputs.REPO_LOWER }}/frontend:${{ steps.prep_tags.outputs.LATEST_TAG_SUFFIX }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false

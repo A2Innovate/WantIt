@@ -4,4 +4,5 @@ export interface Request {
   id: number;
   content: string;
   user: User;
+  budget: number;
 }

@@ -12,6 +12,7 @@
         <div v-if="userStore.current" class="flex items-center gap-2">
           <div
             class="flex items-center bg-neutral-900 h-8 px-2 rounded-full cursor-pointer"
+            @click="isAddRequestModalOpen = true"
           >
             <Icon name="material-symbols:add" />
           </div>
@@ -33,9 +34,14 @@
       </div>
     </div>
     <slot />
+    <ModalNewRequest
+      :is-open="isAddRequestModalOpen"
+      @close="isAddRequestModalOpen = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 const userStore = useUserStore();
+const isAddRequestModalOpen = ref(false);
 </script>

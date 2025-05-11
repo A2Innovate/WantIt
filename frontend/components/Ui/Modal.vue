@@ -5,7 +5,7 @@
       class="fixed top-0 w-full h-screen flex items-center justify-center bg-black/50 backdrop-blur-sm"
       @click.self="emit('close')"
     >
-      <UiCard>
+      <UiCard :class="cardClass">
         <slot />
       </UiCard>
     </div>
@@ -15,6 +15,7 @@
 <script setup lang="ts">
 defineProps<{
   isOpen: boolean;
+  cardClass?: string;
 }>();
 
 const emit = defineEmits(['close']);

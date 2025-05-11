@@ -6,14 +6,17 @@
           <WhatDoYouWant />
         </h2>
         <UiInput
-          v-model="query"
+          v-model="requestStore.query"
           placeholder="An iPhone..."
           class="w-full"
-          @update:model-value="refresh"
+          @update:model-value="requestStore.refresh()"
         />
-        <div v-if="!isFetching" class="flex flex-col gap-2">
+        <div
+          v-if="!requestStore.isFetching"
+          class="flex flex-col gap-2 sm:mb-32 mb-4"
+        >
           <RequestCard
-            v-for="request in data"
+            v-for="request in requestStore.requests"
             :key="request.id"
             :request="request"
           />
@@ -24,20 +27,5 @@
 </template>
 
 <script setup lang="ts">
-import type { Request } from '~/types/request';
-
-const api = useApi();
-const isFetching = ref(false);
-const query = ref('');
-
-const { data, refresh } = useAsyncData<Request[]>('requests', async () => {
-  isFetching.value = true;
-  const response = await api.get('/request', {
-    params: {
-      content: query.value
-    }
-  });
-  isFetching.value = false;
-  return response.data;
-});
+const requestStore = useRequestStore();
 </script>

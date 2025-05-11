@@ -42,6 +42,7 @@ export const requestsTable = pgTable("requests", {
     .notNull()
     .references(() => usersTable.id, { onDelete: "cascade" }),
   content: text().notNull(),
+  budget: integer().notNull(),
 });
 
 export const requestsRelations = relations(requestsTable, ({ one }) => ({

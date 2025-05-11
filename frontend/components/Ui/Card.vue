@@ -1,10 +1,20 @@
 <template>
-  <div
+  <component
+    :is="as"
     class="p-4 rounded-lg border border-neutral-700 bg-neutral-950"
     v-bind="$attrs"
   >
     <slot />
-  </div>
+  </component>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    as?: string | Component;
+  }>(),
+  {
+    as: 'div'
+  }
+);
+</script>

@@ -2,9 +2,13 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { ilike } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import { requestsTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
+import {
+  createRequestSchema,
+  requestByIdSchema,
+} from "@/schema/services/request.ts";
 
 const app = new Hono();
 
@@ -32,6 +36,7 @@ app.get(
       columns: {
         id: true,
         content: true,
+        budget: true,
       },
     });
 
@@ -39,24 +44,58 @@ app.get(
   },
 );
 
+app.get(
+  "/:requestId",
+  zValidator(
+    "param",
+    requestByIdSchema,
+  ),
+  async (c) => {
+    const { requestId } = c.req.valid("param");
+
+    const request = await db.query.requestsTable.findFirst({
+      where: eq(requestsTable.id, requestId),
+      with: {
+        user: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      columns: {
+        id: true,
+        content: true,
+        budget: true,
+      },
+    });
+
+    if (!request) {
+      return c.json({ message: "Request not found" }, 404);
+    }
+
+    return c.json(request);
+  },
+);
+
 app.post(
-  "/create",
+  "/",
   authRequired,
   zValidator(
     "json",
-    z.object({
-      content: z.string(),
-    }),
+    createRequestSchema,
   ),
   async (c) => {
+    const { content, budget } = c.req.valid("json");
     const session = c.get("session");
 
     const request = await db.insert(requestsTable).values({
-      content: c.req.valid("json").content,
+      content,
       userId: session.user.id,
+      budget,
     }).returning();
 
-    return c.json(request);
+    return c.json(request[0]);
   },
 );
 

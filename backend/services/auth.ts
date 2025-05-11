@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
 import { db } from "@/db/index.ts";
 import { eq } from "drizzle-orm";
 import { userSessionsTable, usersTable } from "@/db/schema.ts";
@@ -12,6 +11,7 @@ import argon2 from "argon2";
 import { sendMail } from "@/utils/mail.ts";
 import { setCookie } from "hono/cookie";
 import { authRequired } from "@/middleware/auth.ts";
+import { loginSchema, signUpSchema } from "@/schema/services/auth.ts";
 
 const app = new Hono();
 
@@ -29,20 +29,7 @@ app.post(
   "/register",
   zValidator(
     "json",
-    z.object({
-      name: z.string().min(2, "Name must be at least 2 characters long").max(
-        256,
-        "Name must be at most 256 characters long",
-      ),
-      email: z.string().email("Invalid email"),
-      password: z.string().min(
-        8,
-        "Password must be at least 8 characters long",
-      ).max(
-        256,
-        "Password must be at most 256 characters long",
-      ),
-    }),
+    signUpSchema,
   ),
   async (c) => {
     const { name, email, password } = c.req.valid("json");
@@ -52,7 +39,7 @@ app.post(
     });
 
     if (existingUser) {
-      return c.json({ error: "User with this email already exists" }, 409);
+      return c.json({ message: "User with this email already exists" }, 409);
     }
 
     const hashedPassword = await argon2.hash(password);
@@ -92,16 +79,7 @@ app.post(
   "/login",
   zValidator(
     "json",
-    z.object({
-      email: z.string().email("Invalid email"),
-      password: z.string().min(
-        8,
-        "Password must be at least 8 characters long",
-      ).max(
-        256,
-        "Password must be at most 256 characters long",
-      ),
-    }),
+    loginSchema,
   ),
   async (c) => {
     const { email, password } = c.req.valid("json");
@@ -112,15 +90,15 @@ app.post(
 
     if (!user) {
       // Intentional, user should not know which one is wrong
-      return c.json({ error: "Incorrect email or password" }, 401);
+      return c.json({ message: "Incorrect email or password" }, 401);
     }
 
     if (!(await argon2.verify(user.password, password))) {
-      return c.json({ error: "Incorrect email or password" }, 401);
+      return c.json({ message: "Incorrect email or password" }, 401);
     }
 
     if (!user.isEmailVerified) {
-      return c.json({ error: "Email is not verified" }, 401);
+      return c.json({ message: "Email is not verified" }, 401);
     }
 
     const sessionToken = await generateSessionToken();
@@ -154,7 +132,7 @@ app.post("/verify-email/:token", async (c) => {
   });
 
   if (!user) {
-    return c.json({ error: "Invalid token" }, 400);
+    return c.json({ message: "Invalid token" }, 400);
   }
 
   await db.update(usersTable).set({

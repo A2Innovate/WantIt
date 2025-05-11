@@ -24,12 +24,15 @@
         />
       </div>
       <UiButton class="mt-2">Sign in</UiButton>
-      <p v-if="error" class="text-red-500 mt-2">{{ error }}</p>
+      <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
+import { loginSchema } from '@/schema/services/auth';
+import { AxiosError } from 'axios';
+
 definePageMeta({
   layout: 'auth'
 });
@@ -47,6 +50,16 @@ if (userStore.current) {
 
 async function signIn() {
   try {
+    const validation = validate(loginSchema, {
+      email: email.value,
+      password: password.value
+    });
+
+    if (validation) {
+      error.value = validation;
+      return;
+    }
+
     const response = await api.post('/auth/login', {
       email: email.value,
       password: password.value
@@ -55,7 +68,11 @@ async function signIn() {
     userStore.current = response.data;
     navigateTo('/');
   } catch (e) {
-    console.error(e);
+    if (e instanceof AxiosError) {
+      error.value = e.response?.data.message;
+    } else {
+      error.value = 'Something went wrong';
+    }
   }
 }
 </script>

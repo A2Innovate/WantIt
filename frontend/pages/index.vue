@@ -9,9 +9,9 @@
           v-model="query"
           placeholder="An iPhone..."
           class="w-full"
-          @input="refresh"
+          @update:model-value="refresh"
         />
-        <div class="flex flex-col gap-2">
+        <div v-if="!isFetching" class="flex flex-col gap-2">
           <RequestCard
             v-for="request in data"
             :key="request.id"
@@ -27,17 +27,17 @@
 import type { Request } from '~/types/request';
 
 const api = useApi();
+const isFetching = ref(false);
 const query = ref('');
 
-const { data, refresh } = await useAsyncData<Request[]>(
-  'requests',
-  async () => {
-    const response = await api.get('/request', {
-      params: {
-        content: query.value
-      }
-    });
-    return response.data;
-  }
-);
+const { data, refresh } = useAsyncData<Request[]>('requests', async () => {
+  isFetching.value = true;
+  const response = await api.get('/request', {
+    params: {
+      content: query.value
+    }
+  });
+  isFetching.value = false;
+  return response.data;
+});
 </script>

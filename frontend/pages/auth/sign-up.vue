@@ -34,21 +34,24 @@
         />
       </div>
       <UiButton class="mt-2">Sign up</UiButton>
-      <p v-if="error" class="text-red-500 mt-2">{{ error }}</p>
+      <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
+import { signUpSchema } from '@/schema/services/auth';
+import { AxiosError } from 'axios';
+
 definePageMeta({
   layout: 'auth'
 });
+
 const name = ref('');
 const email = ref('');
 const password = ref('');
 const api = useApi();
 const userStore = useUserStore();
-
 const error = ref('');
 
 if (userStore.current) {
@@ -57,6 +60,17 @@ if (userStore.current) {
 
 async function signUp() {
   try {
+    const validation = validate(signUpSchema, {
+      name: name.value,
+      email: email.value,
+      password: password.value
+    });
+
+    if (validation) {
+      error.value = validation;
+      return;
+    }
+
     await api.post('/auth/register', {
       name: name.value,
       email: email.value,
@@ -65,7 +79,11 @@ async function signUp() {
 
     navigateTo('/auth/sign-in');
   } catch (e) {
-    console.error(e);
+    if (e instanceof AxiosError) {
+      error.value = e.response?.data.message;
+    } else {
+      error.value = 'Something went wrong';
+    }
   }
 }
 </script>

@@ -14,6 +14,7 @@ export const usersTable = pgTable("users", {
   isEmailVerified: boolean().notNull().default(false),
   emailVerificationToken: text().unique(),
   password: text().notNull(),
+  passwordResetToken: text().unique(),
 });
 
 export const userSessionsTable = pgTable("user_sessions", {

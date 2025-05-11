@@ -24,6 +24,14 @@
         />
       </div>
       <UiButton class="mt-2">Sign in</UiButton>
+      <div class="flex justify-between sm:flex-row flex-col">
+        <NuxtLink to="/auth/sign-up" class="sm:text-left text-center"
+          >Don't have an account?</NuxtLink
+        >
+        <NuxtLink to="/auth/reset-password" class="sm:text-right text-center"
+          >Forgot password?</NuxtLink
+        >
+      </div>
       <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
     </form>
   </div>

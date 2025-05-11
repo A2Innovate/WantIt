@@ -5,13 +5,19 @@ import { eq } from "drizzle-orm";
 import { userSessionsTable, usersTable } from "@/db/schema.ts";
 import {
   generateEmailVerificationToken,
+  generateResetPasswordToken,
   generateSessionToken,
 } from "@/utils/generate.ts";
 import argon2 from "argon2";
 import { sendMail } from "@/utils/mail.ts";
 import { setCookie } from "hono/cookie";
 import { authRequired } from "@/middleware/auth.ts";
-import { loginSchema, signUpSchema } from "@/schema/services/auth.ts";
+import {
+  loginSchema,
+  requestPasswordResetSchema,
+  resetPasswordSchema,
+  signUpSchema,
+} from "@/schema/services/auth.ts";
 
 const app = new Hono();
 
@@ -152,5 +158,66 @@ app.post("/logout", authRequired, async (c) => {
 
   return c.json({ message: "Logged out successfully" }, 200);
 });
+
+app.post(
+  "/request-password-reset",
+  zValidator("json", requestPasswordResetSchema),
+  async (c) => {
+    const { email } = c.req.valid("json");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, email),
+    });
+
+    if (!user) {
+      return c.json({ message: "User not found" }, 404);
+    }
+
+    const resetPasswordToken = await generateResetPasswordToken();
+
+    await sendMail({
+      to: email,
+      subject: "WantIt - Reset password",
+
+      text: `Hi ${user.name}!
+
+      To reset your password, click the link below:
+      ${Deno.env.get("FRONTEND_URL")}/auth/reset-password/${resetPasswordToken}
+      
+      Best regards,
+      WantIt Team
+      `,
+    });
+
+    await db.update(usersTable).set({
+      passwordResetToken: resetPasswordToken,
+    }).where(eq(usersTable.id, user.id));
+
+    return c.json({ message: "Reset password email sent successfully" }, 200);
+  },
+);
+
+app.post(
+  "/reset-password",
+  zValidator("json", resetPasswordSchema),
+  async (c) => {
+    const { password, token } = c.req.valid("json");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.passwordResetToken, token),
+    });
+
+    if (!user) {
+      return c.json({ message: "Invalid token" }, 400);
+    }
+
+    await db.update(usersTable).set({
+      password: await argon2.hash(password),
+      passwordResetToken: null,
+    }).where(eq(usersTable.id, user.id));
+
+    return c.json({ message: "Password reset successfully" }, 200);
+  },
+);
 
 export default app;

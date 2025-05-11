@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import auth from "./services/auth.ts";
 import { cors } from "hono/cors";
 import request from "./services/request.ts";
+import user from "./services/user.ts";
 
 const app = new Hono();
 
@@ -17,5 +18,6 @@ app.get("/", (c) => {
 
 app.route("/api/auth", auth);
 app.route("/api/request", request);
+app.route("/api/user", user);
 
 Deno.serve(app.fetch);

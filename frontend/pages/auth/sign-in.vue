@@ -24,6 +24,7 @@
         />
       </div>
       <UiButton class="mt-2">Sign in</UiButton>
+      <p v-if="error" class="text-red-500 mt-2">{{ error }}</p>
     </form>
   </div>
 </template>
@@ -38,6 +39,8 @@ const password = ref('');
 const api = useApi();
 const userStore = useUserStore();
 
+const error = ref('');
+
 if (userStore.current) {
   navigateTo('/');
 }
@@ -51,8 +54,8 @@ async function signIn() {
 
     userStore.current = response.data;
     navigateTo('/');
-  } catch (error) {
-    console.error(error);
+  } catch (e) {
+    console.error(e);
   }
 }
 </script>

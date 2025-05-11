@@ -26,7 +26,7 @@
           </li>
           <li>
             <NuxtLink
-              to="/settings"
+              to="/user/settings"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
               ><Icon name="material-symbols:settings" /> Settings
             </NuxtLink>
@@ -71,5 +71,6 @@ const userStore = useUserStore();
 function signOut() {
   userStore.logout();
   isOpen.value = false;
+  navigateTo('/');
 }
 </script>

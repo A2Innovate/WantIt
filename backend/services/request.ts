@@ -2,11 +2,12 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { eq, ilike } from "drizzle-orm";
+import { and, eq, ilike } from "drizzle-orm";
 import { requestsTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   createRequestSchema,
+  editRequestSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
 
@@ -95,6 +96,36 @@ app.post(
       budget,
     }).returning();
 
+    return c.json(request[0]);
+  },
+);
+
+app.put(
+  "/:requestId",
+  authRequired,
+  zValidator(
+    "param",
+    requestByIdSchema,
+  ),
+  zValidator(
+    "json",
+    editRequestSchema,
+  ),
+  async (c) => {
+    const { requestId } = c.req.valid("param");
+    const { content, budget } = c.req.valid("json");
+    const session = c.get("session");
+
+    const request = await db.update(requestsTable)
+      .set({
+        content,
+        budget,
+      })
+      .where(and(
+        eq(requestsTable.id, requestId),
+        eq(requestsTable.userId, session.user.id),
+      ))
+      .returning();
     return c.json(request[0]);
   },
 );

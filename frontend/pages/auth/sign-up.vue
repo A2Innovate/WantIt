@@ -35,6 +35,12 @@
       </div>
       <UiButton class="mt-2">Sign up</UiButton>
       <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
+      <div class="flex flex-col">
+        <NuxtLink to="/" class="text-center">Back to Home</NuxtLink>
+        <NuxtLink to="/auth/sign-in" class="text-center"
+          >Have an account?</NuxtLink
+        >
+      </div>
     </form>
   </div>
 </template>

@@ -126,6 +126,11 @@ app.put(
         eq(requestsTable.userId, session.user.id),
       ))
       .returning();
+
+    if (!request[0]) {
+      return c.json({ message: "Request not found" }, 404);
+    }
+
     return c.json(request[0]);
   },
 );

@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 import { createRequestSchema } from '@/schema/services/request';
+import { AxiosError } from 'axios';
 
 defineProps<{
   isOpen: boolean;
@@ -43,12 +44,14 @@ async function addRequest() {
       budget: Number(budget.value)
     });
 
-    console.log(response.data);
-
     navigateTo(`/request/${response.data.id}`);
     emit('close');
-  } catch (error) {
-    console.error(error);
+  } catch (e) {
+    if (e instanceof AxiosError && e.response?.data.message) {
+      error.value = e.response.data.message;
+    } else {
+      error.value = 'Something went wrong';
+    }
   }
 }
 </script>

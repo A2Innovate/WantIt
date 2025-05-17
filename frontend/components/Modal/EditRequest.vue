@@ -13,25 +13,23 @@
 </template>
 
 <script setup lang="ts">
+import { AxiosError } from 'axios';
 import { editRequestSchema } from '~/schema/services/request';
 import type { Request } from '~/types/request';
 
 const props = defineProps<{
   isOpen: boolean;
-  request?: Request;
+  request: Request;
 }>();
-const localRequest = ref<Request | undefined>(props.request);
-const emit = defineEmits(['close']);
+
+const emit = defineEmits(['close', 'update']);
 const api = useApi();
 
-const content = ref(props.request?.content ?? '');
-const budget = ref(props.request?.budget.toString() ?? '');
+const content = ref(props.request.content);
+const budget = ref(props.request.budget.toString());
 const error = ref('');
 
 async function editRequest() {
-  if (!localRequest.value) {
-    return;
-  }
   try {
     const validation = validate(editRequestSchema, {
       content: content.value,
@@ -43,21 +41,19 @@ async function editRequest() {
       return;
     }
 
-    const response = await api.put(`/request/${localRequest.value.id}`, {
+    await api.put(`/request/${props.request.id}`, {
       content: content.value,
       budget: Number(budget.value)
     });
 
-    console.log(response.data);
-
-    if (localRequest.value) {
-      localRequest.value.content = content.value;
-      localRequest.value.budget = Number(budget.value);
-    }
-
+    emit('update');
     emit('close');
-  } catch (error) {
-    console.error(error);
+  } catch (e) {
+    if (e instanceof AxiosError && e.response?.data.message) {
+      error.value = e.response.data.message;
+    } else {
+      error.value = 'Something went wrong';
+    }
   }
 }
 </script>

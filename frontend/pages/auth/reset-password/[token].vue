@@ -54,11 +54,17 @@ async function resetPassword() {
       error.value = validation;
       return;
     }
+
     await api.post('/auth/reset-password', {
       password: password.value,
       token: route.params.token
     });
+
     success.value = true;
+
+    setTimeout(() => {
+      navigateTo('/');
+    }, 2000);
   } catch (e) {
     if (e instanceof AxiosError) {
       error.value = e.response?.data.message;

@@ -8,14 +8,7 @@
         <p v-if="request">${{ request.budget }}</p>
 
         <div class="flex justify-between items-center mt-4">
-          <div
-            v-if="
-              request &&
-              userStore.current &&
-              userStore.current.id === request.user.id
-            "
-            class="flex"
-          >
+          <div v-if="userStore.current?.id === request?.user.id" class="flex">
             <UiButton @click="isEditRequestModalOpen = true"
               >Edit request</UiButton
             >
@@ -44,6 +37,7 @@
       :is-open="isEditRequestModalOpen"
       :request="request"
       @close="isEditRequestModalOpen = false"
+      @update="refresh()"
     />
   </div>
 </template>
@@ -57,7 +51,11 @@ const userStore = useUserStore();
 
 const isEditRequestModalOpen = ref(false);
 
-const { data: request, error } = useAsyncData<Request>('request', async () => {
+const {
+  data: request,
+  error,
+  refresh
+} = useAsyncData<Request>('request', async () => {
   const response = await api.get(`/request/${route.params.requestId}`);
   return response.data;
 });

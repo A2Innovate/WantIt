@@ -51,3 +51,27 @@ export const requestsRelations = relations(requestsTable, ({ one }) => ({
     references: [usersTable.id],
   }),
 }));
+
+export const offersTable = pgTable("offers", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  requestId: integer()
+    .notNull()
+    .references(() => requestsTable.id, { onDelete: "cascade" }),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  content: text().notNull(),
+  price: integer().notNull(),
+  negotiation: boolean().notNull().default(false),
+});
+
+export const offersRelations = relations(offersTable, ({ one }) => ({
+  request: one(requestsTable, {
+    fields: [offersTable.requestId],
+    references: [requestsTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [offersTable.userId],
+    references: [usersTable.id],
+  }),
+}));

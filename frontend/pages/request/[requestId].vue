@@ -31,13 +31,23 @@
           <span v-else> {{ error.message }}</span>
         </p>
       </UiCard>
+      <div v-if="request" class="flex justify-end m-4">
+        <UiButton @click="isAddOfferModalOpen = true">Add offer</UiButton>
+      </div>
     </div>
+
     <ModalEditRequest
       v-if="request"
       :is-open="isEditRequestModalOpen"
       :request="request"
       @close="isEditRequestModalOpen = false"
       @update="refresh()"
+    />
+    <ModalNewOffer
+      v-if="request"
+      :is-open="isAddOfferModalOpen"
+      :request="request"
+      @close="isAddOfferModalOpen = false"
     />
   </div>
 </template>
@@ -50,6 +60,7 @@ const api = useApi();
 const userStore = useUserStore();
 
 const isEditRequestModalOpen = ref(false);
+const isAddOfferModalOpen = ref(false);
 
 const {
   data: request,

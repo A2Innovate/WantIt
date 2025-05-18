@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 export const createRequestSchema = z.object({
   content: z
     .string()
@@ -6,12 +7,22 @@ export const createRequestSchema = z.object({
     .max(512, 'Content must be at most 512 characters long'),
   budget: z.number().max(2147483647, 'Budget must be at most 2147483647')
 });
+
 export const editRequestSchema = z.object({
   content: z
     .string()
     .min(4, 'Content must be at least 4 characters long')
     .max(512, 'Content must be at most 512 characters long'),
   budget: z.number().max(2147483647, 'Budget must be at most 2147483647')
+});
+
+export const createOfferSchema = z.object({
+  content: z
+    .string()
+    .min(4, 'Content must be at least 4 characters long')
+    .max(512, 'Content must be at most 512 characters long'),
+  price: z.number().max(2147483647, 'Price must be at most 2147483647'),
+  negotiation: z.boolean().default(false)
 });
 
 export const requestByIdSchema = z.object({

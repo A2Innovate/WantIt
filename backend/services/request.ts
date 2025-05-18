@@ -3,9 +3,10 @@ import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, eq, ilike } from "drizzle-orm";
-import { requestsTable } from "@/db/schema.ts";
+import { offersTable, requestsTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
+  createOfferSchema,
   createRequestSchema,
   editRequestSchema,
   requestByIdSchema,
@@ -76,6 +77,53 @@ app.get(
     }
 
     return c.json(request);
+  },
+);
+
+app.post(
+  "/:requestId",
+  authRequired,
+  zValidator(
+    "param",
+    requestByIdSchema,
+  ),
+  zValidator(
+    "json",
+    createOfferSchema,
+  ),
+  async (c) => {
+    const { requestId } = c.req.valid("param");
+    const { content, price, negotiation } = c.req.valid("json");
+    const session = c.get("session");
+
+    try {
+      const offer = await db.insert(offersTable).values({
+        requestId,
+        content,
+        price,
+        negotiation,
+        userId: session.user.id,
+      }).returning({
+        id: offersTable.id,
+        content: offersTable.content,
+        price: offersTable.price,
+        negotiation: offersTable.negotiation,
+      });
+
+      return c.json(offer[0]);
+    } catch (e) {
+      if (
+        e instanceof Error &&
+        e.message.includes("offers_requestId_requests_id_fk")
+      ) {
+        return c.json({ message: "Request not found" }, 404);
+      }
+
+      return c.json(
+        { message: "Something went wrong while creating offer" },
+        500,
+      );
+    }
   },
 );
 

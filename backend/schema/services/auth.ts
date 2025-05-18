@@ -40,3 +40,14 @@ export const resetPasswordSchema = z.object({
   ),
   token: z.string(),
 });
+
+export const changePasswordSchema = z.object({
+  oldPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(256, "Password must be at most 256 characters long"),
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(256, "Password must be at most 256 characters long"),
+});

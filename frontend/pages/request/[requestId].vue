@@ -31,7 +31,7 @@
           <span v-else> {{ error.message }}</span>
         </p>
       </UiCard>
-      <div v-if="request" class="flex justify-end m-4">
+      <div v-if="request && userStore.current" class="flex justify-end m-4">
         <UiButton @click="isAddOfferModalOpen = true">Add offer</UiButton>
       </div>
     </div>

@@ -13,6 +13,7 @@ import { sendMail } from "@/utils/mail.ts";
 import { setCookie } from "hono/cookie";
 import { authRequired } from "@/middleware/auth.ts";
 import {
+  changePasswordSchema,
   loginSchema,
   requestPasswordResetSchema,
   resetPasswordSchema,
@@ -217,6 +218,26 @@ app.post(
     }).where(eq(usersTable.id, user.id));
 
     return c.json({ message: "Password reset successfully" }, 200);
+  },
+);
+app.post(
+  "/change-password",
+  authRequired,
+  zValidator("json", changePasswordSchema),
+  async (c) => {
+    const { oldPassword, newPassword } = c.req.valid("json");
+
+    const session = c.get("session");
+
+    if (!(await argon2.verify(session.user.password, oldPassword))) {
+      return c.json({ message: "Incorrect old password" }, 401);
+    }
+
+    await db.update(usersTable).set({
+      password: await argon2.hash(newPassword),
+    }).where(eq(usersTable.id, session.user.id));
+
+    return c.json({ message: "Password changed successfully" }, 200);
   },
 );
 

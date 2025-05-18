@@ -19,7 +19,7 @@
         <ul class="py-1 text-sm text-white">
           <li>
             <NuxtLink
-              to="/account"
+              to="/user/account"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
               ><Icon name="material-symbols:account-circle" /> Account
             </NuxtLink>

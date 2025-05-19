@@ -5,7 +5,7 @@
       <UiCard v-if="!error" class="m-4">
         <p v-if="request">{{ request.content }}</p>
         <p v-else>Loading...</p>
-        <p v-if="request">${{ request.budget }}</p>
+        <p v-if="request">{{ priceFmt(request.budget) }}</p>
 
         <div class="flex justify-between items-center mt-4">
           <div v-if="userStore.current?.id === request?.user.id" class="flex">
@@ -31,6 +31,22 @@
           <span v-else> {{ error.message }}</span>
         </p>
       </UiCard>
+
+      <h2
+        v-if="request?.offers.length"
+        class="text-xl font-semibold mt-6 mb-4 px-4"
+      >
+        Offers
+      </h2>
+
+      <div v-if="request?.offers.length" class="flex flex-col gap-2 m-4">
+        <CardOffer
+          v-for="offer in request.offers"
+          :key="offer.id"
+          :offer="offer"
+        />
+      </div>
+
       <div v-if="request && userStore.current" class="flex justify-end m-4">
         <UiButton @click="isAddOfferModalOpen = true">Add offer</UiButton>
       </div>

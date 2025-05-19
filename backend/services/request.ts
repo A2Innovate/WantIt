@@ -64,6 +64,21 @@ app.get(
             name: true,
           },
         },
+        offers: {
+          columns: {
+            id: true,
+            content: true,
+            price: true,
+            negotiation: true,
+          },
+          with: {
+            user: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+        },
       },
       columns: {
         id: true,

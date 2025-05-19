@@ -15,7 +15,7 @@
           v-if="!requestStore.isFetching"
           class="flex flex-col gap-2 sm:mb-32 mb-4"
         >
-          <RequestCard
+          <CardRequest
             v-for="request in requestStore.requests"
             :key="request.id"
             :request="request"

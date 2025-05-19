@@ -7,10 +7,9 @@
     <p class="text-lg font-medium mb-2 break-words">{{ request.content }}</p>
     <div class="flex gap-2 mt-1">
       <span
-        class="flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-700 text-green-100"
+        class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-700 text-green-100"
       >
-        <Icon name="material-symbols:attach-money" class="mr-1" />
-        {{ request.budget }}
+        {{ priceFmt(request.budget) }}
       </span>
     </div>
     <div class="flex justify-end">

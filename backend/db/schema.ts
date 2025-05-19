@@ -45,11 +45,12 @@ export const requestsTable = pgTable("requests", {
   budget: integer().notNull(),
 });
 
-export const requestsRelations = relations(requestsTable, ({ one }) => ({
+export const requestsRelations = relations(requestsTable, ({ one, many }) => ({
   user: one(usersTable, {
     fields: [requestsTable.userId],
     references: [usersTable.id],
   }),
+  offers: many(offersTable),
 }));
 
 export const offersTable = pgTable("offers", {

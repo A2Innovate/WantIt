@@ -57,6 +57,10 @@ async function addOffer() {
 
     emit('update');
     emit('close');
+    content.value = '';
+    price.value = '';
+    negotiation.value = false;
+    error.value = '';
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
       error.value = e.response.data.message;

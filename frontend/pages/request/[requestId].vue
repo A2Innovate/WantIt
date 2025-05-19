@@ -64,6 +64,7 @@
       :is-open="isAddOfferModalOpen"
       :request="request"
       @close="isAddOfferModalOpen = false"
+      @update="refresh()"
     />
   </div>
 </template>

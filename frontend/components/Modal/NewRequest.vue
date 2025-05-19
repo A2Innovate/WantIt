@@ -46,6 +46,9 @@ async function addRequest() {
 
     navigateTo(`/request/${response.data.id}`);
     emit('close');
+    content.value = '';
+    budget.value = '';
+    error.value = '';
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
       error.value = e.response.data.message;

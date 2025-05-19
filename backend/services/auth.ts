@@ -19,6 +19,7 @@ import {
   resetPasswordSchema,
   signUpSchema,
 } from "@/schema/services/auth.ts";
+import { FRONTEND_URL } from "@/utils/global.ts";
 
 const app = new Hono();
 
@@ -119,6 +120,7 @@ app.post(
     setCookie(c, "session", sessionToken, {
       httpOnly: true,
       secure: true,
+      domain: FRONTEND_URL,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });

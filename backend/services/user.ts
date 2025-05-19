@@ -9,6 +9,7 @@ import { sendMail } from "@/utils/mail.ts";
 import { updateProfileSchema } from "@/schema/services/user.ts";
 
 const app = new Hono();
+
 app.put(
   "/update",
   zValidator(

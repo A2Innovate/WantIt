@@ -8,6 +8,13 @@ Make sure to install dependencies:
 pnpm install
 ```
 
+Then, copy the `.env.sample` file to `.env` and fill in the environment
+variables.
+
+```
+cp .env.sample .env
+```
+
 ## Development
 
 Start the development server on `http://localhost:3000`:

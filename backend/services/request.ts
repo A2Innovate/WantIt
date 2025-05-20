@@ -74,6 +74,7 @@ app.get(
           with: {
             user: {
               columns: {
+                id: true,
                 name: true,
               },
             },

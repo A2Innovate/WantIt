@@ -7,3 +7,10 @@ export const updateProfileSchema = z.object({
     .max(256, 'Name must be at most 256 characters long'),
   email: z.string().email('Invalid email')
 });
+
+export const getUserByIdSchema = z.object({
+  userId: z
+    .string()
+    .refine((value) => !isNaN(Number(value)), 'userId must be a valid number')
+    .transform((value) => Number(value))
+});

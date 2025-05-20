@@ -6,9 +6,36 @@ import { zValidator } from "@hono/zod-validator";
 import { userSessionsTable, usersTable } from "@/db/schema.ts";
 import { generateEmailVerificationToken } from "@/utils/generate.ts";
 import { sendMail } from "@/utils/mail.ts";
-import { updateProfileSchema } from "@/schema/services/user.ts";
+import {
+  getUserByIdSchema,
+  updateProfileSchema,
+} from "@/schema/services/user.ts";
 
 const app = new Hono();
+
+app.get("/:userId", zValidator("param", getUserByIdSchema), async (c) => {
+  const { userId } = c.req.valid("param");
+
+  const user = await db.query.usersTable.findFirst({
+    where: eq(usersTable.id, userId),
+    with: {
+      requests: {
+        columns: {
+          userId: false,
+        },
+      },
+    },
+    columns: {
+      name: true,
+    },
+  });
+
+  if (!user) {
+    return c.json({ message: "User not found" }, 404);
+  }
+
+  return c.json(user);
+});
 
 app.put(
   "/update",

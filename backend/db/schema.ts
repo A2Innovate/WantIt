@@ -17,6 +17,10 @@ export const usersTable = pgTable("users", {
   passwordResetToken: text().unique(),
 });
 
+export const userRelations = relations(usersTable, ({ many }) => ({
+  requests: many(requestsTable),
+}));
+
 export const userSessionsTable = pgTable("user_sessions", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   userId: integer()

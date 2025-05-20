@@ -4,7 +4,7 @@ import type { Offer } from './offer';
 export interface Request {
   id: number;
   content: string;
-  user: User;
+  user: Omit<User, 'email'>;
   budget: number;
   offers: Offer[];
 }

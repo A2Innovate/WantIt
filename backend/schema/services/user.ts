@@ -7,3 +7,10 @@ export const updateProfileSchema = z.object({
   ),
   email: z.string().email("Invalid email"),
 });
+
+export const getUserByIdSchema = z.object({
+  userId: z.string().refine(
+    (value) => !isNaN(Number(value)),
+    "userId must be a valid number",
+  ).transform((value) => Number(value)),
+});

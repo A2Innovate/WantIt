@@ -3,17 +3,22 @@
     <div class="space-y-4">
       <div class="flex items-center justify-between">
         <NuxtLink :to="`/user/${offer.user.id}`">
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2 group">
             <div class="w-8 h-8 rounded-full bg-neutral-700">
               <div
-                class="w-full h-full flex items-center justify-center font-medium"
+                class="w-full h-full flex items-center justify-center font-medium group-hover:text-neutral-300 transition-colors"
               >
                 {{ offer.user.name.charAt(0) }}
               </div>
             </div>
             <div>
-              <span class="text-sm text-gray-400">Offered by</span>
-              <span class="ml-1 font-medium">
+              <span
+                class="text-sm text-gray-400 group-hover:text-gray-500 transition-colors"
+                >Offered by</span
+              >
+              <span
+                class="ml-1 font-medium group-hover:text-neutral-300 transition-colors"
+              >
                 {{ offer.user.name }}
               </span>
             </div>

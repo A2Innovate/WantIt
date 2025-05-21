@@ -68,6 +68,7 @@ export const offersTable = pgTable("offers", {
   content: text().notNull(),
   price: integer().notNull(),
   negotiation: boolean().notNull().default(false),
+  images: text().array(),
 });
 
 export const offersRelations = relations(offersTable, ({ one }) => ({

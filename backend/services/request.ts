@@ -97,7 +97,7 @@ app.get(
 );
 
 app.post(
-  "/:requestId",
+  "/:requestId/offer",
   authRequired,
   zValidator(
     "param",
@@ -140,6 +140,36 @@ app.post(
         500,
       );
     }
+  },
+);
+
+app.post(
+  "/:requestId/image",
+  authRequired,
+  zValidator(
+    "form",
+    z.object({
+      "images[]": z.array(
+        z.instanceof(File)
+          .refine(
+            (file) => file.size > 0,
+            "Uploaded image cannot be empty.",
+          )
+          .refine(
+            (file) => file.size < 1024 * 1024 * 5,
+            "Image must be smaller than 5MB.",
+          )
+          .refine(
+            (file) => file.type.startsWith("image/"),
+            "File must be an image (e.g., image/jpeg, image/png).",
+          ),
+      ),
+    }),
+  ),
+  (c) => {
+    // TODO
+
+    return c.json({ message: "TODO" });
   },
 );
 

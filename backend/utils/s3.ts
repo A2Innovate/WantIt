@@ -13,7 +13,7 @@ export const s3 = new S3Client({
 export async function uploadFile(
   { file, key }: { file: File; key: string },
 ) {
-  await s3.send(
+  return s3.send(
     new PutObjectCommand({
       Bucket: Deno.env.get("S3_BUCKET")!,
       Key: key,

@@ -51,16 +51,22 @@ async function addOffer() {
       return;
     }
 
-    await api.post<Request>(`/request/${props.request.id}/offer`, {
-      content: content.value,
-      price: Number(price.value),
-      negotiation: negotiation.value
-    });
+    const response = await api.post<Request>(
+      `/request/${props.request.id}/offer`,
+      {
+        content: content.value,
+        price: Number(price.value),
+        negotiation: negotiation.value
+      }
+    );
 
     if (images.value) {
-      await api.postForm(`/request/${props.request.id}/image`, {
-        images: images.value
-      });
+      await api.postForm(
+        `/request/${props.request.id}/offer/${response.data.id}/image`,
+        {
+          images: images.value
+        }
+      );
     }
 
     emit('update');

@@ -7,6 +7,7 @@
       >
         <Icon name="material-symbols:photo" size="3em" />
         <p class="text-sm">Choose images</p>
+        <small class="text-xs text-neutral-400">(Max 5 MB each)</small>
       </label>
       <input
         id="file"

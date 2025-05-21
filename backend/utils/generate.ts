@@ -1,7 +1,11 @@
 import crypto from "node:crypto";
 import { db } from "@/db/index.ts";
-import { eq } from "drizzle-orm";
-import { userSessionsTable, usersTable } from "@/db/schema.ts";
+import { and, eq } from "drizzle-orm";
+import {
+  offerImagesTable,
+  userSessionsTable,
+  usersTable,
+} from "@/db/schema.ts";
 
 export async function generateEmailVerificationToken() {
   const token = crypto.randomBytes(32).toString("hex");
@@ -43,4 +47,26 @@ export async function generateSessionToken() {
   }
 
   return token;
+}
+
+export async function generateUniqueOfferImageUUID(
+  requestId: number,
+  offerId: number,
+) {
+  const imageUUID = crypto.randomUUID();
+
+  const existingImage = await db.query.offerImagesTable.findFirst({
+    where: (
+      and(
+        eq(offerImagesTable.offerId, offerId),
+        eq(offerImagesTable.name, imageUUID),
+      )
+    ),
+  });
+
+  if (existingImage) {
+    return generateUniqueOfferImageUUID(requestId, offerId);
+  }
+
+  return imageUUID;
 }

@@ -3,7 +3,7 @@ import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, eq, ilike } from "drizzle-orm";
-import { offersTable, requestsTable } from "@/db/schema.ts";
+import { offerImagesTable, offersTable, requestsTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   createOfferSchema,
@@ -11,6 +11,8 @@ import {
   editRequestSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
+import { uploadFile } from "@/utils/s3.ts";
+import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 
 const app = new Hono();
 
@@ -68,6 +70,7 @@ app.get(
           columns: {
             id: true,
             content: true,
+            requestId: true,
             price: true,
             negotiation: true,
           },
@@ -75,6 +78,11 @@ app.get(
             user: {
               columns: {
                 id: true,
+                name: true,
+              },
+            },
+            images: {
+              columns: {
                 name: true,
               },
             },
@@ -144,8 +152,27 @@ app.post(
 );
 
 app.post(
-  "/:requestId/image",
+  "/:requestId/offer/:offerId/image",
   authRequired,
+  zValidator(
+    "param",
+    z.object({
+      requestId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "requestId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+      offerId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "offerId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+    }),
+  ),
   zValidator(
     "form",
     z.object({
@@ -166,10 +193,41 @@ app.post(
       ),
     }),
   ),
-  (c) => {
-    // TODO
+  async (c) => {
+    const { requestId, offerId } = c.req.valid("param");
+    const { "images[]": images } = c.req.valid("form");
+    const session = c.get("session");
 
-    return c.json({ message: "TODO" });
+    const offer = await db.query.offersTable.findFirst({
+      where: and(
+        eq(offersTable.id, offerId),
+        eq(offersTable.requestId, requestId),
+        eq(offersTable.userId, session.user.id),
+      ),
+    });
+
+    if (!offer) {
+      return c.json({ message: "Offer not found" }, 404);
+    }
+
+    const imageUUIDs: string[] = [];
+    for (const image of images) {
+      const imageUUID = await generateUniqueOfferImageUUID(requestId, offerId);
+      imageUUIDs.push(imageUUID);
+      await uploadFile({
+        file: image,
+        key: `request/${requestId}/offer/${offerId}/images/${imageUUID}`,
+      });
+    }
+
+    const offerImages = await db.insert(offerImagesTable).values(
+      imageUUIDs.map((imageUUID) => ({
+        offerId,
+        name: imageUUID,
+      })),
+    ).returning();
+
+    return c.json(offerImages);
   },
 );
 

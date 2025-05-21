@@ -35,6 +35,15 @@
         </span>
       </div>
 
+      <UiImageCarousel
+        :images="
+          offer.images.map(
+            (image) =>
+              `${useRuntimeConfig().public.s3Endpoint}/${useRuntimeConfig().public.s3Bucket}/request/${offer.requestId}/offer/${offer.id}/images/${image.name}`
+          )
+        "
+      />
+
       <p class="text-gray-300 text-sm leading-relaxed">
         {{ offer.content }}
       </p>

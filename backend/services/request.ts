@@ -190,7 +190,9 @@ app.post(
             (file) => file.type.startsWith("image/"),
             "File must be an image (e.g., image/jpeg, image/png).",
           ),
-      ),
+      )
+        .min(1, "You must upload at least one image.")
+        .max(10, "You can upload up to 10 images."),
     }),
   ),
   async (c) => {
@@ -210,20 +212,21 @@ app.post(
       return c.json({ message: "Offer not found" }, 404);
     }
 
-    const imageUUIDs: string[] = [];
+    const imageNames: string[] = [];
     for (const image of images) {
-      const imageUUID = await generateUniqueOfferImageUUID(requestId, offerId);
-      imageUUIDs.push(imageUUID);
+      const imageName = await generateUniqueOfferImageUUID(requestId, offerId) +
+        "." + image.name.split(".").pop();
+      imageNames.push(imageName);
       await uploadFile({
         file: image,
-        key: `request/${requestId}/offer/${offerId}/images/${imageUUID}`,
+        key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
       });
     }
 
     const offerImages = await db.insert(offerImagesTable).values(
-      imageUUIDs.map((imageUUID) => ({
+      imageNames.map((imageName) => ({
         offerId,
-        name: imageUUID,
+        name: imageName,
       })),
     ).returning();
 

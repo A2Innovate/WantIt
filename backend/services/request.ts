@@ -206,10 +206,17 @@ app.post(
         eq(offersTable.requestId, requestId),
         eq(offersTable.userId, session.user.id),
       ),
+      with: {
+        images: true,
+      },
     });
 
     if (!offer) {
       return c.json({ message: "Offer not found" }, 404);
+    }
+
+    if (offer.images.length + images.length > 10) {
+      return c.json({ message: "One offer can have up to 10 images." }, 400);
     }
 
     const imageNames: string[] = [];

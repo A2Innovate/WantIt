@@ -51,6 +51,11 @@ async function addOffer() {
       return;
     }
 
+    if (images.value && images.value.length > 10) {
+      error.value = 'One offer can have up to 10 images.';
+      return;
+    }
+
     const response = await api.post<Request>(
       `/request/${props.request.id}/offer`,
       {

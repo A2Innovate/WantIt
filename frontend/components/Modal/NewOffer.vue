@@ -56,6 +56,16 @@ async function addOffer() {
       return;
     }
 
+    if (images.value) {
+      for (const image of images.value) {
+        if (image.size > 1024 * 1024 * 5) {
+          error.value =
+            'At least one of your images is too large, max size is 5MB.';
+          return;
+        }
+      }
+    }
+
     const response = await api.post<Request>(
       `/request/${props.request.id}/offer`,
       {

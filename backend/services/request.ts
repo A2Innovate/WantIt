@@ -11,7 +11,7 @@ import {
   editRequestSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
-import { uploadFile } from "@/utils/s3.ts";
+import { deleteFile, uploadFile } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 
 const app = new Hono();
@@ -220,22 +220,39 @@ app.post(
     }
 
     const imageNames: string[] = [];
-    for (const image of images) {
-      const imageName = await generateUniqueOfferImageUUID(requestId, offerId) +
-        "." + image.name.split(".").pop();
-      imageNames.push(imageName);
-      await uploadFile({
-        file: image,
-        key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
-      });
-    }
+    let offerImages;
+    try {
+      for (const image of images) {
+        const imageFileFormat = image.name.includes(".")
+          ? `.${image.name.split(".").pop()}`
+          : "";
+        const imageName = await generateUniqueOfferImageUUID(offerId) +
+          imageFileFormat;
+        imageNames.push(imageName);
+        await uploadFile({
+          file: image,
+          key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
+        });
+      }
 
-    const offerImages = await db.insert(offerImagesTable).values(
-      imageNames.map((imageName) => ({
-        offerId,
-        name: imageName,
-      })),
-    ).returning();
+      offerImages = await db.insert(offerImagesTable).values(
+        imageNames.map((imageName) => ({
+          offerId,
+          name: imageName,
+        })),
+      ).returning();
+    } catch {
+      for (const imageName of imageNames) {
+        await deleteFile(
+          `request/${requestId}/offer/${offerId}/images/${imageName}`,
+        );
+      }
+
+      return c.json(
+        { message: "Something went wrong while uploading images" },
+        500,
+      );
+    }
 
     return c.json(offerImages);
   },

@@ -50,7 +50,6 @@ export async function generateSessionToken() {
 }
 
 export async function generateUniqueOfferImageUUID(
-  requestId: number,
   offerId: number,
 ) {
   const imageUUID = crypto.randomUUID();
@@ -65,7 +64,7 @@ export async function generateUniqueOfferImageUUID(
   });
 
   if (existingImage) {
-    return generateUniqueOfferImageUUID(requestId, offerId);
+    return generateUniqueOfferImageUUID(offerId);
   }
 
   return imageUUID;

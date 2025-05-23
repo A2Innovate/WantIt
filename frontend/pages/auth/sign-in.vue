@@ -24,6 +24,12 @@
         />
       </div>
       <UiButton class="mt-2">Sign in</UiButton>
+      <UiButton
+        class="mt-2 flex gap-2 items-center justify-center"
+        type="button"
+        @click="signInWithGoogle"
+        ><Icon name="devicon:google" /> Sign in with Google</UiButton
+      >
       <div class="flex justify-between sm:flex-row flex-col">
         <NuxtLink to="/auth/sign-up" class="sm:text-left text-center"
           >Don't have an account?</NuxtLink
@@ -32,6 +38,7 @@
           >Forgot password?</NuxtLink
         >
       </div>
+
       <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
     </form>
   </div>
@@ -82,5 +89,10 @@ async function signIn() {
       error.value = 'Something went wrong';
     }
   }
+}
+
+async function signInWithGoogle() {
+  const getURL = await api.get('/auth/oauth/google');
+  navigateTo(getURL.data.url, { external: true });
 }
 </script>

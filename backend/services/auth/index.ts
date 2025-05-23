@@ -19,8 +19,11 @@ import {
   resetPasswordSchema,
   signUpSchema,
 } from "@/schema/services/auth.ts";
+import oauth from "./oauth.ts";
 
 const app = new Hono();
+
+app.route("/oauth", oauth);
 
 app.get("/", authRequired, (c) => {
   const session = c.get("session");

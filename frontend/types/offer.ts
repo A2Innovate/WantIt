@@ -7,4 +7,7 @@ export interface Offer {
   content: string;
   price: number;
   negotiation: boolean;
+  images: {
+    name: string;
+  }[];
 }

@@ -70,7 +70,25 @@ export const offersTable = pgTable("offers", {
   negotiation: boolean().notNull().default(false),
 });
 
-export const offersRelations = relations(offersTable, ({ one }) => ({
+export const offerImagesTable = pgTable("offer_images", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  offerId: integer()
+    .notNull()
+    .references(() => offersTable.id, { onDelete: "cascade" }),
+  name: text().notNull(),
+});
+
+export const offerImagesRelations = relations(
+  offerImagesTable,
+  ({ one }) => ({
+    offer: one(offersTable, {
+      fields: [offerImagesTable.offerId],
+      references: [offersTable.id],
+    }),
+  }),
+);
+
+export const offersRelations = relations(offersTable, ({ one, many }) => ({
   request: one(requestsTable, {
     fields: [offersTable.requestId],
     references: [requestsTable.id],
@@ -79,4 +97,5 @@ export const offersRelations = relations(offersTable, ({ one }) => ({
     fields: [offersTable.userId],
     references: [usersTable.id],
   }),
+  images: many(offerImagesTable),
 }));

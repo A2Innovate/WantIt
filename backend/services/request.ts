@@ -3,7 +3,7 @@ import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, eq, ilike } from "drizzle-orm";
-import { offersTable, requestsTable } from "@/db/schema.ts";
+import { offerImagesTable, offersTable, requestsTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   createOfferSchema,
@@ -11,6 +11,8 @@ import {
   editRequestSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
+import { deleteFile, uploadFile } from "@/utils/s3.ts";
+import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 
 const app = new Hono();
 
@@ -68,6 +70,7 @@ app.get(
           columns: {
             id: true,
             content: true,
+            requestId: true,
             price: true,
             negotiation: true,
           },
@@ -75,6 +78,11 @@ app.get(
             user: {
               columns: {
                 id: true,
+                name: true,
+              },
+            },
+            images: {
+              columns: {
                 name: true,
               },
             },
@@ -97,7 +105,7 @@ app.get(
 );
 
 app.post(
-  "/:requestId",
+  "/:requestId/offer",
   authRequired,
   zValidator(
     "param",
@@ -140,6 +148,113 @@ app.post(
         500,
       );
     }
+  },
+);
+
+app.post(
+  "/:requestId/offer/:offerId/image",
+  authRequired,
+  zValidator(
+    "param",
+    z.object({
+      requestId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "requestId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+      offerId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "offerId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+    }),
+  ),
+  zValidator(
+    "form",
+    z.object({
+      "images[]": z.array(
+        z.instanceof(File)
+          .refine(
+            (file) => file.size > 0,
+            "Uploaded image cannot be empty.",
+          )
+          .refine(
+            (file) => file.size < 1024 * 1024 * 5,
+            "Image must be smaller than 5MB.",
+          )
+          .refine(
+            (file) => file.type.startsWith("image/"),
+            "File must be an image (e.g., image/jpeg, image/png).",
+          ),
+      )
+        .min(1, "You must upload at least one image.")
+        .max(10, "You can upload up to 10 images."),
+    }),
+  ),
+  async (c) => {
+    const { requestId, offerId } = c.req.valid("param");
+    const { "images[]": images } = c.req.valid("form");
+    const session = c.get("session");
+
+    const offer = await db.query.offersTable.findFirst({
+      where: and(
+        eq(offersTable.id, offerId),
+        eq(offersTable.requestId, requestId),
+        eq(offersTable.userId, session.user.id),
+      ),
+      with: {
+        images: true,
+      },
+    });
+
+    if (!offer) {
+      return c.json({ message: "Offer not found" }, 404);
+    }
+
+    if (offer.images.length + images.length > 10) {
+      return c.json({ message: "One offer can have up to 10 images." }, 400);
+    }
+
+    const imageNames: string[] = [];
+    let offerImages;
+    try {
+      for (const image of images) {
+        const imageFileFormat = image.name.includes(".")
+          ? `.${image.name.split(".").pop()}`
+          : "";
+        const imageName = await generateUniqueOfferImageUUID(offerId) +
+          imageFileFormat;
+        imageNames.push(imageName);
+        await uploadFile({
+          file: image,
+          key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
+        });
+      }
+
+      offerImages = await db.insert(offerImagesTable).values(
+        imageNames.map((imageName) => ({
+          offerId,
+          name: imageName,
+        })),
+      ).returning();
+    } catch {
+      for (const imageName of imageNames) {
+        await deleteFile(
+          `request/${requestId}/offer/${offerId}/images/${imageName}`,
+        );
+      }
+
+      return c.json(
+        { message: "Something went wrong while uploading images" },
+        500,
+      );
+    }
+
+    return c.json(offerImages);
   },
 );
 

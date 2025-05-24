@@ -1,6 +1,7 @@
 const REQUIRED_ENVS = [
   "FRONTEND_URL",
   "DB_URL",
+  "REDIS_URL",
   "SMTP_HOST",
   "SMTP_PORT",
   "SMTP_SECURE",
@@ -39,7 +40,9 @@ export const COOKIE_DOMAIN = (() => {
     throw new Error(`Invalid FRONTEND_URL: ${FRONTEND_URL}`);
   }
 })();
+
 export const DB_URL = Deno.env.get("DB_URL")!;
+export const REDIS_URL = Deno.env.get("REDIS_URL")!;
 export const SMTP_HOST = Deno.env.get("SMTP_HOST")!;
 export const SMTP_PORT = (() => {
   const port = Number(Deno.env.get("SMTP_PORT"));

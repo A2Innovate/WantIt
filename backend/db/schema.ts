@@ -13,7 +13,7 @@ export const usersTable = pgTable("users", {
   email: text().notNull(),
   isEmailVerified: boolean().notNull().default(false),
   emailVerificationToken: text().unique(),
-  password: text().notNull(),
+  password: text(),
   passwordResetToken: text().unique(),
 });
 

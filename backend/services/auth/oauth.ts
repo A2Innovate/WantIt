@@ -135,9 +135,9 @@ app.get("/google/callback", async (c) => {
       return c.redirect(FRONTEND_URL + "/", 302);
     }
     const user = await db.insert(usersTable).values({
-      name: userInfo.given_name!,
+      name: userInfo.given_name || userInfo.name || "Google User",
       email: userInfo.email!,
-      password: "",
+      password: null,
       emailVerificationToken: null,
       isEmailVerified: true,
     }).returning();

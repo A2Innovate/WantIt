@@ -19,9 +19,9 @@
         <ul class="py-1 text-sm text-white">
           <li>
             <NuxtLink
-              to="/user/account"
+              :to="`/user/${userStore.current?.id}`"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:account-circle" /> Account
+              ><Icon name="material-symbols:account-circle" /> Profile
             </NuxtLink>
           </li>
           <li>

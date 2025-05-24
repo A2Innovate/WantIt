@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-2xl mx-auto">
     <div class="m-4 flex flex-col gap-4">
-      <h1 class="text-xl font-semibold">Account</h1>
+      <h1 class="text-xl font-semibold">Settings</h1>
       <UiCard>
         <form class="flex flex-col gap-2" @submit.prevent="updateProfile">
           <div>

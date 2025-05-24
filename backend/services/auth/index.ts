@@ -10,7 +10,7 @@ import {
 } from "@/utils/generate.ts";
 import argon2 from "argon2";
 import { sendMail } from "@/utils/mail.ts";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, setCookie } from "hono/cookie";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   changePasswordSchema,
@@ -103,6 +103,13 @@ app.post(
       return c.json({ message: "Incorrect email or password" }, 401);
     }
 
+    if (!user.password) {
+      return c.json({
+        message:
+          "This account has no password, it was likely created with OAuth, please use OAuth to login or reset your password.",
+      }, 400);
+    }
+
     if (!(await argon2.verify(user.password, password))) {
       return c.json({ message: "Incorrect email or password" }, 401);
     }
@@ -160,6 +167,8 @@ app.post("/logout", authRequired, async (c) => {
   await db.delete(userSessionsTable).where(
     eq(userSessionsTable.sessionToken, session.sessionToken),
   );
+
+  deleteCookie(c, "wantit_session");
 
   return c.json({ message: "Logged out successfully" }, 200);
 });
@@ -221,6 +230,11 @@ app.post(
       passwordResetToken: null,
     }).where(eq(usersTable.id, user.id));
 
+    // Remove this user's sessions
+    await db.delete(userSessionsTable).where(
+      eq(userSessionsTable.userId, user.id),
+    );
+
     return c.json({ message: "Password reset successfully" }, 200);
   },
 );
@@ -232,6 +246,13 @@ app.post(
     const { oldPassword, newPassword } = c.req.valid("json");
 
     const session = c.get("session");
+
+    if (!session.user.password) {
+      return c.json({
+        message:
+          "This account has no password, it was likely created using OAuth, please reset your password.",
+      }, 400);
+    }
 
     if (!(await argon2.verify(session.user.password, oldPassword))) {
       return c.json({ message: "Incorrect old password" }, 401);

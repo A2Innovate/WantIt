@@ -8,6 +8,7 @@
     "drizzle-orm": "npm:drizzle-orm@^0.43.1",
     "hono": "npm:hono@^4.7.9",
     "nodemailer": "npm:nodemailer@^7.0.3",
+    "openid-client": "npm:openid-client@^6.5.0",
     "pg": "npm:pg@^8.15.6",
     "@/": "./",
     "zod": "npm:zod@^3.24.4"

@@ -12,6 +12,8 @@ const REQUIRED_ENVS = [
   "S3_REGION",
   "S3_ACCESS_KEY",
   "S3_SECRET_KEY",
+  "OAUTH_GOOGLE_CLIENT_ID",
+  "OAUTH_GOOGLE_CLIENT_SECRET",
 ];
 
 for (const env of REQUIRED_ENVS) {
@@ -63,3 +65,7 @@ export const S3_BUCKET = Deno.env.get("S3_BUCKET")!;
 export const S3_REGION = Deno.env.get("S3_REGION")!;
 export const S3_ACCESS_KEY = Deno.env.get("S3_ACCESS_KEY")!;
 export const S3_SECRET_KEY = Deno.env.get("S3_SECRET_KEY")!;
+export const OAUTH_GOOGLE_CLIENT_ID = Deno.env.get("OAUTH_GOOGLE_CLIENT_ID")!;
+export const OAUTH_GOOGLE_CLIENT_SECRET = Deno.env.get(
+  "OAUTH_GOOGLE_CLIENT_SECRET",
+)!;

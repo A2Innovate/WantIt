@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Hono } from "hono";
-import auth from "./services/auth.ts";
+import auth from "./services/auth/index.ts";
 import { cors } from "hono/cors";
 import request from "./services/request.ts";
 import user from "./services/user.ts";

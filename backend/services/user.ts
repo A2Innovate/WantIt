@@ -10,6 +10,7 @@ import {
   getUserByIdSchema,
   updateProfileSchema,
 } from "@/schema/services/user.ts";
+import { FRONTEND_URL } from "@/utils/global.ts";
 
 const app = new Hono();
 
@@ -82,9 +83,7 @@ app.put(
         text: `Hi ${session.user.name}!
 
         To confirm your email update, click the link below:
-        ${
-          Deno.env.get("FRONTEND_URL")
-        }/auth/verify-email/${emailVerificationToken}
+        ${FRONTEND_URL}/auth/verify-email/${emailVerificationToken}
         
         Best regards,
         WantIt Team

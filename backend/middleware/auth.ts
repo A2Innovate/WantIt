@@ -12,7 +12,7 @@ export const authRequired = createMiddleware<{
     };
   };
 }>(async (c, next) => {
-  const sessionToken = getCookie(c, "session");
+  const sessionToken = getCookie(c, "wantit_session");
 
   if (!sessionToken) {
     return c.json({
@@ -28,7 +28,7 @@ export const authRequired = createMiddleware<{
   });
 
   if (!session || session.expiresAt < new Date()) {
-    deleteCookie(c, "session");
+    deleteCookie(c, "wantit_session");
     return c.json({
       message: "Incorrect session token.",
     }, 401);

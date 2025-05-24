@@ -1,12 +1,20 @@
 import nodemailer from "nodemailer";
+import {
+  SMTP_FROM,
+  SMTP_HOST,
+  SMTP_PASSWORD,
+  SMTP_PORT,
+  SMTP_SECURE,
+  SMTP_USER,
+} from "@/utils/global.ts";
 
 const transporter = nodemailer.createTransport({
-  host: Deno.env.get("SMTP_HOST"),
-  port: Number(Deno.env.get("SMTP_PORT")),
-  secure: Deno.env.get("SMTP_SECURE") === "true",
+  host: SMTP_HOST,
+  port: SMTP_PORT,
+  secure: SMTP_SECURE,
   auth: {
-    user: Deno.env.get("SMTP_USER"),
-    pass: Deno.env.get("SMTP_PASSWORD"),
+    user: SMTP_USER,
+    pass: SMTP_PASSWORD,
   },
 });
 
@@ -14,7 +22,7 @@ export async function sendMail(
   { to, subject, text }: { to: string; subject: string; text: string },
 ) {
   await transporter.sendMail({
-    from: Deno.env.get("SMTP_FROM"),
+    from: SMTP_FROM,
     to,
     subject,
     text,

@@ -4,11 +4,12 @@ import auth from "./services/auth.ts";
 import { cors } from "hono/cors";
 import request from "./services/request.ts";
 import user from "./services/user.ts";
+import { FRONTEND_URL } from "./utils/global.ts";
 
 const app = new Hono();
 
 app.use(cors({
-  origin: Deno.env.get("FRONTEND_URL") ?? "http://localhost:3000",
+  origin: FRONTEND_URL,
   credentials: true,
 }));
 

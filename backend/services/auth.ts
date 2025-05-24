@@ -19,6 +19,7 @@ import {
   resetPasswordSchema,
   signUpSchema,
 } from "@/schema/services/auth.ts";
+import { COOKIE_DOMAIN, FRONTEND_URL } from "@/utils/global.ts";
 
 const app = new Hono();
 
@@ -60,9 +61,7 @@ app.post(
 
       Thank you for registering to WantIt!
       To activate your account, click the link below:
-      ${
-        Deno.env.get("FRONTEND_URL")
-      }/auth/verify-email/${emailVerificationToken}
+      ${FRONTEND_URL}/auth/verify-email/${emailVerificationToken}
       
       If you did not register to WantIt, please ignore this email.
       
@@ -116,10 +115,11 @@ app.post(
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
     });
 
-    setCookie(c, "session", sessionToken, {
+    setCookie(c, "wantit_session", sessionToken, {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
+      domain: COOKIE_DOMAIN,
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
@@ -183,7 +183,7 @@ app.post(
       text: `Hi ${user.name}!
 
       To reset your password, click the link below:
-      ${Deno.env.get("FRONTEND_URL")}/auth/reset-password/${resetPasswordToken}
+      ${FRONTEND_URL}/auth/reset-password/${resetPasswordToken}
       
       Best regards,
       WantIt Team

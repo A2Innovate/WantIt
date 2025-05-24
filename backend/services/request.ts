@@ -13,11 +13,16 @@ import {
 } from "@/schema/services/request.ts";
 import { deleteFile, uploadFile } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
+import { rateLimit } from "@/middleware/ratelimit.ts";
 
 const app = new Hono();
 
 app.get(
   "/",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 1000,
+  }),
   zValidator(
     "query",
     z.object({
@@ -50,6 +55,10 @@ app.get(
 
 app.get(
   "/:requestId",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 250,
+  }),
   zValidator(
     "param",
     requestByIdSchema,
@@ -107,6 +116,10 @@ app.get(
 app.post(
   "/:requestId/offer",
   authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 30,
+  }),
   zValidator(
     "param",
     requestByIdSchema,
@@ -154,6 +167,10 @@ app.post(
 app.post(
   "/:requestId/offer/:offerId/image",
   authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 300,
+  }),
   zValidator(
     "param",
     z.object({
@@ -261,6 +278,10 @@ app.post(
 app.post(
   "/",
   authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 15,
+  }),
   zValidator(
     "json",
     createRequestSchema,
@@ -282,6 +303,10 @@ app.post(
 app.put(
   "/:requestId",
   authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 30,
+  }),
   zValidator(
     "param",
     requestByIdSchema,

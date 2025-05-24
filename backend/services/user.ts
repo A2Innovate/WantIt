@@ -11,35 +11,48 @@ import {
   updateProfileSchema,
 } from "@/schema/services/user.ts";
 import { FRONTEND_URL } from "@/utils/global.ts";
+import { rateLimit } from "@/middleware/ratelimit.ts";
 
 const app = new Hono();
 
-app.get("/:userId", zValidator("param", getUserByIdSchema), async (c) => {
-  const { userId } = c.req.valid("param");
+app.get(
+  "/:userId",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  zValidator("param", getUserByIdSchema),
+  async (c) => {
+    const { userId } = c.req.valid("param");
 
-  const user = await db.query.usersTable.findFirst({
-    where: eq(usersTable.id, userId),
-    with: {
-      requests: {
-        columns: {
-          userId: false,
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+      with: {
+        requests: {
+          columns: {
+            userId: false,
+          },
         },
       },
-    },
-    columns: {
-      name: true,
-    },
-  });
+      columns: {
+        name: true,
+      },
+    });
 
-  if (!user) {
-    return c.json({ message: "User not found" }, 404);
-  }
+    if (!user) {
+      return c.json({ message: "User not found" }, 404);
+    }
 
-  return c.json(user);
-});
+    return c.json(user);
+  },
+);
 
 app.put(
   "/update",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
   zValidator(
     "json",
     updateProfileSchema,

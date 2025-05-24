@@ -20,6 +20,7 @@ import {
   signUpSchema,
 } from "@/schema/services/auth.ts";
 import oauth from "./oauth.ts";
+import { rateLimit } from "@/middleware/ratelimit.ts";
 
 import { COOKIE_DOMAIN, FRONTEND_URL } from "@/utils/global.ts";
 
@@ -39,6 +40,10 @@ app.get("/", authRequired, (c) => {
 
 app.post(
   "/register",
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 10,
+  }),
   zValidator(
     "json",
     signUpSchema,
@@ -87,6 +92,10 @@ app.post(
 
 app.post(
   "/login",
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 100,
+  }),
   zValidator(
     "json",
     loginSchema,
@@ -142,24 +151,31 @@ app.post(
   },
 );
 
-app.post("/verify-email/:token", async (c) => {
-  const token = c.req.param("token");
+app.post(
+  "/verify-email/:token",
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 10,
+  }),
+  async (c) => {
+    const token = c.req.param("token");
 
-  const user = await db.query.usersTable.findFirst({
-    where: eq(usersTable.emailVerificationToken, token),
-  });
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.emailVerificationToken, token),
+    });
 
-  if (!user) {
-    return c.json({ message: "Invalid token" }, 400);
-  }
+    if (!user) {
+      return c.json({ message: "Invalid token" }, 400);
+    }
 
-  await db.update(usersTable).set({
-    isEmailVerified: true,
-    emailVerificationToken: null,
-  }).where(eq(usersTable.id, user.id));
+    await db.update(usersTable).set({
+      isEmailVerified: true,
+      emailVerificationToken: null,
+    }).where(eq(usersTable.id, user.id));
 
-  return c.json({ message: "Email verified successfully" }, 200);
-});
+    return c.json({ message: "Email verified successfully" }, 200);
+  },
+);
 
 app.post("/logout", authRequired, async (c) => {
   const session = c.get("session");
@@ -175,6 +191,10 @@ app.post("/logout", authRequired, async (c) => {
 
 app.post(
   "/request-password-reset",
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 5,
+  }),
   zValidator("json", requestPasswordResetSchema),
   async (c) => {
     const { email } = c.req.valid("json");
@@ -213,6 +233,10 @@ app.post(
 
 app.post(
   "/reset-password",
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 5,
+  }),
   zValidator("json", resetPasswordSchema),
   async (c) => {
     const { password, token } = c.req.valid("json");
@@ -241,6 +265,10 @@ app.post(
 app.post(
   "/change-password",
   authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 10,
+  }),
   zValidator("json", changePasswordSchema),
   async (c) => {
     const { oldPassword, newPassword } = c.req.valid("json");

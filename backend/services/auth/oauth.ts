@@ -130,10 +130,31 @@ app.get("/google/callback", async (c) => {
 
       return c.redirect(frontendUrl + "/", 302);
     }
-    //TODO create user
-    return c.redirect(
-      frontendUrl + "/auth/oauth/error?message=Google OAuth successful",
-    );
+    
+    const user = await db.insert(usersTable).values({
+      name: userInfo.given_name!,
+      email: userInfo.email!,
+      password: "",
+      emailVerificationToken: null,
+      isEmailVerified: true,
+    }).returning();
+
+    const sessionToken = await generateSessionToken();
+
+    await db.insert(userSessionsTable).values({
+      userId: user[0].id,
+      sessionToken,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+    });
+
+    setCookie(c, "session", sessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
+    return c.redirect(frontendUrl + "/", 302);
   } catch (error) {
     console.error("Error in Google OAuth callback:", error);
     return c.redirect(

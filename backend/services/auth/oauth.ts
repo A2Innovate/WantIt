@@ -130,7 +130,7 @@ app.get("/google/callback", async (c) => {
 
       return c.redirect(frontendUrl + "/", 302);
     }
-    
+
     const user = await db.insert(usersTable).values({
       name: userInfo.given_name!,
       email: userInfo.email!,

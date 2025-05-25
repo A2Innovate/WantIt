@@ -10,7 +10,10 @@ export default defineNuxtConfig({
     public: {
       apiBase: '',
       s3Endpoint: '',
-      s3Bucket: ''
+      s3Bucket: '',
+      pusherKey: '',
+      pusherCluster: '',
+      pusherWsHost: ''
     }
   },
   vite: {

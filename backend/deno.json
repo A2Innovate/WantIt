@@ -12,6 +12,7 @@
     "openid-client": "npm:openid-client@^6.5.0",
     "pg": "npm:pg@^8.15.6",
     "@/": "./",
+    "pusher": "npm:pusher@^5.2.0",
     "zod": "npm:zod@^3.24.4"
   },
   "tasks": {

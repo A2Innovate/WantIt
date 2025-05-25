@@ -15,6 +15,10 @@ const REQUIRED_ENVS = [
   "S3_SECRET_KEY",
   "OAUTH_GOOGLE_CLIENT_ID",
   "OAUTH_GOOGLE_CLIENT_SECRET",
+  "PUSHER_KEY",
+  "PUSHER_SECRET",
+  "PUSHER_APP_ID",
+  "PUSHER_HOST",
 ];
 
 for (const env of REQUIRED_ENVS) {
@@ -72,3 +76,7 @@ export const OAUTH_GOOGLE_CLIENT_ID = Deno.env.get("OAUTH_GOOGLE_CLIENT_ID")!;
 export const OAUTH_GOOGLE_CLIENT_SECRET = Deno.env.get(
   "OAUTH_GOOGLE_CLIENT_SECRET",
 )!;
+export const PUSHER_KEY = Deno.env.get("PUSHER_KEY")!;
+export const PUSHER_SECRET = Deno.env.get("PUSHER_SECRET")!;
+export const PUSHER_APP_ID = Deno.env.get("PUSHER_APP_ID")!;
+export const PUSHER_HOST = Deno.env.get("PUSHER_HOST")!;

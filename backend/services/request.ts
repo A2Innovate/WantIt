@@ -35,7 +35,6 @@ async function getModel() {
   }
   return model;
 }
-// const model = await nsfwjs.load("MobileNetV2");
 
 app.get(
   "/",

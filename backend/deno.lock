@@ -21,6 +21,7 @@
     "npm:nsfwjs@^4.2.1": "4.2.1_@tensorflow+tfjs@4.22.0__@tensorflow+tfjs-core@4.22.0_buffer@6.0.3",
     "npm:openid-client@^6.5.0": "6.5.0",
     "npm:pg@^8.15.6": "8.15.6",
+    "npm:pusher@^5.2.0": "5.2.0",
     "npm:sharp@~0.34.2": "0.34.2",
     "npm:zod@^3.24.4": "3.24.4"
   },
@@ -1374,6 +1375,12 @@
     "abbrev@1.1.1": {
       "integrity": "sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q=="
     },
+    "abort-controller@3.0.0": {
+      "integrity": "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==",
+      "dependencies": [
+        "event-target-shim"
+      ]
+    },
     "adm-zip@0.5.16": {
       "integrity": "sha512-TGw5yVi4saajsSEgz25grObGHEUaDrniwvA2qwSC060KfqGPdglhvPMA2lPIoxs3PQIItj2iag35fONcQqgUaQ=="
     },
@@ -1552,8 +1559,8 @@
       "dependencies": [
         "@drizzle-team/brocli",
         "@esbuild-kit/esm-loader",
-        "esbuild@0.25.4",
-        "esbuild-register"
+        "esbuild-register",
+        "esbuild@0.25.4"
       ]
     },
     "drizzle-orm@0.43.1_pg@8.15.6": {
@@ -1613,15 +1620,15 @@
     "esbuild@0.18.20": {
       "integrity": "sha512-ceqxoedUrcayh7Y7ZX6NdbbDzGROiyVBgC4PriJThBKSVPWnnFHZAkfI1lJT8QFkOwH4qOS2SJkS4wvpGl8BpA==",
       "dependencies": [
-        "@esbuild/android-arm@0.18.20",
         "@esbuild/android-arm64@0.18.20",
+        "@esbuild/android-arm@0.18.20",
         "@esbuild/android-x64@0.18.20",
         "@esbuild/darwin-arm64@0.18.20",
         "@esbuild/darwin-x64@0.18.20",
         "@esbuild/freebsd-arm64@0.18.20",
         "@esbuild/freebsd-x64@0.18.20",
-        "@esbuild/linux-arm@0.18.20",
         "@esbuild/linux-arm64@0.18.20",
+        "@esbuild/linux-arm@0.18.20",
         "@esbuild/linux-ia32@0.18.20",
         "@esbuild/linux-loong64@0.18.20",
         "@esbuild/linux-mips64el@0.18.20",
@@ -1641,15 +1648,15 @@
       "integrity": "sha512-8pgjLUcUjcgDg+2Q4NYXnPbo/vncAY4UmyaCm0jZevERqCHZIaWwdJHkf8XQtu4AxSKCdvrUbT0XUr1IdZzI8Q==",
       "dependencies": [
         "@esbuild/aix-ppc64",
-        "@esbuild/android-arm@0.25.4",
         "@esbuild/android-arm64@0.25.4",
+        "@esbuild/android-arm@0.25.4",
         "@esbuild/android-x64@0.25.4",
         "@esbuild/darwin-arm64@0.25.4",
         "@esbuild/darwin-x64@0.25.4",
         "@esbuild/freebsd-arm64@0.25.4",
         "@esbuild/freebsd-x64@0.25.4",
-        "@esbuild/linux-arm@0.25.4",
         "@esbuild/linux-arm64@0.25.4",
+        "@esbuild/linux-arm@0.25.4",
         "@esbuild/linux-ia32@0.25.4",
         "@esbuild/linux-loong64@0.25.4",
         "@esbuild/linux-mips64el@0.25.4",
@@ -1669,6 +1676,9 @@
     },
     "escalade@3.2.0": {
       "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA=="
+    },
+    "event-target-shim@5.0.1": {
+      "integrity": "sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ=="
     },
     "fast-xml-parser@4.4.1": {
       "integrity": "sha512-xkjOecfnKGkSsOwtZ5Pz7Us/T6mrbPQrq0nh+aCO5V9nk5NLWmasAHumTKjiPJPWANe+kAZ84Jc8ooJkzZ88Sw==",
@@ -1840,6 +1850,9 @@
     },
     "is-arrayish@0.3.2": {
       "integrity": "sha512-eVRqCvVlZbuw3GrM63ovNSNAeA1K16kaR/LRY/92w0zxQ5/1YzwblUX652i4Xs9RwAGjW9d9y6X88t8OaAJfWQ=="
+    },
+    "is-base64@1.1.0": {
+      "integrity": "sha512-Nlhg7Z2dVC4/PTvIFkgVVNvPHSO2eR/Yd0XzhGiXCXEvWnptXlXa/clQ8aePPiMuxEGcWfzWbGw2Fe3d+Y3v1g=="
     },
     "is-fullwidth-code-point@3.0.0": {
       "integrity": "sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg=="
@@ -2040,6 +2053,17 @@
     "progress@2.0.3": {
       "integrity": "sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA=="
     },
+    "pusher@5.2.0": {
+      "integrity": "sha512-F6LNiZyJsIkoHLz+YurjKZ1HH8V1/cMggn4k97kihjP3uTvm0P4mZzSFeHOWIy+PlJ2VInJBhUFJBYLsFR5cjg==",
+      "dependencies": [
+        "@types/node-fetch",
+        "abort-controller",
+        "is-base64",
+        "node-fetch",
+        "tweetnacl",
+        "tweetnacl-util"
+      ]
+    },
     "readable-stream@3.6.2": {
       "integrity": "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==",
       "dependencies": [
@@ -2196,6 +2220,12 @@
     "tslib@2.8.1": {
       "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
     },
+    "tweetnacl-util@0.15.1": {
+      "integrity": "sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw=="
+    },
+    "tweetnacl@1.0.3": {
+      "integrity": "sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw=="
+    },
     "undici-types@6.20.0": {
       "integrity": "sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg=="
     },
@@ -2272,11 +2302,11 @@
       "npm:drizzle-orm@~0.43.1",
       "npm:hono@^4.7.9",
       "npm:ioredis@^5.6.1",
-      "npm:jpeg-js@~0.4.4",
       "npm:nodemailer@^7.0.3",
       "npm:nsfwjs-patched@^4.2.3",
       "npm:openid-client@^6.5.0",
       "npm:pg@^8.15.6",
+      "npm:pusher@^5.2.0",
       "npm:sharp@~0.34.2",
       "npm:zod@^3.24.4"
     ]

@@ -10,16 +10,17 @@
     "drizzle-orm": "npm:drizzle-orm@^0.43.1",
     "hono": "npm:hono@^4.7.9",
     "ioredis": "npm:ioredis@^5.6.1",
-    "jpeg-js": "npm:jpeg-js@^0.4.4",
     "nodemailer": "npm:nodemailer@^7.0.3",
     "nsfwjs-patched": "npm:nsfwjs-patched@^4.2.3",
     "openid-client": "npm:openid-client@^6.5.0",
     "pg": "npm:pg@^8.15.6",
-    "@/": "./",
+    "pusher": "npm:pusher@^5.2.0",
     "sharp": "npm:sharp@^0.34.2",
-    "zod": "npm:zod@^3.24.4"
+    "zod": "npm:zod@^3.24.4",
+    "@/": "./"
   },
   "tasks": {
+    "install": "deno install --allow-scripts",
     "start": "deno run --allow-net --allow-env --allow-read --allow-ffi --allow-sys main.ts",
     "dev": "deno run --allow-net --allow-env --allow-read --allow-ffi --allow-sys --watch main.ts",
     "db:push": "drizzle-kit push"

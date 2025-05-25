@@ -14,8 +14,14 @@ import {
 import { deleteFile, uploadFile } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
+import * as nsfwjs from "nsfwjs-patched";
+import * as tf from "@tensorflow/tfjs-node";
+
 
 const app = new Hono();
+
+const model = await nsfwjs.load('MobileNetV2');
+
 
 app.get(
   "/",
@@ -235,11 +241,16 @@ app.post(
     if (offer.images.length + images.length > 10) {
       return c.json({ message: "One offer can have up to 10 images." }, 400);
     }
-
     const imageNames: string[] = [];
     let offerImages;
     try {
       for (const image of images) {
+
+        const imageDecoded = tf.node.decodeImage(new Uint8Array(await image.arrayBuffer()));
+        const result = await model.classify(imageDecoded);
+        console.log(result);
+
+        
         const imageFileFormat = image.name.includes(".")
           ? `.${image.name.split(".").pop()}`
           : "";
@@ -258,7 +269,8 @@ app.post(
           name: imageName,
         })),
       ).returning();
-    } catch {
+    } catch (e) {
+      console.log(e);
       for (const imageName of imageNames) {
         await deleteFile(
           `request/${requestId}/offer/${offerId}/images/${imageName}`,

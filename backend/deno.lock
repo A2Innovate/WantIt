@@ -2270,7 +2270,6 @@
       "npm:dotenv@^16.5.0",
       "npm:drizzle-kit@~0.31.1",
       "npm:drizzle-orm@~0.43.1",
-      "npm:heic-convert@^2.1.0",
       "npm:hono@^4.7.9",
       "npm:ioredis@^5.6.1",
       "npm:jpeg-js@~0.4.4",

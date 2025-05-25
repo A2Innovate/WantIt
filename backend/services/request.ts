@@ -257,8 +257,7 @@ app.post(
             (result.className === "Porn" || result.className === "Sexy" ||
               result.className == "Hentai")
           ) {
-            console.log(result);
-            return c.json({ message: "Image contains NSFW content" }, 400);
+            throw new Error("Image contains NSFW content");
           }
         }
 
@@ -284,14 +283,22 @@ app.post(
       for (const imageName of imageNames) {
         await deleteFile(
           `request/${requestId}/offer/${offerId}/images/${imageName}`,
+          );
+        }
+      
+        if (e instanceof Error && e.message === "Image contains NSFW content") {
+          return c.json(
+            { message: e.message },
+            400,
+          );
+        }
+      
+        return c.json(
+          { message: "Something went wrong while uploading images" },
+          500,
         );
       }
-
-      return c.json(
-        { message: "Something went wrong while uploading images" },
-        500,
-      );
-    }
+      
 
     return c.json(offerImages);
   },

@@ -17,11 +17,9 @@ import { rateLimit } from "@/middleware/ratelimit.ts";
 import * as nsfwjs from "nsfwjs-patched";
 import * as tf from "@tensorflow/tfjs-node";
 
-
 const app = new Hono();
 
-const model = await nsfwjs.load('MobileNetV2');
-
+const model = await nsfwjs.load("MobileNetV2");
 
 app.get(
   "/",
@@ -245,12 +243,12 @@ app.post(
     let offerImages;
     try {
       for (const image of images) {
-
-        const imageDecoded = tf.node.decodeImage(new Uint8Array(await image.arrayBuffer()));
+        const imageDecoded = tf.node.decodeImage(
+          new Uint8Array(await image.arrayBuffer()),
+        );
         const result = await model.classify(imageDecoded);
         console.log(result);
 
-        
         const imageFileFormat = image.name.includes(".")
           ? `.${image.name.split(".").pop()}`
           : "";

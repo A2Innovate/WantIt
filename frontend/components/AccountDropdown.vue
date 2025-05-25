@@ -26,6 +26,13 @@
           </li>
           <li>
             <NuxtLink
+              to="/user/chat"
+              class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
+              ><Icon name="material-symbols:chat" /> Chat
+            </NuxtLink>
+          </li>
+          <li>
+            <NuxtLink
               to="/user/settings"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
               ><Icon name="material-symbols:settings" /> Settings

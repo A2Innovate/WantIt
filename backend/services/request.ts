@@ -283,22 +283,21 @@ app.post(
       for (const imageName of imageNames) {
         await deleteFile(
           `request/${requestId}/offer/${offerId}/images/${imageName}`,
-          );
-        }
-      
-        if (e instanceof Error && e.message === "Image contains NSFW content") {
-          return c.json(
-            { message: e.message },
-            400,
-          );
-        }
-      
-        return c.json(
-          { message: "Something went wrong while uploading images" },
-          500,
         );
       }
-      
+
+      if (e instanceof Error && e.message === "Image contains NSFW content") {
+        return c.json(
+          { message: e.message },
+          400,
+        );
+      }
+
+      return c.json(
+        { message: "Something went wrong while uploading images" },
+        500,
+      );
+    }
 
     return c.json(offerImages);
   },

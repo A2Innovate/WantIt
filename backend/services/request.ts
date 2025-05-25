@@ -20,7 +20,22 @@ import sharp from "sharp";
 
 const app = new Hono();
 
-const model = await nsfwjs.load("MobileNetV2");
+let model: nsfwjs.NSFWJS | null = null;
+const NSFW_THRESHOLD = 0.6;
+const NSFW_CATEGORIES = ["Porn", "Hentai", "Sexy"];
+
+async function getModel() {
+  if (!model) {
+    try {
+      model = await nsfwjs.load("MobileNetV2");
+    } catch (error) {
+      console.error("Failed to load NSFW model:", error);
+      throw new Error("NSFW detection service unavailable");
+    }
+  }
+  return model;
+}
+// const model = await nsfwjs.load("MobileNetV2");
 
 app.get(
   "/",
@@ -246,18 +261,26 @@ app.post(
       for (const image of images) {
         const imageBuffer = sharp(await image.arrayBuffer())
           .toFormat("png");
-        let imageDecoded = tf.node.decodeImage(await imageBuffer.toBuffer(), 3); // 3 channels only (RGB)
-        imageDecoded = tf.image.resizeBilinear(imageDecoded, [224, 224])
-          .expandDims(0);
-        const prediction = await model.classify(imageDecoded, 2);
 
-        for (const result of prediction) {
-          if (
-            result.probability > 0.6 &&
-            (result.className === "Porn" || result.className === "Sexy" ||
-              result.className == "Hentai")
-          ) {
-            throw new Error("Image contains NSFW content");
+        let imageDecoded;
+        try {
+          imageDecoded = tf.node.decodeImage(await imageBuffer.toBuffer(), 3);
+          imageDecoded = tf.image.resizeBilinear(imageDecoded, [224, 224])
+            .expandDims(0);
+
+          const nsfwModel = await getModel();
+          const prediction = await nsfwModel.classify(imageDecoded, 2);
+          for (const result of prediction) {
+            if (
+              result.probability > NSFW_THRESHOLD &&
+              NSFW_CATEGORIES.includes(result.className)
+            ) {
+              throw new Error("Image contains NSFW content");
+            }
+          }
+        } finally {
+          if (imageDecoded) {
+            imageDecoded.dispose();
           }
         }
 
@@ -265,8 +288,9 @@ app.post(
           ".webp";
 
         imageNames.push(imageName);
-        uploadFileBuffer({
-          buffer: await imageBuffer.toFormat("webp").toBuffer(),
+        await uploadFileBuffer({
+          buffer: await imageBuffer.toFormat("webp", { quality: 80 })
+            .toBuffer(),
           key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
         });
         imageDecoded.dispose();
@@ -279,7 +303,6 @@ app.post(
         })),
       ).returning();
     } catch (e) {
-      console.log(e);
       for (const imageName of imageNames) {
         await deleteFile(
           `request/${requestId}/offer/${offerId}/images/${imageName}`,

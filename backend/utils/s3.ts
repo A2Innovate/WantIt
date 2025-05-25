@@ -45,8 +45,8 @@ export function uploadFileBuffer(
   );
 }
 
-export function deleteFile(key: string) {
-  return s3.send(
+export async function deleteFile(key: string) {
+  return await s3.send(
     new DeleteObjectCommand({
       Bucket: S3_BUCKET,
       Key: key,

@@ -33,7 +33,7 @@ export async function uploadFile(
   );
 }
 
-export async function uploadFileBuffer(
+export function uploadFileBuffer(
   { buffer, key }: { buffer: Uint8Array; key: string },
 ) {
   return s3.send(

@@ -17,8 +17,6 @@ import { rateLimit } from "@/middleware/ratelimit.ts";
 import * as nsfwjs from "nsfwjs-patched";
 import * as tf from "@tensorflow/tfjs-node";
 import sharp from "sharp";
-import heicConvert from "heic-convert";
-import { Buffer } from "node:buffer";
 
 const app = new Hono();
 
@@ -268,7 +266,7 @@ app.post(
           ".webp";
 
         imageNames.push(imageName);
-        await uploadFileBuffer({
+        uploadFileBuffer({
           buffer: await imageBuffer.toFormat("webp").toBuffer(),
           key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
         });

@@ -8,6 +8,7 @@
     "dotenv": "npm:dotenv@^16.5.0",
     "drizzle-kit": "npm:drizzle-kit@^0.31.1",
     "drizzle-orm": "npm:drizzle-orm@^0.43.1",
+    "heic-convert": "npm:heic-convert@^2.1.0",
     "hono": "npm:hono@^4.7.9",
     "ioredis": "npm:ioredis@^5.6.1",
     "jpeg-js": "npm:jpeg-js@^0.4.4",
@@ -16,6 +17,7 @@
     "openid-client": "npm:openid-client@^6.5.0",
     "pg": "npm:pg@^8.15.6",
     "@/": "./",
+    "sharp": "npm:sharp@^0.34.2",
     "zod": "npm:zod@^3.24.4"
   },
   "tasks": {

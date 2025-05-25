@@ -16,6 +16,11 @@ import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import * as nsfwjs from "nsfwjs-patched";
 import * as tf from "@tensorflow/tfjs-node";
+import sharp from "sharp";
+import heicConvert from "heic-convert";
+import { Buffer } from 'node:buffer';
+
+
 
 const app = new Hono();
 
@@ -243,9 +248,19 @@ app.post(
     let offerImages;
     try {
       for (const image of images) {
-        const imageDecoded = tf.node.decodeImage(
-          new Uint8Array(await image.arrayBuffer()),
-        );
+
+
+        let imageBuffer;
+        let imageDecoded;
+        if (image.type === "image/png"){
+          imageBuffer = await image.arrayBuffer();
+          imageDecoded = tf.node.decodeImage(new Uint8Array(imageBuffer));
+        }
+        else  {
+          imageBuffer = await sharp(await image.arrayBuffer()).toFormat("png").toBuffer();
+          imageDecoded = tf.node.decodeImage(new Uint8Array(imageBuffer));
+        }
+       
         const result = await model.classify(imageDecoded);
         console.log(result);
 

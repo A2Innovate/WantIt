@@ -11,16 +11,14 @@ import {
   editRequestSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
-import { deleteFile, uploadFile } from "@/utils/s3.ts";
+import { deleteFile, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import * as nsfwjs from "nsfwjs-patched";
 import * as tf from "@tensorflow/tfjs-node";
 import sharp from "sharp";
 import heicConvert from "heic-convert";
-import { Buffer } from 'node:buffer';
-
-
+import { Buffer } from "node:buffer";
 
 const app = new Hono();
 
@@ -248,32 +246,33 @@ app.post(
     let offerImages;
     try {
       for (const image of images) {
+        const imageBuffer = sharp(await image.arrayBuffer())
+          .toFormat("png");
+        let imageDecoded = tf.node.decodeImage(await imageBuffer.toBuffer(), 3); // 3 channels only (RGB)
+        imageDecoded = tf.image.resizeBilinear(imageDecoded, [224, 224])
+          .expandDims(0);
+        const prediction = await model.classify(imageDecoded, 2);
 
-
-        let imageBuffer;
-        let imageDecoded;
-        if (image.type === "image/png"){
-          imageBuffer = await image.arrayBuffer();
-          imageDecoded = tf.node.decodeImage(new Uint8Array(imageBuffer));
+        for (const result of prediction) {
+          if (
+            result.probability > 0.6 &&
+            (result.className === "Porn" || result.className === "Sexy" ||
+              result.className == "Hentai")
+          ) {
+            console.log(result);
+            return c.json({ message: "Image contains NSFW content" }, 400);
+          }
         }
-        else  {
-          imageBuffer = await sharp(await image.arrayBuffer()).toFormat("png").toBuffer();
-          imageDecoded = tf.node.decodeImage(new Uint8Array(imageBuffer));
-        }
-       
-        const result = await model.classify(imageDecoded);
-        console.log(result);
 
-        const imageFileFormat = image.name.includes(".")
-          ? `.${image.name.split(".").pop()}`
-          : "";
         const imageName = await generateUniqueOfferImageUUID(offerId) +
-          imageFileFormat;
+          ".webp";
+
         imageNames.push(imageName);
-        await uploadFile({
-          file: image,
+        await uploadFileBuffer({
+          buffer: await imageBuffer.toFormat("webp").toBuffer(),
           key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
         });
+        imageDecoded.dispose();
       }
 
       offerImages = await db.insert(offerImagesTable).values(

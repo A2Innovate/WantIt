@@ -54,12 +54,16 @@ import type { Chat } from '~/types/chat';
 import { AxiosError } from 'axios';
 import { sendChatMessageSchema } from '~/schema/services/chat';
 import type { Message } from '~/types/message';
+import type { Channel } from 'pusher-js';
 
 const route = useRoute();
+const userStore = useUserStore();
+const pusher = usePusher();
 const api = useApi();
 const sendError = ref('');
 const requestFetch = useRequestFetch();
 const content = ref('');
+let channel: Channel;
 
 const { data, error } = useAsyncData<Chat>(async () => {
   const response = await requestFetch<Chat>(
@@ -97,4 +101,19 @@ async function handleSend() {
   }
   content.value = '';
 }
+
+onMounted(() => {
+  channel = pusher.subscribe(
+    `private-user-${userStore.current?.id}-chat-${route.params.userId}`
+  );
+
+  channel.bind('new-message', (message: Message) => {
+    data.value?.messages.push(message);
+  });
+});
+
+onUnmounted(() => {
+  channel.unsubscribe();
+  channel.unbind('new-message');
+});
 </script>

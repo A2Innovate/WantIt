@@ -8,6 +8,7 @@ import {
   paramPersonIdSchema,
   sendChatMessageSchema,
 } from "@/schema/services/chat.ts";
+import { pusher } from "@/utils/pusher.ts";
 
 const app = new Hono();
 
@@ -133,6 +134,12 @@ app.post(
       receiverId: personId,
       content,
     }).returning();
+
+    pusher.trigger(
+      `private-user-${personId}-chat-${session.user.id}`,
+      "new-message",
+      message[0],
+    );
 
     return c.json(message[0], 200);
   },

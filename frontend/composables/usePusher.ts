@@ -1,7 +1,13 @@
 import Pusher from 'pusher-js';
 import type { UserAuthenticationCallback } from 'pusher-js';
 
+let pusher: Pusher | null = null;
+
 export function usePusher() {
+  if (pusher) {
+    return pusher;
+  }
+
   const config = useRuntimeConfig().public;
   const api = useApi();
 
@@ -26,7 +32,7 @@ export function usePusher() {
    * Custom handler overrides endpoint and transport,
    * but for some reason they're still needed to not cause a type error
    */
-  const pusher = new Pusher(config.pusherKey, {
+  pusher = new Pusher(config.pusherKey, {
     wsHost: config.pusherWsHost,
     disableStats: true,
     cluster: config.pusherCluster,

@@ -5,7 +5,7 @@
 First, install the dependencies:
 
 ```
-deno task install
+deno install
 ```
 
 Then, copy the `.env.sample` file to `.env` and fill in the environment

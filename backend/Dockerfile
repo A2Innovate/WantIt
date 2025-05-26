@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN deno task install
+RUN deno install
 
 EXPOSE 8000
 

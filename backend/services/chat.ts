@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
-import { and, desc, eq, or } from "drizzle-orm";
+import { and, asc, desc, eq, notInArray, or } from "drizzle-orm";
 import { messagesTable, usersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
 import {
@@ -14,8 +14,8 @@ const app = new Hono();
 app.get("/", authRequired, async (c) => {
   const session = c.get("session");
 
-  // Last message from each sender
-  const lastMessages = await db
+  // Last messages from other users
+  const lastMessagesFromOtherUsers = await db
     .selectDistinctOn([messagesTable.senderId], {
       createdAt: messagesTable.createdAt,
       content: messagesTable.content,
@@ -29,7 +29,30 @@ app.get("/", authRequired, async (c) => {
     .where(eq(messagesTable.receiverId, session.user.id))
     .orderBy(messagesTable.senderId, desc(messagesTable.createdAt));
 
-  return c.json(lastMessages);
+  // Last messages sent by user
+  const lastMessagesFromUser = await db
+    .selectDistinctOn([messagesTable.receiverId], {
+      createdAt: messagesTable.createdAt,
+      content: messagesTable.content,
+      person: {
+        id: usersTable.id,
+        name: usersTable.name,
+      },
+    })
+    .from(messagesTable)
+    .innerJoin(usersTable, eq(messagesTable.receiverId, usersTable.id))
+    .where(
+      and(
+        eq(messagesTable.senderId, session.user.id),
+        notInArray(
+          messagesTable.receiverId,
+          lastMessagesFromSenders.map((msg) => msg.person.id),
+        ),
+      ),
+    )
+    .orderBy(messagesTable.receiverId, desc(messagesTable.createdAt));
+
+  return c.json([...lastMessagesFromSenders, ...lastMessagesFromUser]);
 });
 
 app.get(
@@ -68,7 +91,7 @@ app.get(
         createdAt: true,
         senderId: true,
       },
-      orderBy: desc(messagesTable.createdAt),
+      orderBy: asc(messagesTable.createdAt),
     });
 
     return c.json({

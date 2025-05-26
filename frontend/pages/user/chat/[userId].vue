@@ -12,12 +12,12 @@
           </div>
           <h2 class="text-2xl font-semibold">{{ data.person.name }}</h2>
         </div>
-        <div class="flex flex-col-reverse gap-2">
+        <div class="flex flex-col gap-2">
           <UiMessage
             v-for="message in data.messages"
             :key="message.id"
             :content="message.content"
-            :time="message.createdAt"
+            :time="new Date(message.createdAt)"
             :side="
               useUserStore().current?.id === message.senderId ? 'right' : 'left'
             "
@@ -32,6 +32,11 @@
         />
         <UiButton type="submit">Send</UiButton>
       </form>
+      <p
+        v-if="sendError"
+        class="text-red-500 mt-2 text-center"
+        v-text="sendError"
+      ></p>
     </UiCard>
     <UiCard v-else-if="error" class="m-4">
       <p class="text-red-500 text-center">
@@ -48,6 +53,7 @@
 import type { Chat } from '~/types/chat';
 import { AxiosError } from 'axios';
 import { sendChatMessageSchema } from '~/schema/services/chat';
+import type { Message } from '~/types/message';
 
 const route = useRoute();
 const api = useApi();
@@ -76,9 +82,12 @@ async function handleSend() {
       return;
     }
 
-    const response = await api.post('/chat/' + route.params.userId, {
+    const response = await api.post<Message>('/chat/' + route.params.userId, {
       content: content.value
     });
+
+    // Magic trick for Server/Client time desync
+    response.data.createdAt = new Date().toISOString();
 
     data.value?.messages.push(response.data);
   } catch (e) {

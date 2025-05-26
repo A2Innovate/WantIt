@@ -6,16 +6,18 @@
     ]"
   >
     <p>{{ content }}</p>
-    <span class="text-sm text-neutral-400 self-end">{{
-      formatTime(new Date(time))
-    }}</span>
+    <ClientOnly>
+      <span class="text-sm text-neutral-400 self-end">{{
+        formatTime(props.time)
+      }}</span>
+    </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   content: string;
-  time: string;
+  time: Date;
   side: 'left' | 'right';
 }>();
 </script>

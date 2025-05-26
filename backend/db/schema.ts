@@ -40,6 +40,29 @@ export const userSessionsRelations = relations(
   }),
 );
 
+export const messagesTable = pgTable("messages", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  senderId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  receiverId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  content: text().notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const messagesRelations = relations(messagesTable, ({ one }) => ({
+  sender: one(usersTable, {
+    fields: [messagesTable.senderId],
+    references: [usersTable.id],
+  }),
+  receiver: one(usersTable, {
+    fields: [messagesTable.receiverId],
+    references: [usersTable.id],
+  }),
+}));
+
 export const requestsTable = pgTable("requests", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   userId: integer()

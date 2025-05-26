@@ -1,7 +1,7 @@
 interface LastMessage {
   createdAt: string;
   content: string;
-  sender: {
+  person: {
     id: number;
     name: string;
   };

@@ -9,21 +9,21 @@
         >
           <UiCard
             v-for="message in messageStore.lastMessages"
-            :key="message.sender.id"
+            :key="message.person.id"
             :as="NuxtLink"
-            :to="`/user/chat/${message.sender.id}`"
+            :to="`/user/chat/${message.person.id}`"
             class="hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <div class="flex items-center gap-4">
               <div
                 class="w-12 h-12 rounded-full bg-neutral-700 flex items-center justify-center text-xl font-medium"
               >
-                {{ message.sender.name.charAt(0).toUpperCase() }}
+                {{ message.person.name.charAt(0).toUpperCase() }}
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <h3 class="font-medium truncate">
-                    {{ message.sender.name }}
+                    {{ message.person.name }}
                   </h3>
                   <span class="text-sm text-neutral-400">
                     {{ formatTime(new Date(message.createdAt)) }}
@@ -46,4 +46,6 @@
 import { NuxtLink } from '#components';
 
 const messageStore = useMessageStore();
+
+messageStore.fetchLastMessages();
 </script>

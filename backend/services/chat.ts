@@ -4,7 +4,10 @@ import { db } from "@/db/index.ts";
 import { and, desc, eq, or } from "drizzle-orm";
 import { messagesTable, usersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
+import {
+  paramPersonIdSchema,
+  sendChatMessageSchema,
+} from "@/schema/services/chat.ts";
 
 const app = new Hono();
 
@@ -16,7 +19,7 @@ app.get("/", authRequired, async (c) => {
     .selectDistinctOn([messagesTable.senderId], {
       createdAt: messagesTable.createdAt,
       content: messagesTable.content,
-      sender: {
+      person: {
         id: usersTable.id,
         name: usersTable.name,
       },
@@ -30,62 +33,85 @@ app.get("/", authRequired, async (c) => {
 });
 
 app.get(
-  "/:chatUserId",
+  "/:personId",
   zValidator(
     "param",
-    z.object({
-      chatUserId: z.string().refine(
-        (value) => !isNaN(Number(value)),
-        "chatUserId must be a valid number",
-      ).transform((value) => Number(value)),
-    }),
+    paramPersonIdSchema,
   ),
   authRequired,
   async (c) => {
     const session = c.get("session");
-    const { chatUserId } = c.req.valid("param");
+    const { personId } = c.req.valid("param");
 
-    const sender = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, chatUserId),
+    const person = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, personId),
     });
 
-    if (!sender) {
-      return c.json({ message: "Sender not found" }, 404);
+    if (!person) {
+      return c.json({ message: "Person not found" }, 404);
     }
 
     const messages = await db.query.messagesTable.findMany({
       where: or(
         and(
-          eq(messagesTable.senderId, chatUserId),
+          eq(messagesTable.senderId, personId),
           eq(messagesTable.receiverId, session.user.id),
         ),
         and(
-          eq(messagesTable.receiverId, chatUserId),
+          eq(messagesTable.receiverId, personId),
           eq(messagesTable.senderId, session.user.id),
         ),
       ),
-      with: {
-        sender: {
-          columns: {
-            id: true,
-          },
-        },
-      },
       columns: {
         id: true,
         content: true,
         createdAt: true,
+        senderId: true,
       },
       orderBy: desc(messagesTable.createdAt),
     });
 
     return c.json({
-      sender: {
-        name: sender.name,
-        id: sender.id,
+      person: {
+        name: person.name,
+        id: person.id,
       },
       messages,
     });
+  },
+);
+
+app.post(
+  "/:personId",
+  zValidator(
+    "param",
+    paramPersonIdSchema,
+  ),
+  zValidator(
+    "json",
+    sendChatMessageSchema,
+  ),
+  authRequired,
+  async (c) => {
+    const session = c.get("session");
+    const { personId } = c.req.valid("param");
+    const { content } = c.req.valid("json");
+
+    const person = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, personId),
+    });
+
+    if (!person) {
+      return c.json({ message: "Person not found" }, 404);
+    }
+
+    const message = await db.insert(messagesTable).values({
+      senderId: session.user.id,
+      receiverId: personId,
+      content,
+    }).returning();
+
+    return c.json(message[0], 200);
   },
 );
 

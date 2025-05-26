@@ -7,10 +7,10 @@
             <div
               class="w-full h-full flex items-center justify-center font-medium text-2xl"
             >
-              {{ data.sender.name.charAt(0) }}
+              {{ data.person.name.charAt(0) }}
             </div>
           </div>
-          <h2 class="text-2xl font-semibold">{{ data.sender.name }}</h2>
+          <h2 class="text-2xl font-semibold">{{ data.person.name }}</h2>
         </div>
         <div class="flex flex-col-reverse gap-2">
           <UiMessage
@@ -19,9 +19,7 @@
             :content="message.content"
             :time="message.createdAt"
             :side="
-              useUserStore().current?.id === message.sender.id
-                ? 'right'
-                : 'left'
+              useUserStore().current?.id === message.senderId ? 'right' : 'left'
             "
           />
         </div>
@@ -48,8 +46,12 @@
 
 <script setup lang="ts">
 import type { Chat } from '~/types/chat';
+import { AxiosError } from 'axios';
+import { sendChatMessageSchema } from '~/schema/services/chat';
 
 const route = useRoute();
+const api = useApi();
+const sendError = ref('');
 const requestFetch = useRequestFetch();
 const content = ref('');
 
@@ -63,8 +65,27 @@ const { data, error } = useAsyncData<Chat>(async () => {
   return response;
 });
 
-function handleSend() {
+async function handleSend() {
+  try {
+    const validation = validate(sendChatMessageSchema, {
+      content: content.value
+    });
+
+    if (validation) {
+      sendError.value = validation;
+      return;
+    }
+
+    const response = await api.post('/chat/' + route.params.userId, {
+      content: content.value
+    });
+
+    data.value?.messages.push(response.data);
+  } catch (e) {
+    if (e instanceof AxiosError) {
+      error.value = e.response?.data.message;
+    }
+  }
   content.value = '';
-  // TODO
 }
 </script>

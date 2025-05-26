@@ -1,7 +1,7 @@
 import type { Message } from './message';
 
 export interface Chat {
-  sender: {
+  person: {
     name: string;
   };
   messages: Message[];

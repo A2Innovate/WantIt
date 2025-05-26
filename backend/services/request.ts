@@ -14,26 +14,31 @@ import {
 import { deleteFile, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
-import * as nsfwjs from "nsfwjs-patched";
-import * as tf from "@tensorflow/tfjs-node";
+import { ImagePipelineInputs } from "@huggingface/transformers";
+
 import sharp from "sharp";
+
+import { pipeline } from "@huggingface/transformers";
 
 const app = new Hono();
 
-let model: nsfwjs.NSFWJS | null = null;
+let _pipe: ImagePipelineInputs | null = null;
 const NSFW_THRESHOLD = 0.6;
-const NSFW_CATEGORIES = ["Porn", "Hentai", "Sexy"];
+const NSFW_CATEGORIES = ["porn", "hentai", "sexy"];
 
-async function getModel() {
-  if (!model) {
+async function getPipe() {
+  if (!_pipe) {
     try {
-      model = await nsfwjs.load("MobileNetV2");
+      _pipe = await pipeline(
+        "image-classification",
+        "onnx-community/nsfw-image-detector-ONNX",
+      );
     } catch (error) {
       console.error("Failed to load NSFW model:", error);
       throw new Error("NSFW detection service unavailable");
     }
   }
-  return model;
+  return _pipe;
 }
 
 app.get(
@@ -258,41 +263,27 @@ app.post(
     let offerImages;
     try {
       for (const image of images) {
-        const imageBuffer = sharp(await image.arrayBuffer())
-          .toFormat("png");
+        const imageBuffer = await image.arrayBuffer();
+        const sharpImage = sharp(imageBuffer);
 
-        let imageDecoded;
-        try {
-          imageDecoded = tf.node.decodeImage(await imageBuffer.toBuffer(), 3);
-          imageDecoded = tf.image.resizeBilinear(imageDecoded, [224, 224])
-            .expandDims(0);
-
-          const nsfwModel = await getModel();
-          const prediction = await nsfwModel.classify(imageDecoded, 2);
-          for (const result of prediction) {
-            if (
-              result.probability > NSFW_THRESHOLD &&
-              NSFW_CATEGORIES.includes(result.className)
-            ) {
-              throw new Error("Image contains NSFW content");
-            }
-          }
-        } finally {
-          if (imageDecoded) {
-            imageDecoded.dispose();
+        const pipe = await getPipe();
+        const prediction = await pipe(image);
+        for (const result of prediction) {
+          if (
+            result.score > NSFW_THRESHOLD &&
+            NSFW_CATEGORIES.includes(result.label)
+          ) {
+            throw new Error("Image contains NSFW content");
           }
         }
 
-        const imageName = await generateUniqueOfferImageUUID(offerId) +
-          ".webp";
+        const imageName = await generateUniqueOfferImageUUID(offerId) + ".webp";
 
         imageNames.push(imageName);
         await uploadFileBuffer({
-          buffer: await imageBuffer.toFormat("webp", { quality: 80 })
-            .toBuffer(),
+          buffer: await sharpImage.webp({ quality: 80 }).toBuffer(),
           key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
         });
-        imageDecoded.dispose();
       }
 
       offerImages = await db.insert(offerImagesTable).values(

@@ -21,8 +21,9 @@ import {
 } from "@/schema/services/auth.ts";
 import oauth from "./oauth.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
-
 import { COOKIE_DOMAIN, FRONTEND_URL } from "@/utils/global.ts";
+import { pusher } from "@/utils/pusher.ts";
+import { z } from "zod";
 
 const app = new Hono();
 
@@ -37,6 +38,36 @@ app.get("/", authRequired, (c) => {
     name: session.user.name,
   });
 });
+
+app.post(
+  "/pusher",
+  authRequired,
+  zValidator(
+    "json",
+    z.object({
+      socket_id: z.string(),
+      channel_name: z.string(),
+    }),
+  ),
+  (c) => {
+    const session = c.get("session");
+    const { socket_id, channel_name } = c.req.valid("json");
+    const channel_parts = channel_name.split("-");
+
+    if (
+      channel_parts.length !== 5 || channel_parts[0] !== "private" ||
+      channel_parts[1] !== "user" ||
+      channel_parts[2] !== session.user.id.toString() ||
+      channel_parts[3] !== "chat"
+    ) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+
+    const auth = pusher.authorizeChannel(socket_id, channel_name);
+
+    return c.json(auth);
+  },
+);
 
 app.post(
   "/register",

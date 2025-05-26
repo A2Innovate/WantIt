@@ -18,8 +18,8 @@
     "@/": "./"
   },
   "tasks": {
-    "start": "deno run --allow-net --allow-env --allow-read --allow-ffi --allow-sys main.ts",
-    "dev": "deno run --allow-net --allow-env --allow-read --allow-ffi --allow-sys --watch main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read --allow-write --allow-ffi --allow-sys main.ts",
+    "dev": "deno run --allow-net --allow-env --allow-read --allow-write --allow-ffi --allow-sys --watch main.ts",
     "db:push": "drizzle-kit push"
   },
   "compilerOptions": {

@@ -46,13 +46,13 @@ app.get("/", authRequired, async (c) => {
         eq(messagesTable.senderId, session.user.id),
         notInArray(
           messagesTable.receiverId,
-          lastMessagesFromSenders.map((msg) => msg.person.id),
+          lastMessagesFromOtherUsers.map((msg) => msg.person.id),
         ),
       ),
     )
     .orderBy(messagesTable.receiverId, desc(messagesTable.createdAt));
 
-  return c.json([...lastMessagesFromSenders, ...lastMessagesFromUser]);
+  return c.json([...lastMessagesFromOtherUsers, ...lastMessagesFromUser]);
 });
 
 app.get(

@@ -33,8 +33,20 @@ export async function uploadFile(
   );
 }
 
-export function deleteFile(key: string) {
+export function uploadFileBuffer(
+  { buffer, key }: { buffer: Uint8Array; key: string },
+) {
   return s3.send(
+    new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: key,
+      Body: buffer,
+    }),
+  );
+}
+
+export async function deleteFile(key: string) {
+  return await s3.send(
     new DeleteObjectCommand({
       Bucket: S3_BUCKET,
       Key: key,

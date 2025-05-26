@@ -11,11 +11,35 @@ import {
   editRequestSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
-import { deleteFile, uploadFile } from "@/utils/s3.ts";
+import { deleteFile, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
+import { ImagePipelineInputs } from "@huggingface/transformers";
+
+import sharp from "sharp";
+
+import { pipeline } from "@huggingface/transformers";
 
 const app = new Hono();
+
+let _pipe: ImagePipelineInputs | null = null;
+const NSFW_THRESHOLD = 0.6;
+const NSFW_CATEGORIES = ["porn", "hentai", "sexy"];
+
+async function getPipe() {
+  if (!_pipe) {
+    try {
+      _pipe = await pipeline(
+        "image-classification",
+        "onnx-community/nsfw-image-detector-ONNX",
+      );
+    } catch (error) {
+      console.error("Failed to load NSFW model:", error);
+      throw new Error("NSFW detection service unavailable");
+    }
+  }
+  return _pipe;
+}
 
 app.get(
   "/",
@@ -235,19 +259,29 @@ app.post(
     if (offer.images.length + images.length > 10) {
       return c.json({ message: "One offer can have up to 10 images." }, 400);
     }
-
     const imageNames: string[] = [];
     let offerImages;
     try {
       for (const image of images) {
-        const imageFileFormat = image.name.includes(".")
-          ? `.${image.name.split(".").pop()}`
-          : "";
-        const imageName = await generateUniqueOfferImageUUID(offerId) +
-          imageFileFormat;
+        const imageBuffer = await image.arrayBuffer();
+        const sharpImage = sharp(imageBuffer);
+
+        const pipe = await getPipe();
+        const prediction = await pipe(image);
+        for (const result of prediction) {
+          if (
+            result.score > NSFW_THRESHOLD &&
+            NSFW_CATEGORIES.includes(result.label)
+          ) {
+            throw new Error("Image contains NSFW content");
+          }
+        }
+
+        const imageName = await generateUniqueOfferImageUUID(offerId) + ".webp";
+
         imageNames.push(imageName);
-        await uploadFile({
-          file: image,
+        await uploadFileBuffer({
+          buffer: await sharpImage.webp({ quality: 80 }).toBuffer(),
           key: `request/${requestId}/offer/${offerId}/images/${imageName}`,
         });
       }
@@ -258,10 +292,17 @@ app.post(
           name: imageName,
         })),
       ).returning();
-    } catch {
+    } catch (e) {
       for (const imageName of imageNames) {
         await deleteFile(
           `request/${requestId}/offer/${offerId}/images/${imageName}`,
+        );
+      }
+
+      if (e instanceof Error && e.message === "Image contains NSFW content") {
+        return c.json(
+          { message: e.message },
+          400,
         );
       }
 

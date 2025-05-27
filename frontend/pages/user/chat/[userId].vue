@@ -83,9 +83,8 @@ const { data, error } = useAsyncData<Chat>(async () => {
 });
 
 function scrollToBottom() {
-  if (!messagesContainer.value) return;
-
   requestAnimationFrame(() => {
+    if (!messagesContainer.value) return;
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   });
 }

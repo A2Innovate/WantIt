@@ -14,19 +14,21 @@
           >
             <UiButton @click="isEditRequestModalOpen = true">
               <Icon name="material-symbols:edit-rounded" />
-              Edit
+              <span class="hidden sm:block">Edit</span>
             </UiButton>
             <UiButton @click="isDeleteRequestModalOpen = true">
               <Icon name="material-symbols:delete-rounded" />
-              Delete
+              <span class="hidden sm:block">Delete</span>
             </UiButton>
           </div>
 
           <div
             class="flex w-fit gap-2 items-center bg-neutral-900 h-8 px-2 rounded-full"
           >
-            <Icon name="material-symbols:account-circle" />
-            <p v-if="request" class="text-sm">{{ request.user.name }}</p>
+            <Icon name="material-symbols:account-circle" class="shrink-0" />
+            <p v-if="request" class="text-sm break-all">
+              {{ request.user.name }}
+            </p>
             <p v-else>Loading...</p>
           </div>
         </div>
@@ -95,15 +97,19 @@
 
 <script setup lang="ts">
 import type { Request } from '~/types/request';
+import type { Channel } from 'pusher-js';
+import type { Offer } from '~/types/offer';
 
 const route = useRoute();
 const api = useApi();
 const userStore = useUserStore();
+const pusher = usePusher();
 
 const isEditRequestModalOpen = ref(false);
 const isAddOfferModalOpen = ref(false);
 const isDeleteRequestModalOpen = ref(false);
 const isDeletingRequest = ref(false);
+let channel: Channel;
 
 const {
   data: request,
@@ -125,4 +131,44 @@ async function deleteRequest() {
     isDeletingRequest.value = false;
   }
 }
+
+onMounted(() => {
+  channel = pusher.subscribe(`public-request-${route.params.requestId}`);
+
+  channel.bind('new-offer', (data: Offer) => {
+    if (!request.value?.offers.find((offer) => offer.id === data.id)) {
+      request.value?.offers.push(data);
+    }
+  });
+
+  channel.bind(
+    'update-offer-images',
+    (data: { offerId: number; images: string[] }) => {
+      const offer = request.value?.offers.find(
+        (offer) => offer.id === data.offerId
+      );
+      if (offer) {
+        offer.images = data.images.map((image) => ({ name: image }));
+      }
+    }
+  );
+
+  channel.bind('update-request', (data: Partial<Request>) => {
+    if (request.value) {
+      request.value = {
+        ...request.value,
+        ...data
+      };
+    }
+  });
+
+  channel.bind('delete-request', () => {
+    navigateTo('/');
+  });
+});
+
+onUnmounted(() => {
+  channel.unsubscribe();
+  channel.unbind_all();
+});
 </script>

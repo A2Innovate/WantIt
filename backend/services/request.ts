@@ -15,6 +15,7 @@ import { deleteFile, deleteRecursive, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { ImagePipelineInputs } from "@huggingface/transformers";
+import { pusher } from "@/utils/pusher.ts";
 
 import sharp from "sharp";
 
@@ -158,7 +159,7 @@ app.post(
     const session = c.get("session");
 
     try {
-      const offer = await db.insert(offersTable).values({
+      const [offer] = await db.insert(offersTable).values({
         requestId,
         content,
         price,
@@ -169,9 +170,27 @@ app.post(
         content: offersTable.content,
         price: offersTable.price,
         negotiation: offersTable.negotiation,
+        requestId: offersTable.requestId,
       });
 
-      return c.json(offer[0]);
+      const completeOffer = {
+        ...offer,
+        images: [],
+        user: {
+          id: session.user.id,
+          name: session.user.name,
+        },
+      };
+
+      pusher.trigger(
+        `public-request-${requestId}`,
+        "new-offer",
+        completeOffer,
+      ).catch((e) => {
+        console.error("Async Pusher trigger error: ", e);
+      });
+
+      return c.json(offer);
     } catch (e) {
       if (
         e instanceof Error &&
@@ -312,6 +331,17 @@ app.post(
       );
     }
 
+    pusher.trigger(
+      `public-request-${requestId}`,
+      "update-offer-images",
+      {
+        offerId,
+        images: offerImages.map((image) => image.name),
+      },
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
+
     return c.json(offerImages);
   },
 );
@@ -376,6 +406,14 @@ app.put(
       return c.json({ message: "Request not found" }, 404);
     }
 
+    pusher.trigger(
+      `public-request-${requestId}`,
+      "update-request",
+      request[0],
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
+
     return c.json(request[0]);
   },
 );
@@ -413,6 +451,14 @@ app.delete(
         eq(requestsTable.id, requestId),
         eq(requestsTable.userId, session.user.id),
       ));
+
+    pusher.trigger(
+      `public-request-${requestId}`,
+      "delete-request",
+      requestId,
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
 
     return c.json({
       message: "Request deleted successfully",

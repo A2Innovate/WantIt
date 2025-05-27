@@ -11,7 +11,7 @@ import {
   editRequestSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
-import { deleteFile, uploadFileBuffer } from "@/utils/s3.ts";
+import { deleteFile, deleteRecursive, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { ImagePipelineInputs } from "@huggingface/transformers";
@@ -377,6 +377,46 @@ app.put(
     }
 
     return c.json(request[0]);
+  },
+);
+
+app.delete(
+  "/:requestId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
+  zValidator(
+    "param",
+    requestByIdSchema,
+  ),
+  async (c) => {
+    const { requestId } = c.req.valid("param");
+    const session = c.get("session");
+
+    const request = await db.query.requestsTable.findFirst({
+      where: and(
+        eq(requestsTable.id, requestId),
+        eq(requestsTable.userId, session.user.id),
+      ),
+    });
+
+    if (!request) {
+      return c.json({ message: "Request not found" }, 404);
+    }
+
+    await deleteRecursive(`request/${requestId}`);
+
+    await db.delete(requestsTable)
+      .where(and(
+        eq(requestsTable.id, requestId),
+        eq(requestsTable.userId, session.user.id),
+      ));
+
+    return c.json({
+      message: "Request deleted successfully",
+    });
   },
 );
 

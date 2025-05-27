@@ -1,5 +1,8 @@
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
+  ListObjectsV2CommandOutput,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -52,4 +55,43 @@ export async function deleteFile(key: string) {
       Key: key,
     }),
   );
+}
+
+export async function deleteRecursive(
+  key: string,
+) {
+  const objectsToDelete: string[] = [];
+  let continuationToken: string | undefined = undefined;
+
+  do {
+    const listResponse: ListObjectsV2CommandOutput = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: S3_BUCKET,
+        Prefix: key,
+        ContinuationToken: continuationToken,
+      }),
+    );
+
+    for (const object of listResponse.Contents ?? []) {
+      if (object.Key) {
+        objectsToDelete.push(object.Key);
+      }
+    }
+
+    if (listResponse.IsTruncated) {
+      continuationToken = listResponse.NextContinuationToken;
+    } else {
+      continuationToken = undefined;
+    }
+  } while (continuationToken);
+
+  while (objectsToDelete.length > 0) {
+    const batch = objectsToDelete.splice(0, 1000);
+    await s3.send(
+      new DeleteObjectsCommand({
+        Bucket: S3_BUCKET,
+        Delete: { Objects: batch.map((key) => ({ Key: key })) },
+      }),
+    );
+  }
 }

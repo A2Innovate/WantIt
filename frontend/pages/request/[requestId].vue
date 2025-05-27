@@ -8,10 +8,17 @@
         <p v-if="request">{{ priceFmt(request.budget) }}</p>
 
         <div class="flex justify-between items-center mt-4">
-          <div v-if="userStore.current?.id === request?.user.id" class="flex">
+          <div
+            v-if="userStore.current?.id === request?.user.id"
+            class="flex gap-2"
+          >
             <UiButton @click="isEditRequestModalOpen = true">
               <Icon name="material-symbols:edit-rounded" />
-              Edit request
+              Edit
+            </UiButton>
+            <UiButton @click="isDeleteRequestModalOpen = true">
+              <Icon name="material-symbols:delete-rounded" />
+              Delete
             </UiButton>
           </div>
 
@@ -67,6 +74,22 @@
       @close="isAddOfferModalOpen = false"
       @update="refresh()"
     />
+    <ModalConfirm
+      v-if="request"
+      :is-open="isDeleteRequestModalOpen"
+      :is-loading="isDeletingRequest"
+      @cancel="isDeleteRequestModalOpen = false"
+      @confirm="deleteRequest()"
+    >
+      <p class="text-center">
+        Are you sure you want to delete this request?
+        <br />
+        <span class="text-red-500 text-xs"
+          >This action will also delete all offers associated with this
+          request.</span
+        >
+      </p>
+    </ModalConfirm>
   </div>
 </template>
 
@@ -79,6 +102,8 @@ const userStore = useUserStore();
 
 const isEditRequestModalOpen = ref(false);
 const isAddOfferModalOpen = ref(false);
+const isDeleteRequestModalOpen = ref(false);
+const isDeletingRequest = ref(false);
 
 const {
   data: request,
@@ -88,4 +113,16 @@ const {
   const response = await api.get(`/request/${route.params.requestId}`);
   return response.data;
 });
+
+async function deleteRequest() {
+  try {
+    isDeletingRequest.value = true;
+    await api.delete(`/request/${route.params.requestId}`);
+    navigateTo('/');
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isDeletingRequest.value = false;
+  }
+}
 </script>

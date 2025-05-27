@@ -33,7 +33,10 @@
           placeholder="Type your message..."
           class="w-full"
         />
-        <UiButton type="submit">Send</UiButton>
+        <UiButton type="submit">
+          <Icon name="material-symbols:send-rounded" />
+          Send
+        </UiButton>
       </form>
       <p
         v-if="sendError"

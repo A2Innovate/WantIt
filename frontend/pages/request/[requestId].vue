@@ -9,9 +9,10 @@
 
         <div class="flex justify-between items-center mt-4">
           <div v-if="userStore.current?.id === request?.user.id" class="flex">
-            <UiButton @click="isEditRequestModalOpen = true"
-              >Edit request</UiButton
-            >
+            <UiButton @click="isEditRequestModalOpen = true">
+              <Icon name="material-symbols:edit-rounded" />
+              Edit request
+            </UiButton>
           </div>
 
           <div

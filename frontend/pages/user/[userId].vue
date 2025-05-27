@@ -13,7 +13,21 @@
           <h2 class="text-2xl font-semibold">{{ user.name }}</h2>
         </div>
       </div>
-      <h2 class="text-xl font-semibold mt-6 mb-4 mx-4">Requests</h2>
+      <UiButton
+        v-if="route.params.userId != userStore.current?.id"
+        class="px-4 w-full"
+        :as="NuxtLink"
+        :to="`/user/chat/${route.params.userId}`"
+      >
+        <Icon name="material-symbols:chat" />
+        Send message
+      </UiButton>
+      <h2
+        v-if="user.requests.length"
+        class="text-xl font-semibold mt-6 mb-4 mx-4"
+      >
+        Requests
+      </h2>
       <div class="flex flex-col gap-2">
         <CardRequest
           v-for="request in user.requests"
@@ -42,7 +56,9 @@
 <script setup lang="ts">
 import type { User } from '~/types/user';
 import type { Request } from '~/types/request';
+import { NuxtLink } from '#components';
 
+const userStore = useUserStore();
 const route = useRoute();
 const api = useApi();
 

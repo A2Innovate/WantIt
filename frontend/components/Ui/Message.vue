@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'p-4 rounded-lg border border-neutral-700 bg-neutral-900 flex flex-col break-all w-sm',
+      'p-4 rounded-lg border border-neutral-700 bg-neutral-900 flex flex-col break-all w-full max-w-56 sm:max-w-xs',
       side === 'left' ? 'self-start' : 'self-end'
     ]"
   >

@@ -139,7 +139,9 @@ app.post(
       `private-user-${personId}-chat-${session.user.id}`,
       "new-message",
       message[0],
-    );
+    ).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
 
     return c.json(message[0], 200);
   },

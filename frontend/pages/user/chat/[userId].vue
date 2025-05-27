@@ -12,7 +12,10 @@
           </div>
           <h2 class="text-2xl font-semibold">{{ data.person.name }}</h2>
         </div>
-        <div class="flex flex-col gap-2">
+        <div
+          ref="messagesContainer"
+          class="flex flex-col gap-2 max-h-[calc(90vh-13rem)] overflow-y-auto"
+        >
           <UiMessage
             v-for="message in data.messages"
             :key="message.id"
@@ -63,6 +66,7 @@ const api = useApi();
 const sendError = ref('');
 const requestFetch = useRequestFetch();
 const content = ref('');
+const messagesContainer = ref<HTMLDivElement>();
 let channel: Channel;
 
 const { data, error } = useAsyncData<Chat>(async () => {
@@ -74,6 +78,14 @@ const { data, error } = useAsyncData<Chat>(async () => {
   );
   return response;
 });
+
+function scrollToBottom() {
+  if (!messagesContainer.value) return;
+
+  requestAnimationFrame(() => {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+  });
+}
 
 async function handleSend() {
   try {
@@ -94,6 +106,8 @@ async function handleSend() {
     response.data.createdAt = new Date().toISOString();
 
     data.value?.messages.push(response.data);
+
+    scrollToBottom();
   } catch (e) {
     if (e instanceof AxiosError) {
       error.value = e.response?.data.message;
@@ -109,6 +123,7 @@ onMounted(() => {
 
   channel.bind('new-message', (message: Message) => {
     data.value?.messages.push(message);
+    scrollToBottom();
   });
 });
 

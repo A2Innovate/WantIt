@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, ilike } from "drizzle-orm";
-import { offerImagesTable, offersTable, requestsTable } from "@/db/schema.ts";
+import { and, eq, gt, ilike, cosineDistance, desc, sql } from "drizzle-orm";
+import { offerImagesTable, offersTable, requestsTable, usersTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   createOfferSchema,
@@ -14,32 +14,13 @@ import {
 import { deleteFile, deleteRecursive, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
-import { ImagePipelineInputs } from "@huggingface/transformers";
+import { detectNSFW } from "@/utils/ai/nsfw.ts";
+import { getEmbeddings } from "@/utils/ai/similarity.ts";
 
 import sharp from "sharp";
 
-import { pipeline } from "@huggingface/transformers";
 
 const app = new Hono();
-
-let _pipe: ImagePipelineInputs | null = null;
-const NSFW_THRESHOLD = 0.6;
-const NSFW_CATEGORIES = ["porn", "hentai", "sexy"];
-
-async function getPipe() {
-  if (!_pipe) {
-    try {
-      _pipe = await pipeline(
-        "image-classification",
-        "onnx-community/nsfw-image-detector-ONNX",
-      );
-    } catch (error) {
-      console.error("Failed to load NSFW model:", error);
-      throw new Error("NSFW detection service unavailable");
-    }
-  }
-  return _pipe;
-}
 
 app.get(
   "/",
@@ -56,25 +37,111 @@ app.get(
   async (c) => {
     const query = c.req.valid("query");
 
-    const requests = await db.query.requestsTable.findMany({
-      where: ilike(requestsTable.content, `%${query.content}%`),
-      with: {
-        user: {
-          columns: {
-            id: true,
-            name: true,
+    // If no search query, return recent items (fallback)
+    if (!query.content) {
+      const requests = await db.query.requestsTable.findMany({
+        limit: 5,
+        orderBy: (t, { desc }) => desc(t.id),
+        with: {
+          user: {
+            columns: {
+              id: true,
+              name: true,
+            },
           },
         },
-      },
-      columns: {
-        id: true,
-        content: true,
-        budget: true,
-      },
-    });
+        columns: {
+          id: true,
+          content: true,
+          budget: true,
+        },
+      });
+      return c.json(requests);
+    }
 
-    return c.json(requests);
-  },
+    
+    // const similarity = sql<number>`1 - (${cosineDistance(requestsTable.embedding, embedding)})`;
+
+
+
+    const firstWord = await getEmbeddings("iPhone 14");
+    const secondWord = await getEmbeddings("iphne 14");
+    // console.log(potatoEmbeddingRaw[0].data)
+    // console.log(strawberryEmbeddingRaw[0].data)
+
+    function cosineSimilarity(a: number[], b: number[]) {
+      const dotProduct = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
+      const normA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));
+      const normB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));
+      return dotProduct / (normA * normB);
+    }
+    console.log(cosineSimilarity(firstWord[0].data, secondWord[0].data))
+    //consinedistance htme
+    // console.log(cosineDistance(samsung, iphone));
+
+    // const similarGuides = await db.query.requestsTable.findMany({
+    //   columns: {
+    //     id: true,
+    //     content: true,
+    //     budget: true,
+    //   },
+    //   extras: {
+    //     // similarity,
+    //   },
+    //   with: {
+    //     user: {
+    //       columns: {
+    //         id: true,
+    //         name: true,
+    //         email: true,
+    //       },
+    //     },
+    //   },
+    //   where: gt(similarity, 0.7),
+    //   orderBy: desc(similarity),
+    //   limit: 4,
+    // });
+  
+
+
+   
+    // const results = await db
+    // .select({
+    //   id: requestsTable.id,
+    //   content: requestsTable.content,
+    //   budget: requestsTable.budget,
+    //   similarity,
+    //   user: {
+    //     id: usersTable.id,
+    //     name: usersTable.name,
+    //     email: usersTable.email,
+    //   },
+    // })
+    // .from(requestsTable)
+    // .leftJoin(usersTable, eq(requestsTable.userId, usersTable.id))
+    // .where(gt(similarity, 0.7))
+    // .orderBy(desc(similarity))
+    // .limit(4);
+
+  // const similarGuidesResponse = results.map((result) => ({
+     
+  //     id: result.id,
+  //     content: result.content,
+  //     budget: result.budget,
+  //     user: result.user,
+  //     similarity: result.similarity,
+
+  // }));
+  //   // Map results to match the desired structure
+
+    return c.json({})
+      
+    // }));
+  
+
+    // console.log(similarGuides);
+
+  }
 );
 
 app.get(
@@ -266,15 +333,9 @@ app.post(
         const imageBuffer = await image.arrayBuffer();
         const sharpImage = sharp(imageBuffer);
 
-        const pipe = await getPipe();
-        const prediction = await pipe(image);
-        for (const result of prediction) {
-          if (
-            result.score > NSFW_THRESHOLD &&
-            NSFW_CATEGORIES.includes(result.label)
-          ) {
-            throw new Error("Image contains NSFW content");
-          }
+        const prediction = await detectNSFW(image);
+        if (prediction) {
+          throw new Error("Image contains NSFW content");
         }
 
         const imageName = await generateUniqueOfferImageUUID(offerId) + ".webp";
@@ -335,6 +396,7 @@ app.post(
       content,
       userId: session.user.id,
       budget,
+      embedding: await getEmbeddings(content),
     }).returning();
 
     return c.json(request[0]);

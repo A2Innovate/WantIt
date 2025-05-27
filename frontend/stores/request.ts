@@ -14,6 +14,7 @@ export const useRequestStore = defineStore('request', () => {
           content: query.value
         }
       });
+      console.log(response.data);
       isFetching.value = false;
       return response.data;
     }

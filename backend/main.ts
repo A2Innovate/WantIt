@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import request from "./services/request.ts";
 import user from "./services/user.ts";
 import chat from "./services/chat.ts";
+import currency from "./services/currency.ts";
 import { FRONTEND_URL } from "./utils/global.ts";
 
 const app = new Hono();
@@ -22,5 +23,6 @@ app.route("/api/auth", auth);
 app.route("/api/request", request);
 app.route("/api/user", user);
 app.route("/api/chat", chat);
+app.route("/api/currency", currency);
 
 Deno.serve(app.fetch);

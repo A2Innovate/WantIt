@@ -50,7 +50,7 @@
 
       <div class="flex pt-4 border-t border-neutral-800/80">
         <span class="text-xl font-semibold">
-          {{ priceFmt(offer.price) }}
+          {{ priceFmt(offer.price, 'USD') }}
         </span>
       </div>
     </div>

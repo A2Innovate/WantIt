@@ -9,7 +9,7 @@
       <span
         class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-700 text-green-100"
       >
-        {{ priceFmt(request.budget) }}
+        {{ priceFmt(request.budget, request.currency) }}
       </span>
     </div>
     <div class="flex justify-end">

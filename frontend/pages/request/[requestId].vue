@@ -5,7 +5,7 @@
       <UiCard v-if="!error" class="m-4">
         <p v-if="request">{{ request.content }}</p>
         <p v-else>Loading...</p>
-        <p v-if="request">{{ priceFmt(request.budget) }}</p>
+        <p v-if="request">{{ priceFmt(request.budget, request.currency) }}</p>
 
         <div class="flex justify-between items-center mt-4">
           <div

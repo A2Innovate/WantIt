@@ -5,7 +5,15 @@
       <UiLabel for="content">What do you want?</UiLabel>
       <UiInput id="content" v-model="content" placeholder="An iPhone..." />
       <UiLabel for="budget">Budget</UiLabel>
-      <UiInput id="budget" v-model="budget" type="number" />
+      <div class="flex">
+        <DropdownCurrency v-model="selectedCurrency" />
+        <UiInput
+          id="budget"
+          v-model="budget"
+          class="w-full rounded-l-none"
+          type="number"
+        />
+      </div>
       <UiButton type="submit" class="mt-2">Add</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
@@ -24,14 +32,18 @@ const emit = defineEmits(['close']);
 const api = useApi();
 
 const content = ref('');
+const selectedCurrency = ref('USD');
 const budget = ref('');
 const error = ref('');
 
 async function addRequest() {
   try {
+    console.log(selectedCurrency.value);
+
     const validation = validate(createRequestSchema, {
       content: content.value,
-      budget: Number(budget.value)
+      budget: Number(budget.value),
+      currency: selectedCurrency.value
     });
 
     if (validation) {
@@ -41,7 +53,8 @@ async function addRequest() {
 
     const response = await api.post('/request', {
       content: content.value,
-      budget: Number(budget.value)
+      budget: Number(budget.value),
+      currency: selectedCurrency.value
     });
 
     navigateTo(`/request/${response.data.id}`);

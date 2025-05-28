@@ -70,6 +70,7 @@ app.get(
       columns: {
         id: true,
         content: true,
+        currency: true,
         budget: true,
       },
     });
@@ -126,6 +127,7 @@ app.get(
       columns: {
         id: true,
         content: true,
+        currency: true,
         budget: true,
       },
     });

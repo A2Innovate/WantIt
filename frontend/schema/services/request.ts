@@ -1,11 +1,13 @@
 import { z } from 'zod';
+import { CURRENCIES } from '@/utils/global';
 
 export const createRequestSchema = z.object({
   content: z
     .string()
     .min(4, 'Content must be at least 4 characters long')
     .max(512, 'Content must be at most 512 characters long'),
-  budget: z.number().max(2147483647, 'Budget must be at most 2147483647')
+  budget: z.number().max(2147483647, 'Budget must be at most 2147483647'),
+  currency: z.enum(CURRENCIES as [string, ...string[]])
 });
 
 export const editRequestSchema = z.object({
@@ -13,7 +15,8 @@ export const editRequestSchema = z.object({
     .string()
     .min(4, 'Content must be at least 4 characters long')
     .max(512, 'Content must be at most 512 characters long'),
-  budget: z.number().max(2147483647, 'Budget must be at most 2147483647')
+  budget: z.number().max(2147483647, 'Budget must be at most 2147483647'),
+  currency: z.enum(CURRENCIES as [string, ...string[]])
 });
 
 export const createOfferSchema = z.object({

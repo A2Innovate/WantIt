@@ -12,6 +12,15 @@
             <UiLabel for="email">Email</UiLabel>
             <UiInput id="email" v-model="email" class="w-full" />
           </div>
+          <div>
+            <UiLabel for="prefferedCurrency">Preffered currency</UiLabel>
+            <DropdownCurrency
+              id="prefferedCurrency"
+              v-model="prefferedCurrency"
+              class="h-8"
+              trigger-class="w-32 rounded-lg"
+            />
+          </div>
           <UiButton type="submit">Save</UiButton>
           <p v-if="submitted && !error" class="text-green-500 text-center mt-2">
             Profile updated successfully
@@ -19,7 +28,7 @@
           <p v-if="error" class="text-red-500 text-center mt-2">{{ error }}</p>
         </form>
       </UiCard>
-      <ChangePassword />
+      <UserChangePassword />
     </div>
   </div>
 </template>
@@ -27,7 +36,6 @@
 <script setup lang="ts">
 import { updateProfileSchema } from '@/schema/services/user';
 import { AxiosError } from 'axios';
-import ChangePassword from '~/components/User/ChangePassword.vue';
 
 definePageMeta({
   middleware: 'auth'
@@ -38,6 +46,8 @@ const api = useApi();
 
 const name = ref(userStore.current?.name ?? '');
 const email = ref(userStore.current?.email ?? '');
+const prefferedCurrency = ref(userStore.current?.prefferedCurrency ?? 'USD');
+
 const error = ref('');
 const submitted = ref(false);
 
@@ -48,7 +58,8 @@ async function updateProfile() {
   try {
     const validation = validate(updateProfileSchema, {
       name: name.value,
-      email: email.value
+      email: email.value,
+      prefferedCurrency: prefferedCurrency.value
     });
 
     if (validation) {
@@ -58,10 +69,12 @@ async function updateProfile() {
 
     await api.put('/user/update', {
       name: name.value,
-      email: email.value
+      email: email.value,
+      prefferedCurrency: prefferedCurrency.value
     });
 
     userStore.current!.name = name.value;
+    userStore.current!.prefferedCurrency = prefferedCurrency.value;
     submitted.value = true;
     if (userStore.current!.email !== email.value) {
       navigateTo('/');

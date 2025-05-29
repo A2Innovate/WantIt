@@ -36,6 +36,7 @@ app.get("/", authRequired, (c) => {
     id: session.user.id,
     email: session.user.email,
     name: session.user.name,
+    prefferedCurrency: session.user.prefferedCurrency,
   });
 });
 

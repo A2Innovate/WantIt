@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CURRENCIES } from "@/utils/global.ts";
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters long").max(
@@ -6,6 +7,7 @@ export const updateProfileSchema = z.object({
     "Name must be at most 256 characters long",
   ),
   email: z.string().email("Invalid email"),
+  prefferedCurrency: z.enum(CURRENCIES),
 });
 
 export const getUserByIdSchema = z.object({

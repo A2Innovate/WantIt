@@ -9,6 +9,8 @@ import {
 import { relations } from "drizzle-orm";
 import { CURRENCIES } from "../utils/global.ts";
 
+export const currencies = pgEnum("currencies", CURRENCIES);
+
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull(),
@@ -17,6 +19,7 @@ export const usersTable = pgTable("users", {
   emailVerificationToken: text().unique(),
   password: text(),
   passwordResetToken: text().unique(),
+  prefferedCurrency: currencies().notNull().default("USD"),
 });
 
 export const userRelations = relations(usersTable, ({ many }) => ({
@@ -64,8 +67,6 @@ export const messagesRelations = relations(messagesTable, ({ one }) => ({
     references: [usersTable.id],
   }),
 }));
-
-export const currencies = pgEnum("currencies", CURRENCIES);
 
 export const requestsTable = pgTable("requests", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

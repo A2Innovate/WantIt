@@ -60,7 +60,7 @@ app.put(
   authRequired,
   async (c) => {
     const session = c.get("session");
-    const { name, email } = c.req.valid("json");
+    const { name, email, prefferedCurrency } = c.req.valid("json");
 
     if (session.user.name !== name) {
       await db.update(usersTable).set({
@@ -102,6 +102,12 @@ app.put(
         WantIt Team
         `,
       });
+    }
+
+    if (session.user.prefferedCurrency !== prefferedCurrency) {
+      await db.update(usersTable).set({
+        prefferedCurrency,
+      }).where(eq(usersTable.id, session.user.id));
     }
 
     return c.json({ message: "Updated successfully" }, 200);

@@ -1,11 +1,14 @@
 <template>
   <div ref="dropdownRef" class="relative">
     <button
-      class="flex items-center h-full px-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-l-lg transition-all"
-      :class="{
-        'justify-center w-14': readonly,
-        'justify-between w-18': !readonly
-      }"
+      :class="[
+        'flex items-center h-full px-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-l-lg transition-all',
+        {
+          'justify-center w-14': readonly,
+          'justify-between w-18': !readonly
+        },
+        props.triggerClass
+      ]"
       type="button"
       @click="toggleDropdown"
     >
@@ -54,6 +57,7 @@
 const props = defineProps<{
   modelValue: string;
   readonly?: boolean;
+  triggerClass?: string;
 }>();
 
 const emit = defineEmits(['update:modelValue']);

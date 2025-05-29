@@ -28,11 +28,12 @@ defineProps<{
   isOpen: boolean;
 }>();
 
+const userStore = useUserStore();
 const emit = defineEmits(['close']);
 const api = useApi();
 
 const content = ref('');
-const selectedCurrency = ref('USD');
+const selectedCurrency = ref(userStore.current?.prefferedCurrency ?? 'USD');
 const budget = ref('');
 const error = ref('');
 

@@ -15,6 +15,11 @@
           type="number"
         />
       </div>
+      <ConvertedPrice
+        :currency="request.currency"
+        :amount="Number(price)"
+        class="text-xs"
+      />
       <UiLabel for="negotiation">
         Negotiable
         <UiCheckbox id="negotiation" v-model="negotiation" />

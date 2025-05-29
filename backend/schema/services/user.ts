@@ -7,7 +7,7 @@ export const updateProfileSchema = z.object({
     "Name must be at most 256 characters long",
   ),
   email: z.string().email("Invalid email"),
-  prefferedCurrency: z.enum(CURRENCIES),
+  preferredCurrency: z.enum(CURRENCIES),
 });
 
 export const getUserByIdSchema = z.object({

@@ -13,10 +13,10 @@
             <UiInput id="email" v-model="email" class="w-full" />
           </div>
           <div>
-            <UiLabel for="prefferedCurrency">Preffered currency</UiLabel>
+            <UiLabel for="preferredCurrency">Preferred currency</UiLabel>
             <DropdownCurrency
-              id="prefferedCurrency"
-              v-model="prefferedCurrency"
+              id="preferredCurrency"
+              v-model="preferredCurrency"
               class="h-8"
               trigger-class="w-32 rounded-lg"
             />
@@ -46,7 +46,7 @@ const api = useApi();
 
 const name = ref(userStore.current?.name ?? '');
 const email = ref(userStore.current?.email ?? '');
-const prefferedCurrency = ref(userStore.current?.prefferedCurrency ?? 'USD');
+const preferredCurrency = ref(userStore.current?.preferredCurrency ?? 'USD');
 
 const error = ref('');
 const submitted = ref(false);
@@ -59,7 +59,7 @@ async function updateProfile() {
     const validation = validate(updateProfileSchema, {
       name: name.value,
       email: email.value,
-      prefferedCurrency: prefferedCurrency.value
+      preferredCurrency: preferredCurrency.value
     });
 
     if (validation) {
@@ -70,11 +70,11 @@ async function updateProfile() {
     await api.put('/user/update', {
       name: name.value,
       email: email.value,
-      prefferedCurrency: prefferedCurrency.value
+      preferredCurrency: preferredCurrency.value
     });
 
     userStore.current!.name = name.value;
-    userStore.current!.prefferedCurrency = prefferedCurrency.value;
+    userStore.current!.preferredCurrency = preferredCurrency.value;
     submitted.value = true;
     if (userStore.current!.email !== email.value) {
       navigateTo('/');

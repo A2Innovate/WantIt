@@ -33,7 +33,7 @@ const emit = defineEmits(['close']);
 const api = useApi();
 
 const content = ref('');
-const selectedCurrency = ref(userStore.current?.prefferedCurrency ?? 'USD');
+const selectedCurrency = ref(userStore.current?.preferredCurrency ?? 'USD');
 const budget = ref('');
 const error = ref('');
 

@@ -1,15 +1,15 @@
 <template>
   <span
-    v-if="userStore.current && userStore.current.prefferedCurrency !== currency"
+    v-if="userStore.current && userStore.current.preferredCurrency !== currency"
     >(≈
     {{
       priceFmt(
         currencyStore.convert(
           currency,
-          userStore.current.prefferedCurrency,
+          userStore.current.preferredCurrency,
           amount
         ),
-        userStore.current.prefferedCurrency
+        userStore.current.preferredCurrency
       )
     }})</span
   >

@@ -60,7 +60,7 @@ app.put(
   authRequired,
   async (c) => {
     const session = c.get("session");
-    const { name, email, prefferedCurrency } = c.req.valid("json");
+    const { name, email, preferredCurrency } = c.req.valid("json");
 
     if (session.user.name !== name) {
       await db.update(usersTable).set({
@@ -104,9 +104,9 @@ app.put(
       });
     }
 
-    if (session.user.prefferedCurrency !== prefferedCurrency) {
+    if (session.user.preferredCurrency !== preferredCurrency) {
       await db.update(usersTable).set({
-        prefferedCurrency,
+        preferredCurrency,
       }).where(eq(usersTable.id, session.user.id));
     }
 

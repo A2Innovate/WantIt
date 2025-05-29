@@ -19,7 +19,7 @@ export const usersTable = pgTable("users", {
   emailVerificationToken: text().unique(),
   password: text(),
   passwordResetToken: text().unique(),
-  prefferedCurrency: currencies().notNull().default("USD"),
+  preferredCurrency: currencies().notNull().default("USD"),
 });
 
 export const userRelations = relations(usersTable, ({ many }) => ({

@@ -9,6 +9,17 @@
             <UiInput id="name" v-model="name" class="w-full" />
           </div>
           <div>
+            <UiLabel for="username">Username</UiLabel>
+            <div class="flex">
+              <UiInputIcon> @ </UiInputIcon>
+              <UiInput
+                id="username"
+                v-model="username"
+                class="w-full rounded-l-none"
+              />
+            </div>
+          </div>
+          <div>
             <UiLabel for="email">Email</UiLabel>
             <UiInput id="email" v-model="email" class="w-full" />
           </div>
@@ -45,6 +56,7 @@ const userStore = useUserStore();
 const api = useApi();
 
 const name = ref(userStore.current?.name ?? '');
+const username = ref(userStore.current?.username ?? '');
 const email = ref(userStore.current?.email ?? '');
 const preferredCurrency = ref(userStore.current?.preferredCurrency ?? 'USD');
 
@@ -58,6 +70,7 @@ async function updateProfile() {
   try {
     const validation = validate(updateProfileSchema, {
       name: name.value,
+      username: username.value,
       email: email.value,
       preferredCurrency: preferredCurrency.value
     });
@@ -69,6 +82,7 @@ async function updateProfile() {
 
     await api.put('/user/update', {
       name: name.value,
+      username: username.value,
       email: email.value,
       preferredCurrency: preferredCurrency.value
     });

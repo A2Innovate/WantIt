@@ -69,3 +69,17 @@ export async function generateUniqueOfferImageUUID(
 
   return imageUUID;
 }
+
+export async function generateUniqueUsername() {
+  const username = crypto.randomBytes(8).toString("hex");
+
+  const existingUsername = await db.query.usersTable.findFirst({
+    where: eq(usersTable.username, username),
+  });
+
+  if (existingUsername) {
+    return generateUniqueUsername();
+  }
+
+  return username;
+}

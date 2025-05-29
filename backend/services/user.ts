@@ -36,6 +36,7 @@ app.get(
       },
       columns: {
         name: true,
+        username: true,
       },
     });
 
@@ -60,7 +61,7 @@ app.put(
   authRequired,
   async (c) => {
     const session = c.get("session");
-    const { name, email, preferredCurrency } = c.req.valid("json");
+    const { name, email, preferredCurrency, username } = c.req.valid("json");
 
     if (session.user.name !== name) {
       await db.update(usersTable).set({
@@ -108,6 +109,22 @@ app.put(
       await db.update(usersTable).set({
         preferredCurrency,
       }).where(eq(usersTable.id, session.user.id));
+    }
+
+    if (session.user.username !== username) {
+      try {
+        await db.update(usersTable).set({
+          username,
+        }).where(eq(usersTable.id, session.user.id));
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message ===
+            'duplicate key value violates unique constraint "users_username_unique"'
+        ) {
+          return c.json({ message: "Username already exists" }, 409);
+        }
+      }
     }
 
     return c.json({ message: "Updated successfully" }, 200);

@@ -13,6 +13,7 @@ export const currencies = pgEnum("currencies", CURRENCIES);
 
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  username: text().notNull().unique(),
   name: text().notNull(),
   email: text().notNull(),
   isEmailVerified: boolean().notNull().default(false),

@@ -4,7 +4,10 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { db } from "@/db/index.ts";
 import { eq } from "drizzle-orm";
 import { userSessionsTable, usersTable } from "@/db/schema.ts";
-import { generateSessionToken } from "@/utils/generate.ts";
+import {
+  generateSessionToken,
+  generateUniqueUsername,
+} from "@/utils/generate.ts";
 import {
   COOKIE_DOMAIN,
   FRONTEND_URL,
@@ -151,6 +154,7 @@ app.get(
       }
       const user = await db.insert(usersTable).values({
         name: userInfo.given_name || userInfo.name || "Google User",
+        username: await generateUniqueUsername(),
         email: userInfo.email!,
         password: null,
         emailVerificationToken: null,

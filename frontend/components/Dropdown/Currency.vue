@@ -1,13 +1,20 @@
 <template>
   <div ref="dropdownRef" class="relative">
     <button
-      class="flex items-center justify-between w-18 h-full px-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-l-lg transition-all"
+      class="flex items-center h-full px-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-l-lg transition-all"
+      :class="{
+        'justify-center w-14': readonly,
+        'justify-between w-18': !readonly
+      }"
+      type="button"
       @click="toggleDropdown"
     >
-      <span class="text-neutral-300 text-sm font-medium">{{
-        selectedCurrency
-      }}</span>
+      <span
+        class="text-neutral-300 text-sm font-medium"
+        v-text="props.modelValue"
+      ></span>
       <Icon
+        v-if="!readonly"
         name="material-symbols:keyboard-arrow-down"
         class="text-neutral-400 transition-all duration-200 shrink-0"
         :class="{ 'rotate-180': isOpen }"
@@ -31,7 +38,6 @@
           :key="currency.currency"
           class="px-4 py-2 text-neutral-300 hover:bg-neutral-700 cursor-pointer transition-colors"
           @click="
-            selectedCurrency = currency.currency;
             isOpen = false;
             emit('update:modelValue', currency.currency);
           "
@@ -45,16 +51,19 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   modelValue: string;
+  readonly?: boolean;
 }>();
+
 const emit = defineEmits(['update:modelValue']);
 const isOpen = ref(false);
-const selectedCurrency = ref('USD');
 const dropdownRef = ref<HTMLElement | null>(null);
 
 const toggleDropdown = () => {
-  isOpen.value = !isOpen.value;
+  if (!props.readonly) {
+    isOpen.value = !isOpen.value;
+  }
 };
 
 function closeDropdown(e: MouseEvent) {

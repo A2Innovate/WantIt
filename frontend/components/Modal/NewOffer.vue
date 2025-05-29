@@ -6,7 +6,15 @@
       <UiLabel for="content">What is your offer?</UiLabel>
       <UiInput id="content" v-model="content" placeholder="An iPhone..." />
       <UiLabel for="price">Price</UiLabel>
-      <UiInput id="price" v-model="price" type="number" />
+      <div class="flex">
+        <DropdownCurrency :model-value="request.currency" readonly />
+        <UiInput
+          id="price"
+          v-model="price"
+          class="w-full rounded-l-none"
+          type="number"
+        />
+      </div>
       <UiLabel for="negotiation">
         Negotiable
         <UiCheckbox id="negotiation" v-model="negotiation" />

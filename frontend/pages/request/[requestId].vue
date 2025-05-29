@@ -54,6 +54,7 @@
           v-for="offer in request.offers"
           :key="offer.id"
           :offer="offer"
+          :currency="request.currency"
         />
       </div>
 

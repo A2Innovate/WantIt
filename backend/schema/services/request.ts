@@ -20,7 +20,6 @@ export const editRequestSchema = z.object({
   budget: z
     .number()
     .max(2147483647, "Budget must be at most 2147483647"),
-  currency: z.enum(CURRENCIES),
 });
 
 export const createOfferSchema = z.object({

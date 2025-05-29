@@ -38,8 +38,6 @@ const error = ref('');
 
 async function addRequest() {
   try {
-    console.log(selectedCurrency.value);
-
     const validation = validate(createRequestSchema, {
       content: content.value,
       budget: Number(budget.value),

@@ -360,12 +360,13 @@ app.post(
     createRequestSchema,
   ),
   async (c) => {
-    const { content, budget } = c.req.valid("json");
+    const { content, budget, currency } = c.req.valid("json");
     const session = c.get("session");
 
     const request = await db.insert(requestsTable).values({
       content,
       userId: session.user.id,
+      currency,
       budget,
     }).returning();
 

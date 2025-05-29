@@ -1,11 +1,15 @@
 import {
   boolean,
   integer,
+  pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { CURRENCIES } from "../utils/global.ts";
+
+export const currencies = pgEnum("currencies", CURRENCIES);
 
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -15,6 +19,7 @@ export const usersTable = pgTable("users", {
   emailVerificationToken: text().unique(),
   password: text(),
   passwordResetToken: text().unique(),
+  preferredCurrency: currencies().notNull().default("USD"),
 });
 
 export const userRelations = relations(usersTable, ({ many }) => ({
@@ -70,6 +75,7 @@ export const requestsTable = pgTable("requests", {
     .references(() => usersTable.id, { onDelete: "cascade" }),
   content: text().notNull(),
   budget: integer().notNull(),
+  currency: currencies().notNull().default("USD"),
 });
 
 export const requestsRelations = relations(requestsTable, ({ one, many }) => ({

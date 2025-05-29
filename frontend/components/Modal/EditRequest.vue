@@ -5,7 +5,15 @@
       <UiLabel for="content">What do you want?</UiLabel>
       <UiInput id="content" v-model="content" />
       <UiLabel for="budget">Budget</UiLabel>
-      <UiInput id="budget" v-model="budget" type="number" />
+      <div class="flex">
+        <DropdownCurrency :model-value="request.currency" readonly />
+        <UiInput
+          id="budget"
+          v-model="budget"
+          class="w-full rounded-l-none"
+          type="number"
+        />
+      </div>
       <UiButton type="submit" class="mt-2">Edit request</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>

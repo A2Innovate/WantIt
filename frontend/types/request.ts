@@ -6,5 +6,6 @@ export interface Request {
   content: string;
   user: Omit<User, 'email'>;
   budget: number;
+  currency: string;
   offers: Offer[];
 }

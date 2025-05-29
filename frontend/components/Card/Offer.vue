@@ -50,7 +50,7 @@
 
       <div class="flex pt-4 border-t border-neutral-800/80">
         <span class="text-xl font-semibold">
-          {{ priceFmt(offer.price) }}
+          {{ priceFmt(offer.price, currency) }}
         </span>
       </div>
     </div>
@@ -60,5 +60,5 @@
 <script setup lang="ts">
 import type { Offer } from '@/types/offer';
 
-defineProps<{ offer: Offer }>();
+defineProps<{ offer: Offer; currency: string }>();
 </script>

@@ -5,7 +5,14 @@
       <UiCard v-if="!error" class="m-4">
         <p v-if="request">{{ request.content }}</p>
         <p v-else>Loading...</p>
-        <p v-if="request">{{ priceFmt(request.budget) }}</p>
+        <p v-if="request">
+          {{ priceFmt(request.budget, request.currency) }}
+          <ConvertedPrice
+            class="text-xs"
+            :currency="request.currency"
+            :amount="request.budget"
+          />
+        </p>
 
         <div class="flex justify-between items-center mt-4">
           <div
@@ -54,6 +61,7 @@
           v-for="offer in request.offers"
           :key="offer.id"
           :offer="offer"
+          :currency="request.currency"
         />
       </div>
 

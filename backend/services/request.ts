@@ -3,7 +3,12 @@ import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, eq, ilike } from "drizzle-orm";
-import { offerImagesTable, offersTable, requestsTable } from "@/db/schema.ts";
+import {
+  commentsTable,
+  offerImagesTable,
+  offersTable,
+  requestsTable,
+} from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   createOfferSchema,
@@ -120,6 +125,13 @@ app.get(
             images: {
               columns: {
                 name: true,
+              },
+            },
+            comments: {
+              columns: {
+                id: true,
+                content: true,
+                createdAt: true,
               },
             },
           },
@@ -346,6 +358,78 @@ app.post(
     });
 
     return c.json(offerImages);
+  },
+);
+
+app.post(
+  "/:requestId/offer/:offerId/comment",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 50,
+  }),
+  zValidator(
+    "param",
+    z.object({
+      requestId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "requestId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+      offerId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "offerId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+    }),
+  ),
+  zValidator(
+    "json",
+    z.object({
+      content: z.string().min(1).max(512),
+    }),
+  ),
+  async (c) => {
+    const { requestId, offerId } = c.req.valid("param");
+    const { content } = c.req.valid("json");
+    const session = c.get("session");
+
+    const offer = await db.query.offersTable.findFirst({
+      where: and(
+        eq(offersTable.id, offerId),
+        eq(offersTable.requestId, requestId),
+      ),
+    });
+
+    if (!offer) {
+      return c.json({ message: "Offer not found" }, 404);
+    }
+
+    try {
+      const [comment] = await db.insert(commentsTable).values({
+        requestId,
+        offerId,
+        userId: session.user.id,
+        content,
+      }).returning({
+        id: commentsTable.id,
+        content: commentsTable.content,
+        createdAt: commentsTable.createdAt,
+      });
+
+      return c.json(comment);
+    } catch (e) {
+      console.error(e);
+
+      return c.json(
+        { message: "Something went wrong while saving the comment" },
+        500,
+      );
+    }
   },
 );
 

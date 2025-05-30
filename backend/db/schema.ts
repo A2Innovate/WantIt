@@ -128,4 +128,30 @@ export const offersRelations = relations(offersTable, ({ one, many }) => ({
     references: [usersTable.id],
   }),
   images: many(offerImagesTable),
+  comments: many(commentsTable),
+}));
+
+export const commentsTable = pgTable("comments", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  requestId: integer()
+    .notNull()
+    .references(() => requestsTable.id, { onDelete: "cascade" }),
+  offerId: integer()
+    .references(() => offersTable.id, { onDelete: "cascade" }),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  content: text().notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const commentsRelations = relations(commentsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [commentsTable.userId],
+    references: [usersTable.id],
+  }),
+  offer: one(offersTable, {
+    fields: [commentsTable.offerId],
+    references: [offersTable.id],
+  }),
 }));

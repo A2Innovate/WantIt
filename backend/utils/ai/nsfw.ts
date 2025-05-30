@@ -1,4 +1,4 @@
-import { pipeline, ImagePipelineInputs } from "@huggingface/transformers";
+import { ImagePipelineInputs, pipeline } from "@huggingface/transformers";
 
 let _pipe: ImagePipelineInputs | null = null;
 const NSFW_THRESHOLD = 0.6;
@@ -32,4 +32,3 @@ export async function detectNSFW(image: File) {
   }
   return false;
 }
-  

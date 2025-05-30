@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, gt, cosineDistance, desc, sql } from "drizzle-orm";
+import { and, cosineDistance, desc, eq, gt, sql } from "drizzle-orm";
 import { offerImagesTable, offersTable, requestsTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
@@ -15,9 +15,8 @@ import { deleteFile, deleteRecursive, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { detectNSFW } from "@/utils/ai/nsfw.ts";
-import {getEmbeddings} from "@/utils/ai/similarity.ts";
+import { getEmbeddings } from "@/utils/ai/similarity.ts";
 import sharp from "sharp";
-
 
 const app = new Hono();
 
@@ -58,12 +57,10 @@ app.get(
       return c.json(requests);
     }
 
-    
     const embedding = await getEmbeddings(query.content);
-    const similarity = sql<number>`1 - (${cosineDistance(requestsTable.embedding, embedding)})`;
-
-
-    
+    const similarity = sql<number>`1 - (${
+      cosineDistance(requestsTable.embedding, embedding)
+    })`;
 
     // const firstWord = await getEmbeddings("fruit");
     // const secondWord = await getEmbeddings("potato");
@@ -78,9 +75,7 @@ app.get(
         content: true,
         budget: true,
       },
-      extras: {
-        
-      },
+      extras: {},
       with: {
         user: {
           columns: {
@@ -93,16 +88,14 @@ app.get(
       where: gt(similarity, 0.7),
       orderBy: desc(similarity),
       limit: 4,
-    }); 
+    });
 
     return c.json(similarGuides);
-      
+
     // }));
-  
 
     // console.log(similarGuides);
-
-  }
+  },
 );
 
 app.get(

@@ -1,11 +1,11 @@
 import {
   boolean,
+  index,
   integer,
   pgTable,
   text,
   timestamp,
   vector,
-  index
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -73,9 +73,11 @@ export const requestsTable = pgTable("requests", {
   content: text().notNull(),
   budget: integer().notNull(),
   embedding: vector("embedding", { dimensions: 384 }),
-},
-(table) => [
-  index('embeddingIndex').using('hnsw', table.embedding.op('vector_cosine_ops')),
+}, (table) => [
+  index("embeddingIndex").using(
+    "hnsw",
+    table.embedding.op("vector_cosine_ops"),
+  ),
 ]);
 
 export const requestsRelations = relations(requestsTable, ({ one, many }) => ({

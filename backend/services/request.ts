@@ -15,8 +15,7 @@ import { deleteFile, deleteRecursive, uploadFileBuffer } from "@/utils/s3.ts";
 import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { detectNSFW } from "@/utils/ai/nsfw.ts";
-import { getEmbeddings } from "@/utils/ai/similarity.ts";
-
+import {getEmbeddings} from "@/utils/ai/similarity.ts";
 import sharp from "sharp";
 
 
@@ -60,81 +59,43 @@ app.get(
     }
 
     
-    // const similarity = sql<number>`1 - (${cosineDistance(requestsTable.embedding, embedding)})`;
+    const embedding = await getEmbeddings(query.content);
+    const similarity = sql<number>`1 - (${cosineDistance(requestsTable.embedding, embedding)})`;
 
 
+    
 
-    const firstWord = await getEmbeddings("iPhone 14");
-    const secondWord = await getEmbeddings("iphne 14");
+    // const firstWord = await getEmbeddings("fruit");
+    // const secondWord = await getEmbeddings("potato");
     // console.log(potatoEmbeddingRaw[0].data)
     // console.log(strawberryEmbeddingRaw[0].data)
 
-    function cosineSimilarity(a: number[], b: number[]) {
-      const dotProduct = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
-      const normA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));
-      const normB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));
-      return dotProduct / (normA * normB);
-    }
-    console.log(cosineSimilarity(firstWord[0].data, secondWord[0].data))
-    //consinedistance htme
-    // console.log(cosineDistance(samsung, iphone));
+    // console.log(cosineSimilarity(firstWord, secondWord));
 
-    // const similarGuides = await db.query.requestsTable.findMany({
-    //   columns: {
-    //     id: true,
-    //     content: true,
-    //     budget: true,
-    //   },
-    //   extras: {
-    //     // similarity,
-    //   },
-    //   with: {
-    //     user: {
-    //       columns: {
-    //         id: true,
-    //         name: true,
-    //         email: true,
-    //       },
-    //     },
-    //   },
-    //   where: gt(similarity, 0.7),
-    //   orderBy: desc(similarity),
-    //   limit: 4,
-    // });
-  
+    const similarGuides = await db.query.requestsTable.findMany({
+      columns: {
+        id: true,
+        content: true,
+        budget: true,
+      },
+      extras: {
+        
+      },
+      with: {
+        user: {
+          columns: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      where: gt(similarity, 0.7),
+      orderBy: desc(similarity),
+      limit: 4,
+    }); 
 
-
-   
-    // const results = await db
-    // .select({
-    //   id: requestsTable.id,
-    //   content: requestsTable.content,
-    //   budget: requestsTable.budget,
-    //   similarity,
-    //   user: {
-    //     id: usersTable.id,
-    //     name: usersTable.name,
-    //     email: usersTable.email,
-    //   },
-    // })
-    // .from(requestsTable)
-    // .leftJoin(usersTable, eq(requestsTable.userId, usersTable.id))
-    // .where(gt(similarity, 0.7))
-    // .orderBy(desc(similarity))
-    // .limit(4);
-
-  // const similarGuidesResponse = results.map((result) => ({
-     
-  //     id: result.id,
-  //     content: result.content,
-  //     budget: result.budget,
-  //     user: result.user,
-  //     similarity: result.similarity,
-
-  // }));
-  //   // Map results to match the desired structure
-
-    return c.json({})
+    return c.json(similarGuides);
       
     // }));
   

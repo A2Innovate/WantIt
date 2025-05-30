@@ -72,7 +72,7 @@ export const requestsTable = pgTable("requests", {
     .references(() => usersTable.id, { onDelete: "cascade" }),
   content: text().notNull(),
   budget: integer().notNull(),
-  embedding: vector("embedding", { dimensions: 768 }),
+  embedding: vector("embedding", { dimensions: 384 }),
 },
 (table) => [
   index('embeddingIndex').using('hnsw', table.embedding.op('vector_cosine_ops')),

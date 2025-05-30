@@ -1,24 +1,23 @@
-import { pipeline, ImagePipelineInputs } from "@huggingface/transformers";
+import { FeatureExtractionPipeline, pipeline } from '@huggingface/transformers';
 
-let _pipe: ImagePipelineInputs | null = null;
-async function getPipe() {
-  if (!_pipe) {
+
+let _extractor: FeatureExtractionPipeline | null = null;
+
+async function getExtractor() {
+  if (!_extractor) {
     try {
-      _pipe = await pipeline(
-        "feature-extraction",
-        "sentence-transformers/all-mpnet-base-v2"
-      );
+      _extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
     } catch (error) {
-      console.error("Failed to load Xenova model:", error);
-      throw new Error("Xenova service unavailable");
+      console.error("Failed to load NSFW model:", error);
+      throw new Error("NSFW detection service unavailable");
     }
   }
-  return _pipe;
+  return _extractor;
 }
+
 export async function getEmbeddings(text: string) {
-  const pipe = await getPipe();
-  const prediction = await pipe(text);
-//   console.log(prediction[0].tolist()[0]);
-  return prediction;
+  const extractor = await getExtractor();
+  const output = await extractor(text);
+  return output.tolist()[0][0]; // Flatten the 2D array to 1D
 }
   

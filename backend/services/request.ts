@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, gt, ilike, cosineDistance, desc, sql } from "drizzle-orm";
-import { offerImagesTable, offersTable, requestsTable, usersTable } from "@/db/schema.ts";
+import { and, eq, gt, cosineDistance, desc, sql } from "drizzle-orm";
+import { offerImagesTable, offersTable, requestsTable } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   createOfferSchema,

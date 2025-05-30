@@ -17,7 +17,7 @@
         class="flex w-fit gap-2 items-center bg-neutral-900 h-8 px-2 rounded-full"
       >
         <Icon name="material-symbols:account-circle" />
-        <p class="text-sm">{{ request.user.name }}</p>
+        <p class="text-sm">{{ request.user.username }}</p>
       </div>
     </div>
   </UiCard>

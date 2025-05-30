@@ -63,7 +63,7 @@ app.get(
         user: {
           columns: {
             id: true,
-            name: true,
+            username: true,
           },
         },
       },
@@ -98,7 +98,7 @@ app.get(
         user: {
           columns: {
             id: true,
-            name: true,
+            username: true,
           },
         },
         offers: {
@@ -114,6 +114,7 @@ app.get(
               columns: {
                 id: true,
                 name: true,
+                username: true,
               },
             },
             images: {

@@ -13,6 +13,19 @@
         />
       </div>
       <div>
+        <UiLabel for="username">Username</UiLabel>
+        <div class="flex">
+          <UiInputIcon> @ </UiInputIcon>
+          <UiInput
+            id="username"
+            v-model="username"
+            placeholder="johndoe..."
+            autocomplete="username"
+            class="w-full rounded-l-none"
+          />
+        </div>
+      </div>
+      <div>
         <UiLabel for="email">Email</UiLabel>
         <UiInput
           id="email"
@@ -60,6 +73,7 @@ definePageMeta({
 });
 
 const name = ref('');
+const username = ref('');
 const email = ref('');
 const password = ref('');
 const api = useApi();
@@ -74,6 +88,7 @@ async function signUp() {
   try {
     const validation = validate(signUpSchema, {
       name: name.value,
+      username: username.value,
       email: email.value,
       password: password.value
     });

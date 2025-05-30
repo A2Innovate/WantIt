@@ -2,7 +2,7 @@
   <div class="max-w-2xl mx-auto">
     <UiCard v-if="!error && user" class="m-4">
       <div class="m-4 flex flex-col gap-4">
-        <div class="flex flex-col items-center gap-4">
+        <div class="flex flex-col items-center gap-2">
           <div class="w-16 h-16 rounded-full bg-neutral-700">
             <div
               class="w-full h-full flex items-center justify-center font-medium text-2xl"
@@ -10,11 +10,12 @@
               {{ user.name.charAt(0) }}
             </div>
           </div>
-          <h2 class="text-2xl font-semibold">{{ user.name }}</h2>
+          <h2 class="text-2xl font-semibold mt-2">{{ user.name }}</h2>
+          <h3 class="text-sm">@{{ user.username }}</h3>
         </div>
       </div>
       <UiButton
-        v-if="route.params.userId != userStore.current?.id"
+        v-if="Number(route.params.userId) != userStore.current?.id"
         class="px-4 w-full"
         :as="NuxtLink"
         :to="`/user/chat/${route.params.userId}`"
@@ -36,7 +37,8 @@
             ...request,
             user: {
               id: user.id,
-              name: user.name
+              name: user.name,
+              username: user.username
             }
           }"
         />

@@ -36,6 +36,7 @@ app.get("/", authRequired, (c) => {
     id: session.user.id,
     email: session.user.email,
     name: session.user.name,
+    username: session.user.username,
     preferredCurrency: session.user.preferredCurrency,
   });
 });
@@ -81,7 +82,7 @@ app.post(
     signUpSchema,
   ),
   async (c) => {
-    const { name, email, password } = c.req.valid("json");
+    const { name, username, email, password } = c.req.valid("json");
 
     const existingUser = await db.query.usersTable.findFirst({
       where: eq(usersTable.email, email),
@@ -113,6 +114,7 @@ app.post(
 
     await db.insert(usersTable).values({
       name,
+      username,
       email,
       password: hashedPassword,
       emailVerificationToken,

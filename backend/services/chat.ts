@@ -23,6 +23,7 @@ app.get("/", authRequired, async (c) => {
       person: {
         id: usersTable.id,
         name: usersTable.name,
+        username: usersTable.username,
       },
     })
     .from(messagesTable)
@@ -38,6 +39,7 @@ app.get("/", authRequired, async (c) => {
       person: {
         id: usersTable.id,
         name: usersTable.name,
+        username: usersTable.username,
       },
     })
     .from(messagesTable)
@@ -97,8 +99,9 @@ app.get(
 
     return c.json({
       person: {
-        name: person.name,
         id: person.id,
+        username: person.username,
+        name: person.name,
       },
       messages,
     });

@@ -19,7 +19,7 @@
               <span
                 class="ml-1 font-medium group-hover:text-neutral-300 transition-colors"
               >
-                {{ offer.user.name }}
+                @{{ offer.user.username }}
               </span>
             </div>
           </div>

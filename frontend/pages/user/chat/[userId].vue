@@ -2,7 +2,7 @@
   <div class="max-w-2xl mx-auto">
     <UiCard v-if="!error && data" class="m-4">
       <div class="flex flex-col gap-4">
-        <div class="flex flex-col items-center gap-4">
+        <div class="flex flex-col items-center gap-2">
           <div class="w-16 h-16 rounded-full bg-neutral-700">
             <div
               class="w-full h-full flex items-center justify-center font-medium text-2xl"
@@ -10,7 +10,8 @@
               {{ data.person.name.charAt(0) }}
             </div>
           </div>
-          <h2 class="text-2xl font-semibold">{{ data.person.name }}</h2>
+          <h2 class="text-2xl font-semibold mt-2">{{ data.person.name }}</h2>
+          <h3 class="text-sm">@{{ data.person.username }}</h3>
         </div>
         <div
           ref="messagesContainer"

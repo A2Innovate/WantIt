@@ -23,7 +23,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <h3 class="font-medium truncate">
-                    {{ message.person.name }}
+                    @{{ message.person.username }}
                   </h3>
                   <span class="text-sm text-neutral-400">
                     {{ formatTime(new Date(message.createdAt)) }}

@@ -34,7 +34,7 @@
           >
             <Icon name="material-symbols:account-circle" class="shrink-0" />
             <p v-if="request" class="text-sm break-all">
-              {{ request.user.name }}
+              {{ request.user.username }}
             </p>
             <p v-else>Loading...</p>
           </div>

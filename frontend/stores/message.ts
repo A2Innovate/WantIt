@@ -4,6 +4,7 @@ interface LastMessage {
   person: {
     id: number;
     name: string;
+    username: string;
   };
 }
 

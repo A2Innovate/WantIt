@@ -37,7 +37,8 @@
             ...request,
             user: {
               id: user.id,
-              name: user.name
+              name: user.name,
+              username: user.username
             }
           }"
         />

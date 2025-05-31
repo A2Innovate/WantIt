@@ -9,6 +9,7 @@ import {
   createOfferSchema,
   createRequestSchema,
   editRequestSchema,
+  offerByIdSchema,
   requestByIdSchema,
 } from "@/schema/services/request.ts";
 import { deleteFile, deleteRecursive, uploadFileBuffer } from "@/utils/s3.ts";
@@ -225,6 +226,59 @@ app.post(
         500,
       );
     }
+  },
+);
+
+app.delete(
+  "/:requestId/offer/:offerId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 30,
+  }),
+  zValidator(
+    "param",
+    z.object({
+      ...requestByIdSchema.shape,
+      ...offerByIdSchema.shape,
+    }),
+  ),
+  async (c) => {
+    const { requestId, offerId } = c.req.valid("param");
+    const session = c.get("session");
+
+    const offer = await db.query.offersTable.findFirst({
+      where: and(
+        eq(offersTable.id, offerId),
+        eq(offersTable.requestId, requestId),
+        eq(offersTable.userId, session.user.id),
+      ),
+    });
+
+    if (!offer) {
+      return c.json({ message: "Offer not found" }, 404);
+    }
+
+    await deleteRecursive(`request/${requestId}/offer/${offerId}`);
+
+    await db.delete(offersTable)
+      .where(and(
+        eq(offersTable.id, offerId),
+        eq(offersTable.requestId, requestId),
+        eq(offersTable.userId, session.user.id),
+      ));
+
+    pusher.trigger(
+      `public-request-${requestId}`,
+      "delete-offer",
+      offerId,
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
+
+    return c.json({
+      message: "Offer deleted successfully",
+    });
   },
 );
 

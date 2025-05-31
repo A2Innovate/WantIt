@@ -101,6 +101,7 @@ async function addOffer() {
     emit('close');
     content.value = '';
     price.value = '';
+    images.value = null;
     negotiation.value = false;
     error.value = '';
   } catch (e) {

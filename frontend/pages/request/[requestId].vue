@@ -150,6 +150,14 @@ onMounted(() => {
     }
   });
 
+  channel.bind('delete-offer', (offerId: number) => {
+    if (request.value) {
+      request.value.offers = request.value.offers.filter(
+        (offer) => offer.id !== offerId
+      );
+    }
+  });
+
   channel.bind(
     'update-offer-images',
     (data: { offerId: number; images: string[] }) => {

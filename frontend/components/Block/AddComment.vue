@@ -1,7 +1,12 @@
 <template>
   <div>
     <form class="flex gap-2 items-end" @submit.prevent="handleSubmit">
-      <UiTextArea v-model="content" rows="1" class="w-full" />
+      <UiTextArea
+        v-model="content"
+        rows="1"
+        class="w-full"
+        placeholder="Add comment..."
+      />
       <UiButton :disabled="isSending" class="h-10">Send</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">

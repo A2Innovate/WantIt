@@ -42,3 +42,13 @@ export const requestByIdSchema = z.object({
     )
     .transform((value) => Number(value)),
 });
+
+export const offerByIdSchema = z.object({
+  offerId: z
+    .string()
+    .refine(
+      (value) => !isNaN(Number(value)),
+      "offerId must be a valid number",
+    )
+    .transform((value) => Number(value)),
+});

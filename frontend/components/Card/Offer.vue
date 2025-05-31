@@ -48,6 +48,16 @@
         {{ offer.content }}
       </p>
 
+      <div
+        v-if="userStore.current?.id === offer.user.id"
+        class="flex justify-end"
+      >
+        <UiButton @click="isDeleteModalOpen = true">
+          <Icon name="material-symbols:delete-rounded" />
+          <span class="hidden sm:block">Delete</span>
+        </UiButton>
+      </div>
+
       <div class="flex pt-4 border-t items-center gap-1 border-neutral-800/80">
         <span class="text-xl font-semibold">
           {{ priceFmt(offer.price, currency) }}
@@ -74,6 +84,16 @@
       </div>
       <BlockAddComment v-if="userStore.current" :offer-id="offer.id" />
     </div>
+    <Teleport to="body">
+      <ModalConfirm
+        :is-open="isDeleteModalOpen"
+        :is-loading="isDeleting"
+        @cancel="isDeleteModalOpen = false"
+        @confirm="deleteOffer()"
+      >
+        Are you sure you want to delete this offer?
+      </ModalConfirm>
+    </Teleport>
   </UiCard>
 </template>
 
@@ -81,5 +101,20 @@
 import type { Offer } from '@/types/offer';
 
 const userStore = useUserStore();
-defineProps<{ offer: Offer; currency: string }>();
+const props = defineProps<{ offer: Offer; currency: string }>();
+
+const api = useApi();
+const isDeleteModalOpen = ref(false);
+const isDeleting = ref(false);
+
+async function deleteOffer() {
+  try {
+    isDeleting.value = true;
+    await api.delete(
+      `/request/${props.offer.requestId}/offer/${props.offer.id}`
+    );
+  } finally {
+    isDeleting.value = false;
+  }
+}
 </script>

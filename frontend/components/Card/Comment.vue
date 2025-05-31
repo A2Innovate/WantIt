@@ -18,26 +18,25 @@
     />
     <span v-if="comment.edited" class="text-xs text-neutral-500">Edited</span>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
-    <div class="flex gap-2 justify-end">
+    <div
+      v-if="userStore.current?.id === comment.user.id"
+      class="flex gap-2 justify-end"
+    >
       <UiButton
-        v-if="userStore.current?.id === comment.user.id"
         class="border border-neutral-700"
         :disabled="isSavingEdit"
         @click="handleEdit"
       >
-        <Transition name="slide-right-blur" mode="out-in">
-          <div v-if="!isEditing" class="flex items-center gap-2">
-            <Icon name="material-symbols:edit-rounded" />
-            <span class="hidden sm:block">Edit</span>
-          </div>
-          <div v-else class="flex items-center gap-2">
-            <Icon name="material-symbols:done" />
-            <span class="hidden sm:block">Save</span>
-          </div>
-        </Transition>
+        <div v-if="!isEditing" class="flex items-center gap-2">
+          <Icon name="material-symbols:edit-rounded" />
+          <span class="hidden sm:block">Edit</span>
+        </div>
+        <div v-else class="flex items-center gap-2">
+          <Icon name="material-symbols:done" />
+          <span class="hidden sm:block">Save</span>
+        </div>
       </UiButton>
       <UiButton
-        v-if="userStore.current?.id === comment.user.id"
         class="border border-neutral-700"
         @click="isDeleteModalOpen = true"
       >

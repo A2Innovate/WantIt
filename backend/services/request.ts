@@ -459,6 +459,81 @@ app.post(
   },
 );
 
+app.delete(
+  "/:requestId/offer/:offerId/comment/:commentId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 50,
+  }),
+  zValidator(
+    "param",
+    z.object({
+      requestId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "requestId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+      offerId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "offerId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+      commentId: z
+        .string()
+        .refine(
+          (value) => !isNaN(Number(value)),
+          "commentId must be a valid number",
+        )
+        .transform((value) => Number(value)),
+    }),
+  ),
+  async (c) => {
+    const { requestId, offerId, commentId } = c.req.valid("param");
+    const session = c.get("session");
+
+    const comment = await db.query.commentsTable.findFirst({
+      where: and(
+        eq(commentsTable.id, commentId),
+        eq(commentsTable.offerId, offerId),
+        eq(commentsTable.requestId, requestId),
+        eq(commentsTable.userId, session.user.id),
+      ),
+    });
+
+    if (!comment) {
+      return c.json({ message: "Comment not found" }, 404);
+    }
+
+    await db.delete(commentsTable)
+      .where(and(
+        eq(commentsTable.id, commentId),
+        eq(commentsTable.offerId, offerId),
+        eq(commentsTable.requestId, requestId),
+        eq(commentsTable.userId, session.user.id),
+      ));
+
+    pusher.trigger(
+      `public-request-${requestId}`,
+      "delete-offer-comment",
+      {
+        offerId,
+        commentId,
+      },
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
+
+    return c.json({
+      message: "Comment deleted successfully",
+    });
+  },
+);
+
 app.post(
   "/",
   authRequired,

@@ -81,6 +81,16 @@
               >
             </div>
             <p class="text-sm text-neutral-300">{{ comment.content }}</p>
+            <div class="flex justify-end">
+              <UiButton
+                v-if="userStore.current?.id === comment.user.id"
+                class="border border-neutral-700"
+                @click="deleteComment(comment.id)"
+              >
+                <Icon name="material-symbols:delete-rounded" />
+                <span class="hidden sm:block">Delete</span>
+              </UiButton>
+            </div>
           </div>
         </div>
       </div>
@@ -92,5 +102,13 @@
 <script setup lang="ts">
 import type { Offer } from '@/types/offer';
 
-defineProps<{ offer: Offer; currency: string }>();
+const props = defineProps<{ offer: Offer; currency: string }>();
+const api = useApi();
+const userStore = useUserStore();
+
+async function deleteComment(commentId: number) {
+  await api.delete(
+    `request/${props.offer.requestId}/offer/${props.offer.id}/comment/${commentId}`
+  );
+}
 </script>

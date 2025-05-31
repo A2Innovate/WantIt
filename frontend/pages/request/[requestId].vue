@@ -180,6 +180,20 @@ onMounted(() => {
     }
   });
 
+  channel.bind(
+    'delete-offer-comment',
+    (data: { offerId: number; commentId: number }) => {
+      const offer = request.value?.offers.find(
+        (offer) => offer.id === data.offerId
+      );
+      if (offer) {
+        offer.comments = offer.comments.filter(
+          (comment) => comment.id !== data.commentId
+        );
+      }
+    }
+  );
+
   channel.bind('delete-request', () => {
     navigateTo('/');
   });

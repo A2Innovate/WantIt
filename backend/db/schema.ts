@@ -134,7 +134,6 @@ export const offersRelations = relations(offersTable, ({ one, many }) => ({
 export const commentsTable = pgTable("comments", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   requestId: integer()
-    .notNull()
     .references(() => requestsTable.id, { onDelete: "cascade" }),
   offerId: integer()
     .references(() => offersTable.id, { onDelete: "cascade" }),

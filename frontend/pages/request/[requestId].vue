@@ -176,9 +176,27 @@ onMounted(() => {
       (offer) => offer.id === data.offerId
     );
     if (offer) {
+      data.createdAt = new Date().toString();
       offer.comments.push(data);
     }
   });
+
+  channel.bind(
+    'update-offer-comment',
+    (data: { offerId: number; commentId: number; content: string }) => {
+      const offer = request.value?.offers.find(
+        (offer) => offer.id === data.offerId
+      );
+      if (offer) {
+        const comment = offer.comments.find(
+          (comment) => comment.id === data.commentId
+        );
+        if (comment) {
+          comment.content = data.content;
+        }
+      }
+    }
+  );
 
   channel.bind(
     'delete-offer-comment',

@@ -1,8 +1,8 @@
 <template>
   <div>
-    <form class="flex gap-2" @submit.prevent="handleSubmit">
-      <UiTextArea v-model="content" rows="2" class="w-full" />
-      <UiButton :disabled="isSending">Send</UiButton>
+    <form class="flex gap-2 items-end" @submit.prevent="handleSubmit">
+      <UiTextArea v-model="content" rows="1" class="w-full" />
+      <UiButton :disabled="isSending" class="h-10">Send</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">
       {{ error }}
@@ -11,11 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import { addCommentSchema } from '~/schema/services/request';
+import { addCommentSchema } from '~/schema/services/comment';
 import { AxiosError } from 'axios';
 
 const props = defineProps<{
-  requestId: number;
   offerId: number;
 }>();
 
@@ -25,8 +24,11 @@ const isSending = ref(false);
 const error = ref('');
 
 async function handleSubmit() {
+  isSending.value = true;
+
   const validation = validate(addCommentSchema, {
-    content: content.value
+    content: content.value,
+    offerId: props.offerId
   });
 
   if (validation) {
@@ -35,14 +37,12 @@ async function handleSubmit() {
   }
 
   try {
-    isSending.value = true;
+    error.value = '';
 
-    await api.post(
-      `/request/${props.requestId}/offer/${props.offerId}/comment`,
-      {
-        content: content.value
-      }
-    );
+    await api.post(`/comment`, {
+      offerId: props.offerId,
+      content: content.value
+    });
 
     content.value = '';
   } catch (e) {

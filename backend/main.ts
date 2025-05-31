@@ -6,6 +6,7 @@ import request from "./services/request.ts";
 import user from "./services/user.ts";
 import chat from "./services/chat.ts";
 import currency from "./services/currency.ts";
+import comment from "./services/comment.ts";
 import { FRONTEND_URL } from "./utils/global.ts";
 
 const app = new Hono();
@@ -24,5 +25,6 @@ app.route("/api/request", request);
 app.route("/api/user", user);
 app.route("/api/chat", chat);
 app.route("/api/currency", currency);
+app.route("/api/comment", comment);
 
 Deno.serve(app.fetch);

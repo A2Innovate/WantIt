@@ -65,50 +65,19 @@
       >
         <h4 class="text-md font-semibold mb-2 text-neutral-200">Comments</h4>
         <div class="flex flex-col gap-2">
-          <div
+          <CardComment
             v-for="comment in offer.comments"
             :key="comment.id"
-            class="p-3 rounded-lg bg-neutral-900"
-          >
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-xs text-neutral-400"
-                >@{{ comment.user.username }}</span
-              >
-              <ClientOnly
-                ><span class="text-xs text-neutral-500">{{
-                  formatTime(new Date(comment.createdAt))
-                }}</span></ClientOnly
-              >
-            </div>
-            <p class="text-sm text-neutral-300">{{ comment.content }}</p>
-            <div class="flex justify-end">
-              <UiButton
-                v-if="userStore.current?.id === comment.user.id"
-                class="border border-neutral-700"
-                @click="deleteComment(comment.id)"
-              >
-                <Icon name="material-symbols:delete-rounded" />
-                <span class="hidden sm:block">Delete</span>
-              </UiButton>
-            </div>
-          </div>
+            :comment="comment"
+          />
         </div>
       </div>
-      <BlockAddComment :request-id="offer.requestId" :offer-id="offer.id" />
+      <BlockAddComment :offer-id="offer.id" />
     </div>
   </UiCard>
 </template>
 
 <script setup lang="ts">
 import type { Offer } from '@/types/offer';
-
-const props = defineProps<{ offer: Offer; currency: string }>();
-const api = useApi();
-const userStore = useUserStore();
-
-async function deleteComment(commentId: number) {
-  await api.delete(
-    `request/${props.offer.requestId}/offer/${props.offer.id}/comment/${commentId}`
-  );
-}
+defineProps<{ offer: Offer; currency: string }>();
 </script>

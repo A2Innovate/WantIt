@@ -72,12 +72,14 @@
           />
         </div>
       </div>
-      <BlockAddComment :offer-id="offer.id" />
+      <BlockAddComment v-if="userStore.current" :offer-id="offer.id" />
     </div>
   </UiCard>
 </template>
 
 <script setup lang="ts">
 import type { Offer } from '@/types/offer';
+
+const userStore = useUserStore();
 defineProps<{ offer: Offer; currency: string }>();
 </script>

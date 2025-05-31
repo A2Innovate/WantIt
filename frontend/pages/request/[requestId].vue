@@ -193,6 +193,7 @@ onMounted(() => {
         );
         if (comment) {
           comment.content = data.content;
+          comment.edited = true;
         }
       }
     }

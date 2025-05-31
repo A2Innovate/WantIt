@@ -2,7 +2,7 @@
   <Transition name="fade" mode="out-in">
     <div
       v-if="isOpen"
-      class="fixed top-0 w-full h-screen flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      class="fixed top-0 w-full h-screen flex items-center justify-center bg-black/50 backdrop-blur-sm z-100"
       @click.self="emit('close')"
     >
       <UiCard :class="cardClass">

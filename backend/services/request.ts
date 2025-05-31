@@ -126,6 +126,7 @@ app.get(
               columns: {
                 id: true,
                 content: true,
+                edited: true,
                 createdAt: true,
               },
               with: {

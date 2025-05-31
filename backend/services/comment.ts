@@ -130,6 +130,7 @@ app.put(
     await db.update(commentsTable)
       .set({
         content,
+        edited: true,
       })
       .where(and(
         eq(commentsTable.id, commentId),

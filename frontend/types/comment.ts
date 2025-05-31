@@ -5,5 +5,6 @@ export interface Comment {
   offerId?: number;
   content: string;
   createdAt: string;
+  edited: boolean;
   user: Omit<User, 'email' | 'preferredCurrency' | 'name'>;
 }

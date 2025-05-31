@@ -48,11 +48,31 @@
         {{ offer.content }}
       </p>
 
-      <div class="flex pt-4 border-t border-neutral-800/80">
+      <div class="flex pt-4 border-t items-center gap-1 border-neutral-800/80">
         <span class="text-xl font-semibold">
           {{ priceFmt(offer.price, currency) }}
         </span>
+        <ConvertedPrice
+          class="text-xs"
+          :currency="currency"
+          :amount="offer.price"
+        />
       </div>
+
+      <div
+        v-if="offer.comments.length > 0"
+        class="pt-4 border-t border-neutral-800/80 mt-4"
+      >
+        <h4 class="text-md font-semibold mb-2 text-neutral-200">Comments</h4>
+        <div class="flex flex-col gap-2">
+          <CardComment
+            v-for="comment in offer.comments"
+            :key="comment.id"
+            :comment="comment"
+          />
+        </div>
+      </div>
+      <BlockAddComment v-if="userStore.current" :offer-id="offer.id" />
     </div>
   </UiCard>
 </template>
@@ -60,5 +80,6 @@
 <script setup lang="ts">
 import type { Offer } from '@/types/offer';
 
+const userStore = useUserStore();
 defineProps<{ offer: Offer; currency: string }>();
 </script>

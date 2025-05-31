@@ -107,6 +107,7 @@
 import type { Request } from '~/types/request';
 import type { Channel } from 'pusher-js';
 import type { Offer } from '~/types/offer';
+import type { Comment } from '~/types/comment';
 
 const route = useRoute();
 const api = useApi();
@@ -169,6 +170,48 @@ onMounted(() => {
       };
     }
   });
+
+  channel.bind('new-offer-comment', (data: Comment) => {
+    const offer = request.value?.offers.find(
+      (offer) => offer.id === data.offerId
+    );
+    if (offer) {
+      data.createdAt = new Date().toString();
+      offer.comments.push(data);
+    }
+  });
+
+  channel.bind(
+    'update-offer-comment',
+    (data: { offerId: number; commentId: number; content: string }) => {
+      const offer = request.value?.offers.find(
+        (offer) => offer.id === data.offerId
+      );
+      if (offer) {
+        const comment = offer.comments.find(
+          (comment) => comment.id === data.commentId
+        );
+        if (comment) {
+          comment.content = data.content;
+          comment.edited = true;
+        }
+      }
+    }
+  );
+
+  channel.bind(
+    'delete-offer-comment',
+    (data: { offerId: number; commentId: number }) => {
+      const offer = request.value?.offers.find(
+        (offer) => offer.id === data.offerId
+      );
+      if (offer) {
+        offer.comments = offer.comments.filter(
+          (comment) => comment.id !== data.commentId
+        );
+      }
+    }
+  );
 
   channel.bind('delete-request', () => {
     navigateTo('/');

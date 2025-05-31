@@ -122,6 +122,21 @@ app.get(
                 name: true,
               },
             },
+            comments: {
+              columns: {
+                id: true,
+                content: true,
+                createdAt: true,
+              },
+              with: {
+                user: {
+                  columns: {
+                    id: true,
+                    username: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -179,9 +194,11 @@ app.post(
       const completeOffer = {
         ...offer,
         images: [],
+        comments: [],
         user: {
           id: session.user.id,
           name: session.user.name,
+          username: session.user.username,
         },
       };
 

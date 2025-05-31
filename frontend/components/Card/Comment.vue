@@ -1,0 +1,93 @@
+<template>
+  <div class="p-3 rounded-lg bg-neutral-900">
+    <div class="flex items-center justify-between mb-1">
+      <span class="text-xs text-neutral-400">@{{ comment.user.username }}</span>
+      <ClientOnly
+        ><span class="text-xs text-neutral-500">{{
+          formatTime(new Date(comment.createdAt))
+        }}</span></ClientOnly
+      >
+    </div>
+    <p v-if="!isEditing" class="text-sm text-neutral-300">
+      {{ comment.content }}
+    </p>
+    <UiTextArea
+      v-else
+      v-model="editedCommentContent"
+      class="bg-neutral-950 w-full"
+    />
+    <div class="flex gap-2 justify-end">
+      <UiButton
+        v-if="userStore.current?.id === comment.user.id"
+        class="border border-neutral-700"
+        :disabled="isSavingEdit"
+        @click="handleEdit"
+      >
+        <Transition name="slide-right-blur" mode="out-in">
+          <div v-if="!isEditing" class="flex items-center gap-2">
+            <Icon name="material-symbols:edit-rounded" />
+            <span class="hidden sm:block">Edit</span>
+          </div>
+          <div v-else class="flex items-center gap-2">
+            <Icon name="material-symbols:done" />
+            <span class="hidden sm:block">Save</span>
+          </div>
+        </Transition>
+      </UiButton>
+      <UiButton
+        v-if="userStore.current?.id === comment.user.id"
+        class="border border-neutral-700"
+        :disabled="isDeleting"
+        @click="deleteComment()"
+      >
+        <Icon name="material-symbols:delete-rounded" />
+        <span class="hidden sm:block">Delete</span>
+      </UiButton>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { Comment } from '@/types/comment';
+
+const props = defineProps<{
+  comment: Comment;
+}>();
+
+const isDeleting = ref(false);
+const isEditing = ref(false);
+const isSavingEdit = ref(false);
+const api = useApi();
+const userStore = useUserStore();
+const editedCommentContent = ref(props.comment.content);
+
+async function handleEdit() {
+  if (!isEditing.value) {
+    isEditing.value = true;
+  } else {
+    if (editedCommentContent.value !== props.comment.content) {
+      try {
+        isSavingEdit.value = true;
+
+        await api.put(`/comment/${props.comment.id}`, {
+          content: editedCommentContent.value
+        });
+      } finally {
+        isSavingEdit.value = false;
+        isEditing.value = false;
+      }
+    } else {
+      isEditing.value = false;
+    }
+  }
+}
+
+async function deleteComment() {
+  try {
+    isDeleting.value = true;
+    await api.delete(`/comment/${props.comment.id}`);
+  } finally {
+    isDeleting.value = false;
+  }
+}
+</script>

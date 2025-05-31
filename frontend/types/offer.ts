@@ -1,4 +1,5 @@
 import type { User } from './user';
+import type { Comment } from './comment';
 
 export interface Offer {
   id: number;
@@ -10,4 +11,5 @@ export interface Offer {
   images: {
     name: string;
   }[];
+  comments: Comment[];
 }

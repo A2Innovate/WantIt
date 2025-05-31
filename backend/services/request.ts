@@ -133,6 +133,14 @@ app.get(
                 content: true,
                 createdAt: true,
               },
+              with: {
+                user: {
+                  columns: {
+                    id: true,
+                    username: true,
+                  },
+                },
+              },
             },
           },
         },

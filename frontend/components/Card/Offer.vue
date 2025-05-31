@@ -48,10 +48,41 @@
         {{ offer.content }}
       </p>
 
-      <div class="flex pt-4 border-t border-neutral-800/80">
+      <div class="flex pt-4 border-t items-center gap-1 border-neutral-800/80">
         <span class="text-xl font-semibold">
           {{ priceFmt(offer.price, currency) }}
         </span>
+        <ConvertedPrice
+          class="text-xs"
+          :currency="currency"
+          :amount="offer.price"
+        />
+      </div>
+
+      <div
+        v-if="offer.comments.length > 0"
+        class="pt-4 border-t border-neutral-800/80 mt-4"
+      >
+        <h4 class="text-md font-semibold mb-2 text-neutral-200">Comments</h4>
+        <div class="flex flex-col gap-2">
+          <div
+            v-for="comment in offer.comments"
+            :key="comment.id"
+            class="p-3 rounded-lg bg-neutral-900"
+          >
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-neutral-400"
+                >@{{ comment.user.username }}</span
+              >
+              <ClientOnly
+                ><span class="text-xs text-neutral-500">{{
+                  formatTime(new Date(comment.createdAt))
+                }}</span></ClientOnly
+              >
+            </div>
+            <p class="text-sm text-neutral-300">{{ comment.content }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </UiCard>

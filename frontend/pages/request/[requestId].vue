@@ -107,6 +107,7 @@
 import type { Request } from '~/types/request';
 import type { Channel } from 'pusher-js';
 import type { Offer } from '~/types/offer';
+import type { Comment } from '~/types/comment';
 
 const route = useRoute();
 const api = useApi();
@@ -167,6 +168,15 @@ onMounted(() => {
         ...request.value,
         ...data
       };
+    }
+  });
+
+  channel.bind('new-offer-comment', (data: Comment) => {
+    const offer = request.value?.offers.find(
+      (offer) => offer.id === data.offerId
+    );
+    if (offer) {
+      offer.comments.push(data);
     }
   });
 

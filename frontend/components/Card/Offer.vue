@@ -84,6 +84,7 @@
           </div>
         </div>
       </div>
+      <BlockAddComment :request-id="offer.requestId" :offer-id="offer.id" />
     </div>
   </UiCard>
 </template>

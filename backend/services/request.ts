@@ -11,6 +11,7 @@ import {
 } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
+  addCommentSchema,
   createOfferSchema,
   createRequestSchema,
   editRequestSchema,
@@ -397,9 +398,7 @@ app.post(
   ),
   zValidator(
     "json",
-    z.object({
-      content: z.string().min(1).max(512),
-    }),
+    addCommentSchema,
   ),
   async (c) => {
     const { requestId, offerId } = c.req.valid("param");
@@ -425,8 +424,25 @@ app.post(
         content,
       }).returning({
         id: commentsTable.id,
+        offerId: commentsTable.offerId,
         content: commentsTable.content,
         createdAt: commentsTable.createdAt,
+      });
+
+      const completeComment = {
+        ...comment,
+        user: {
+          id: session.user.id,
+          username: session.user.username,
+        },
+      };
+
+      pusher.trigger(
+        `public-request-${requestId}`,
+        "new-offer-comment",
+        completeComment,
+      ).catch((e) => {
+        console.error("Async Pusher trigger error: ", e);
       });
 
       return c.json(comment);

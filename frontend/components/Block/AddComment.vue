@@ -33,6 +33,7 @@ async function handleSubmit() {
 
   if (validation) {
     error.value = validation;
+    isSending.value = false;
     return;
   }
 

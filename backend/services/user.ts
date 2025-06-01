@@ -30,7 +30,10 @@ app.get(
       with: {
         requests: {
           columns: {
-            userId: false,
+            id: true,
+            content: true,
+            budget: true,
+            currency: true,
           },
         },
       },

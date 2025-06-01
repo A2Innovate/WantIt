@@ -15,8 +15,8 @@ WORKDIR /app
 
 COPY --from=build /app/.output/ ./
 
-ENV PORT 3000
-ENV HOST 0.0.0.0
+ENV PORT=3000
+ENV HOST=0.0.0.0
 
 EXPOSE 3000
 

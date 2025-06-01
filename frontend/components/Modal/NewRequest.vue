@@ -2,6 +2,9 @@
   <UiModal card-class="sm:min-w-md" :is-open="isOpen" @close="emit('close')">
     <h2 class="text-2xl font-semibold">New request</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="addRequest">
+      <UiLabel for="location">Location</UiLabel>
+      <UiMapRadiusPicker id="location" />
+
       <UiLabel for="content">What do you want?</UiLabel>
       <UiInput id="content" v-model="content" placeholder="An iPhone..." />
       <UiLabel for="budget">Budget</UiLabel>

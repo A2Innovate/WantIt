@@ -2,6 +2,8 @@
   <UiModal card-class="sm:min-w-md" :is-open="isOpen" @close="emit('close')">
     <h2 class="text-2xl font-semibold">New request</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="addRequest">
+      <UiLabel for="location">Location</UiLabel>
+      <UiMapRadiusPicker id="location" v-model="location" />
       <UiLabel for="content">What do you want?</UiLabel>
       <UiInput id="content" v-model="content" placeholder="An iPhone..." />
       <UiLabel for="budget">Budget</UiLabel>
@@ -35,6 +37,11 @@ const api = useApi();
 const content = ref('');
 const selectedCurrency = ref(userStore.current?.preferredCurrency ?? 'USD');
 const budget = ref('');
+const location = ref({
+  lat: 37.78,
+  lng: -122.419,
+  radius: 3000
+});
 const error = ref('');
 
 async function addRequest() {
@@ -42,7 +49,12 @@ async function addRequest() {
     const validation = validate(createRequestSchema, {
       content: content.value,
       budget: Number(budget.value),
-      currency: selectedCurrency.value
+      currency: selectedCurrency.value,
+      location: {
+        x: location.value.lng,
+        y: location.value.lat
+      },
+      radius: location.value.radius
     });
 
     if (validation) {
@@ -53,7 +65,12 @@ async function addRequest() {
     const response = await api.post('/request', {
       content: content.value,
       budget: Number(budget.value),
-      currency: selectedCurrency.value
+      currency: selectedCurrency.value,
+      location: {
+        x: location.value.lng,
+        y: location.value.lat
+      },
+      radius: location.value.radius
     });
 
     navigateTo(`/request/${response.data.id}`);

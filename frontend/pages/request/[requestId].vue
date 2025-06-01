@@ -3,6 +3,27 @@
     <div class="max-w-3xl mx-auto">
       <h1 class="text-xl font-semibold my-4 px-4">Request</h1>
       <UiCard v-if="!error" class="m-4">
+        <div v-if="request" class="mb-4">
+          <LMap
+            style="height: 15rem"
+            :zoom="2"
+            :center="[request.location.y, request.location.x]"
+            :use-global-leaflet="false"
+          >
+            <LTileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&amp;copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+              layer-type="base"
+              name="OpenStreetMap"
+            />
+            <LCircle
+              :lat-lng="[request.location.y, request.location.x]"
+              :radius="request.radius"
+            />
+            <LMarker :lat-lng="[request.location.y, request.location.x]" />
+          </LMap>
+        </div>
+
         <p v-if="request">{{ request.content }}</p>
         <p v-else>Loading...</p>
         <p v-if="request">

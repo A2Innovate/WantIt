@@ -1,12 +1,13 @@
 import {
   boolean,
+  geometry,
   integer,
   pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { CURRENCIES } from "../utils/global.ts";
 
 export const currencies = pgEnum("currencies", CURRENCIES);
@@ -77,6 +78,9 @@ export const requestsTable = pgTable("requests", {
   content: text().notNull(),
   budget: integer().notNull(),
   currency: currencies().notNull().default("USD"),
+  location: geometry("location", { type: "point", mode: "xy", srid: 4326 })
+    .notNull().default(sql`ST_SetSRID(ST_MakePoint(-122.419, 37.78), 4326)`),
+  radius: integer().notNull().default(1000000),
 });
 
 export const requestsRelations = relations(requestsTable, ({ one, many }) => ({

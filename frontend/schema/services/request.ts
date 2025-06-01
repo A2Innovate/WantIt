@@ -7,6 +7,11 @@ export const createRequestSchema = z.object({
     .min(4, 'Content must be at least 4 characters long')
     .max(512, 'Content must be at most 512 characters long'),
   budget: z.number().max(2147483647, 'Budget must be at most 2147483647'),
+  location: z.object({
+    x: z.number(),
+    y: z.number(),
+    radius: z.number()
+  }),
   currency: z.enum(CURRENCIES as [string, ...string[]])
 });
 

@@ -9,6 +9,12 @@ export const createRequestSchema = z.object({
   budget: z
     .number()
     .max(2147483647, "Budget must be at most 2147483647"),
+  location: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+      radius: z.number(),
+    }),
   currency: z.enum(CURRENCIES),
 });
 

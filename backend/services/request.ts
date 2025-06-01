@@ -433,7 +433,7 @@ app.post(
     createRequestSchema,
   ),
   async (c) => {
-    const { content, budget, currency } = c.req.valid("json");
+    const { content, budget, currency, location } = c.req.valid("json");
     const session = c.get("session");
 
     const request = await db.insert(requestsTable).values({
@@ -441,6 +441,8 @@ app.post(
       userId: session.user.id,
       currency,
       budget,
+      location,
+      radius: location.radius,
     }).returning();
 
     return c.json(request[0]);

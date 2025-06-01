@@ -27,7 +27,7 @@
         <UiSkeletonLoader v-else class="h-60 mb-4 w-full" />
 
         <p v-if="request">{{ request.content }}</p>
-        <UiSkeleton v-else class="h-6 w-96" />
+        <UiSkeleton v-else class="h-6 w-1/2" />
         <p v-if="request">
           {{ priceFmt(request.budget, request.currency) }}
           <ConvertedPrice

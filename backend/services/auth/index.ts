@@ -21,7 +21,7 @@ import {
 } from "@/schema/services/auth.ts";
 import oauth from "./oauth.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
-import { COOKIE_DOMAIN, FRONTEND_URL } from "@/utils/global.ts";
+import { COOKIE_DOMAIN, COOKIE_SECURE, FRONTEND_URL } from "@/utils/global.ts";
 import { pusher } from "@/utils/pusher.ts";
 import { z } from "zod";
 
@@ -171,7 +171,7 @@ app.post(
 
     setCookie(c, "wantit_session", sessionToken, {
       httpOnly: true,
-      secure: true,
+      secure: COOKIE_SECURE,
       sameSite: "lax",
       domain: COOKIE_DOMAIN,
       maxAge: 60 * 60 * 24 * 30, // 30 days

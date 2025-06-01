@@ -10,6 +10,7 @@ import {
 } from "@/utils/generate.ts";
 import {
   COOKIE_DOMAIN,
+  COOKIE_SECURE,
   FRONTEND_URL,
   OAUTH_GOOGLE_CLIENT_ID,
   OAUTH_GOOGLE_CLIENT_SECRET,
@@ -54,7 +55,7 @@ app.get(
 
     setCookie(c, "pkce_verifier", pkceCodeVerifier, {
       httpOnly: true,
-      secure: true,
+      secure: COOKIE_SECURE,
       sameSite: "Lax",
       maxAge: 600,
     });
@@ -62,7 +63,7 @@ app.get(
     if (state) {
       setCookie(c, "oauth_state", state, {
         httpOnly: true,
-        secure: true,
+        secure: COOKIE_SECURE,
         sameSite: "Lax",
         maxAge: 600,
       });
@@ -144,7 +145,7 @@ app.get(
 
         setCookie(c, "wantit_session", sessionToken, {
           httpOnly: true,
-          secure: true,
+          secure: COOKIE_SECURE,
           sameSite: "Lax",
           maxAge: 60 * 60 * 24 * 30, // 30 days,
           domain: COOKIE_DOMAIN,
@@ -171,7 +172,7 @@ app.get(
 
       setCookie(c, "wantit_session", sessionToken, {
         httpOnly: true,
-        secure: true,
+        secure: COOKIE_SECURE,
         sameSite: "Lax",
         maxAge: 60 * 60 * 24 * 30, // 30 days
         domain: COOKIE_DOMAIN,

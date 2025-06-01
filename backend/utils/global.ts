@@ -28,6 +28,7 @@ for (const env of REQUIRED_ENVS) {
 }
 
 export const FRONTEND_URL = Deno.env.get("FRONTEND_URL")!;
+export const COOKIE_SECURE = FRONTEND_URL.startsWith("https");
 export const COOKIE_DOMAIN = (() => {
   try {
     const hostname = new URL(FRONTEND_URL).hostname;

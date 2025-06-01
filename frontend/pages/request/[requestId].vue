@@ -7,7 +7,7 @@
           <LMap
             style="height: 15rem"
             :zoom="2"
-            :center="[request.location.x, request.location.y]"
+            :center="[request.location.y, request.location.x]"
             :use-global-leaflet="false"
           >
             <LTileLayer
@@ -17,10 +17,10 @@
               name="OpenStreetMap"
             />
             <LCircle
-              :lat-lng="[request.location.x, request.location.y]"
+              :lat-lng="[request.location.y, request.location.x]"
               :radius="request.radius"
             />
-            <LMarker :lat-lng="[request.location.x, request.location.y]" />
+            <LMarker :lat-lng="[request.location.y, request.location.x]" />
           </LMap>
         </div>
 

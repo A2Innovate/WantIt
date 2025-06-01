@@ -79,7 +79,7 @@ export const requestsTable = pgTable("requests", {
   budget: integer().notNull(),
   currency: currencies().notNull().default("USD"),
   location: geometry("location", { type: "point", mode: "xy", srid: 4326 })
-    .notNull().default(sql`ST_SetSRID(ST_MakePoint(37.78, -122.419), 4326)`),
+    .notNull().default(sql`ST_SetSRID(ST_MakePoint(-122.419, 37.78), 4326)`),
   radius: integer().notNull().default(1000000),
 });
 

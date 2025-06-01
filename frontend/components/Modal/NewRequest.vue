@@ -51,8 +51,8 @@ async function addRequest() {
       budget: Number(budget.value),
       currency: selectedCurrency.value,
       location: {
-        x: location.value.lat,
-        y: location.value.lng
+        x: location.value.lng,
+        y: location.value.lat
       },
       radius: location.value.radius
     });
@@ -67,8 +67,8 @@ async function addRequest() {
       budget: Number(budget.value),
       currency: selectedCurrency.value,
       location: {
-        x: location.value.lat,
-        y: location.value.lng
+        x: location.value.lng,
+        y: location.value.lat
       },
       radius: location.value.radius
     });

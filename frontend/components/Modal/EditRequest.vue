@@ -38,8 +38,8 @@ const api = useApi();
 const content = ref(props.request.content);
 const budget = ref(props.request.budget.toString());
 const location = ref({
-  lat: props.request.location.x,
-  lng: props.request.location.y,
+  lng: props.request.location.x,
+  lat: props.request.location.y,
   radius: props.request.radius
 });
 const error = ref('');
@@ -50,8 +50,8 @@ async function editRequest() {
       content: content.value,
       budget: Number(budget.value),
       location: {
-        x: location.value.lat,
-        y: location.value.lng
+        x: location.value.lng,
+        y: location.value.lat
       },
       radius: location.value.radius
     });
@@ -65,8 +65,8 @@ async function editRequest() {
       content: content.value,
       budget: Number(budget.value),
       location: {
-        x: location.value.lat,
-        y: location.value.lng
+        x: location.value.lng,
+        y: location.value.lat
       },
       radius: location.value.radius
     });

@@ -8,10 +8,10 @@ export const createRequestSchema = z.object({
     .max(512, 'Content must be at most 512 characters long'),
   budget: z.number().max(2147483647, 'Budget must be at most 2147483647'),
   location: z.object({
-    x: z.number(),
-    y: z.number()
+    x: z.number().min(-180).max(180),
+    y: z.number().min(-90).max(90)
   }),
-  radius: z.number(),
+  radius: z.number().min(3000).max(1000000),
   currency: z.enum(CURRENCIES as [string, ...string[]])
 });
 
@@ -23,10 +23,10 @@ export const editRequestSchema = z.object({
 
   budget: z.number().max(2147483647, 'Budget must be at most 2147483647'),
   location: z.object({
-    x: z.number(),
-    y: z.number()
+    x: z.number().min(-180).max(180),
+    y: z.number().min(-90).max(90)
   }),
-  radius: z.number()
+  radius: z.number().min(3000).max(1000000)
 });
 
 export const createOfferSchema = z.object({

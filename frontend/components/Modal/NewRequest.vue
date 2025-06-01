@@ -78,6 +78,11 @@ async function addRequest() {
     content.value = '';
     budget.value = '';
     error.value = '';
+    location.value = {
+      lat: 37.78,
+      lng: -122.419,
+      radius: 3000
+    };
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
       error.value = e.response.data.message;

@@ -1,7 +1,8 @@
 <template>
   <div>
     <div class="max-w-3xl mx-auto min-h-[calc(100vh-8.5rem)]">
-      <h1 class="text-xl font-semibold my-4 px-4">Request</h1>
+      <h1 v-if="request" class="text-xl font-semibold my-4 px-4">Request</h1>
+      <UiSkeleton v-else class="h-6 w-20 my-4 mx-4" />
       <UiCard v-if="!error" class="m-4">
         <div v-if="request" class="mb-4">
           <LMap
@@ -23,9 +24,10 @@
             <LMarker :lat-lng="[request.location.y, request.location.x]" />
           </LMap>
         </div>
+        <UiSkeletonLoader v-else class="h-60 mb-4 w-full" />
 
         <p v-if="request">{{ request.content }}</p>
-        <p v-else>Loading...</p>
+        <UiSkeleton v-else class="h-6 w-96" />
         <p v-if="request">
           {{ priceFmt(request.budget, request.currency) }}
           <ConvertedPrice
@@ -34,10 +36,13 @@
             :amount="request.budget"
           />
         </p>
+        <UiSkeleton v-else class="h-6 w-24 mt-1" />
 
         <div class="flex justify-between items-center mt-4">
           <div
-            v-if="userStore.current?.id === request?.user.id"
+            v-if="
+              userStore.current && userStore.current.id === request?.user.id
+            "
             class="flex gap-2"
           >
             <UiButton @click="isEditRequestModalOpen = true">
@@ -57,7 +62,7 @@
             <p v-if="request" class="text-sm break-all">
               {{ request.user.username }}
             </p>
-            <p v-else>Loading...</p>
+            <UiSkeleton v-else class="h-4 w-24" />
           </div>
         </div>
       </UiCard>
@@ -86,8 +91,13 @@
         />
       </div>
 
-      <div v-if="request && userStore.current" class="flex justify-end m-4">
-        <UiButton @click="isAddOfferModalOpen = true">Add offer</UiButton>
+      <div class="flex justify-end m-4">
+        <UiButton
+          v-if="request && userStore.current"
+          @click="isAddOfferModalOpen = true"
+          >Add offer</UiButton
+        >
+        <UiSkeleton v-else-if="!request" class="h-8 w-24" />
       </div>
     </div>
 
@@ -133,6 +143,7 @@ import type { Comment } from '~/types/comment';
 const route = useRoute();
 const api = useApi();
 const userStore = useUserStore();
+const requestStore = useRequestStore();
 const pusher = usePusher();
 
 const isEditRequestModalOpen = ref(false);
@@ -243,6 +254,7 @@ onMounted(() => {
   );
 
   channel.bind('delete-request', () => {
+    requestStore.refresh();
     navigateTo('/');
   });
 });

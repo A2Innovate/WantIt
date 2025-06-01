@@ -7,5 +7,10 @@ export interface Request {
   user: Omit<User, 'email' | 'preferredCurrency'>;
   budget: number;
   currency: string;
+  location: {
+    x: number;
+    y: number;
+  };
+  radius: number;
   offers: Offer[];
 }

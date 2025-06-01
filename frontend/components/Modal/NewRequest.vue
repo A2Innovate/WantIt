@@ -52,9 +52,9 @@ async function addRequest() {
       currency: selectedCurrency.value,
       location: {
         x: location.value.lat,
-        y: location.value.lng,
-        radius: location.value.radius
-      }
+        y: location.value.lng
+      },
+      radius: location.value.radius
     });
 
     if (validation) {

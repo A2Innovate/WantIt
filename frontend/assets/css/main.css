@@ -22,3 +22,7 @@
   filter: blur(0);
   opacity: 0;
 }
+
+.leaflet-container {
+  z-index: 0;
+}

@@ -147,6 +147,8 @@ app.get(
         content: true,
         currency: true,
         budget: true,
+        location: true,
+        radius: true,
       },
     });
 
@@ -433,7 +435,7 @@ app.post(
     createRequestSchema,
   ),
   async (c) => {
-    const { content, budget, currency, location } = c.req.valid("json");
+    const { content, budget, currency, location, radius } = c.req.valid("json");
     const session = c.get("session");
 
     const request = await db.insert(requestsTable).values({
@@ -442,7 +444,7 @@ app.post(
       currency,
       budget,
       location,
-      radius: location.radius,
+      radius,
     }).returning();
 
     return c.json(request[0]);
@@ -466,13 +468,15 @@ app.put(
   ),
   async (c) => {
     const { requestId } = c.req.valid("param");
-    const { content, budget } = c.req.valid("json");
+    const { content, budget, location, radius } = c.req.valid("json");
     const session = c.get("session");
 
     const request = await db.update(requestsTable)
       .set({
         content,
         budget,
+        location,
+        radius,
       })
       .where(and(
         eq(requestsTable.id, requestId),

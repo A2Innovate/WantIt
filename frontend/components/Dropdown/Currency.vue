@@ -1,55 +1,26 @@
 <template>
   <div ref="dropdownRef" class="relative">
-    <button
-      :class="[
-        'flex items-center h-full px-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-l-lg transition-all',
-        {
-          'justify-center w-14': readonly,
-          'justify-between w-18': !readonly
-        },
-        props.triggerClass
-      ]"
-      type="button"
+    <DropdownBaseTrigger
+      :readonly="readonly"
+      :is-open="isOpen"
+      :class="triggerClass"
       @click="toggleDropdown"
     >
-      <span
-        class="text-neutral-300 text-sm font-medium"
-        v-text="props.modelValue"
-      ></span>
-      <Icon
-        v-if="!readonly"
-        name="material-symbols:keyboard-arrow-down"
-        class="text-neutral-400 transition-all duration-200 shrink-0"
-        :class="{ 'rotate-180': isOpen }"
-        size="1.25em"
-      />
-    </button>
-    <Transition
-      enter-active-class="transition ease-out duration-100"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-75"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
-    >
-      <div
-        v-if="isOpen"
-        class="absolute mt-2 w-48 h-64 overflow-y-scroll bg-neutral-800 border border-neutral-600 rounded-lg shadow-lg z-10 divide-y divide-neutral-700 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-500"
+      <span class="text-neutral-300 text-sm font-medium" v-text="modelValue" />
+    </DropdownBaseTrigger>
+    <DropdownBasePopup :is-open="isOpen">
+      <DropdownBaseElement
+        v-for="currency in CURRENCIES_NAMES"
+        :key="currency.currency"
+        @click="
+          isOpen = false;
+          emit('update:modelValue', currency.currency);
+        "
       >
-        <div
-          v-for="currency in CURRENCIES_NAMES"
-          :key="currency.currency"
-          class="px-4 py-2 text-neutral-300 hover:bg-neutral-700 cursor-pointer transition-colors"
-          @click="
-            isOpen = false;
-            emit('update:modelValue', currency.currency);
-          "
-        >
-          <p>{{ currency.currency }}</p>
-          <small class="text-neutral-400 text-xs">{{ currency.name }}</small>
-        </div>
-      </div>
-    </Transition>
+        <p>{{ currency.currency }}</p>
+        <small class="text-neutral-400 text-xs">{{ currency.name }}</small>
+      </DropdownBaseElement>
+    </DropdownBasePopup>
   </div>
 </template>
 

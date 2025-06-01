@@ -44,8 +44,6 @@ export const requestCategories = pgEnum("request_categories", [
   "SaaS Solutions",
 ]);
 
-
-
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   username: text().notNull().unique(),

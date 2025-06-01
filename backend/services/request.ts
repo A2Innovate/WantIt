@@ -63,7 +63,7 @@ app.get(
     const requests = await db.query.requestsTable.findMany({
       where: and(
         ilike(requestsTable.content, `%${query.content}%`),
-        eq(requestsTable.category, query.category ?? "Other" as const)
+        eq(requestsTable.category, query.category ?? "Other" as const),
       ),
       with: {
         user: {
@@ -152,7 +152,7 @@ app.get(
         content: true,
         currency: true,
         budget: true,
-        category: true
+        category: true,
       },
     });
 

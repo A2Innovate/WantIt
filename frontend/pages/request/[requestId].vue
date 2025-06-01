@@ -13,6 +13,7 @@
             :amount="request.budget"
           />
         </p>
+        <span v-if="request" class="text-xs">{{ request.category }}</span>
 
         <div class="flex justify-between items-center mt-4">
           <div
@@ -27,6 +28,7 @@
               <Icon name="material-symbols:delete-rounded" />
               <span class="hidden sm:block">Delete</span>
             </UiButton>
+
           </div>
 
           <div
@@ -118,6 +120,8 @@ const isEditRequestModalOpen = ref(false);
 const isAddOfferModalOpen = ref(false);
 const isDeleteRequestModalOpen = ref(false);
 const isDeletingRequest = ref(false);
+const category = ref('');
+
 let channel: Channel;
 
 const {
@@ -126,8 +130,10 @@ const {
   refresh
 } = useAsyncData<Request>('request', async () => {
   const response = await api.get(`/request/${route.params.requestId}`);
+  category.value = response.data.category;
   return response.data;
 });
+
 
 async function deleteRequest() {
   try {

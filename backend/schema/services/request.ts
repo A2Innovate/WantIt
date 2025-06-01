@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CURRENCIES } from "@/utils/global.ts";
+import { CURRENCIES, REQUEST_CATEGORIES } from "@/utils/global.ts";
 
 export const createRequestSchema = z.object({
   content: z
@@ -10,6 +10,7 @@ export const createRequestSchema = z.object({
     .number()
     .max(2147483647, "Budget must be at most 2147483647"),
   currency: z.enum(CURRENCIES),
+  category: z.enum(REQUEST_CATEGORIES),
 });
 
 export const editRequestSchema = z.object({
@@ -20,6 +21,7 @@ export const editRequestSchema = z.object({
   budget: z
     .number()
     .max(2147483647, "Budget must be at most 2147483647"),
+  category: z.enum(REQUEST_CATEGORIES),
 });
 
 export const createOfferSchema = z.object({

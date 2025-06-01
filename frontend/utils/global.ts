@@ -33,3 +33,37 @@ export const CURRENCIES_NAMES = [
 ];
 
 export const CURRENCIES = CURRENCIES_NAMES.map((currency) => currency.currency);
+
+export const REQUEST_CATEGORIES = [
+  "Other",
+  "Electronics & Gadgets",
+  "Fashion & Accessories",
+  "Home & Living",
+  "Health & Beauty",
+  "Food & Beverages",
+  "Art & Collectibles",
+  "Automotive & Parts",
+  "Tools & Equipment",
+  "Graphic Design",
+  "Web & App Development",
+  "Writing & Translation",
+  "Video Editing",
+  "Marketing & Advertising",
+  "Virtual Assistance",
+  "Business Consulting",
+  "Legal & Financial Services",
+  "Custom Art",
+  "Music Production",
+  "Voiceover",
+  "3D Modeling",
+  "Animation",
+  "Photography",
+  "Crafts & DIY Projects",
+  "Manufacturing",
+  "Wholesale Suppliers",
+  "Logistics & Shipping",
+  "Event Planning",
+  "Corporate Training",
+  "Market Research",
+  "SaaS Solutions",
+];

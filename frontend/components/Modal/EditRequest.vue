@@ -14,6 +14,8 @@
           type="number"
         />
       </div>
+      <UiLabel for="category">Category</UiLabel>
+      <CategoryDropdown v-model="category" class="h-10"/>
       <UiButton type="submit" class="mt-2">Edit request</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
@@ -35,13 +37,15 @@ const api = useApi();
 
 const content = ref(props.request.content);
 const budget = ref(props.request.budget.toString());
+const category = ref(props.request.category);
 const error = ref('');
 
 async function editRequest() {
   try {
     const validation = validate(editRequestSchema, {
       content: content.value,
-      budget: Number(budget.value)
+      budget: Number(budget.value),
+      category: category.value
     });
 
     if (validation) {
@@ -51,7 +55,8 @@ async function editRequest() {
 
     await api.put(`/request/${props.request.id}`, {
       content: content.value,
-      budget: Number(budget.value)
+      budget: Number(budget.value),
+      category: category.value
     });
 
     emit('update');

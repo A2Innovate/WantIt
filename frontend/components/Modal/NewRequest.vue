@@ -14,6 +14,7 @@
           type="number"
         />
       </div>
+      <CategoryDropdown v-model="category" class="w-1/3" />
       <UiButton type="submit" class="mt-2">Add</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
@@ -34,6 +35,7 @@ const api = useApi();
 
 const content = ref('');
 const selectedCurrency = ref(userStore.current?.preferredCurrency ?? 'USD');
+const category = ref('');
 const budget = ref('');
 const error = ref('');
 
@@ -42,7 +44,8 @@ async function addRequest() {
     const validation = validate(createRequestSchema, {
       content: content.value,
       budget: Number(budget.value),
-      currency: selectedCurrency.value
+      currency: selectedCurrency.value,
+      category: category.value
     });
 
     if (validation) {
@@ -53,7 +56,8 @@ async function addRequest() {
     const response = await api.post('/request', {
       content: content.value,
       budget: Number(budget.value),
-      currency: selectedCurrency.value
+      currency: selectedCurrency.value,
+      category: category.value
     });
 
     navigateTo(`/request/${response.data.id}`);

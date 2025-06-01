@@ -10,6 +10,41 @@ import { relations } from "drizzle-orm";
 import { CURRENCIES } from "../utils/global.ts";
 
 export const currencies = pgEnum("currencies", CURRENCIES);
+export const requestCategories = pgEnum("request_categories", [
+  "Other",
+  "Electronics & Gadgets",
+  "Fashion & Accessories",
+  "Home & Living",
+  "Health & Beauty",
+  "Food & Beverages",
+  "Art & Collectibles",
+  "Automotive & Parts",
+  "Tools & Equipment",
+  "Graphic Design",
+  "Web & App Development",
+  "Writing & Translation",
+  "Video Editing",
+  "Marketing & Advertising",
+  "Virtual Assistance",
+  "Business Consulting",
+  "Legal & Financial Services",
+  "Custom Art",
+  "Music Production",
+  "Voiceover",
+  "3D Modeling",
+  "Animation",
+  "Photography",
+  "Crafts & DIY Projects",
+  "Manufacturing",
+  "Wholesale Suppliers",
+  "Logistics & Shipping",
+  "Event Planning",
+  "Corporate Training",
+  "Market Research",
+  "SaaS Solutions",
+]);
+
+
 
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -77,6 +112,7 @@ export const requestsTable = pgTable("requests", {
   content: text().notNull(),
   budget: integer().notNull(),
   currency: currencies().notNull().default("USD"),
+  category: requestCategories().notNull().default("Other"),
 });
 
 export const requestsRelations = relations(requestsTable, ({ one, many }) => ({

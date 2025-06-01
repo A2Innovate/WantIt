@@ -17,6 +17,7 @@ import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { ImagePipelineInputs } from "@huggingface/transformers";
 import { pusher } from "@/utils/pusher.ts";
+import { REQUEST_CATEGORIES } from "@/utils/global.ts";
 
 import sharp from "sharp";
 
@@ -53,13 +54,17 @@ app.get(
     "query",
     z.object({
       content: z.string().optional(),
+      category: z.enum(REQUEST_CATEGORIES).optional(),
     }),
   ),
   async (c) => {
     const query = c.req.valid("query");
 
     const requests = await db.query.requestsTable.findMany({
-      where: ilike(requestsTable.content, `%${query.content}%`),
+      where: and(
+        ilike(requestsTable.content, `%${query.content}%`),
+        eq(requestsTable.category, query.category ?? "Other" as const)
+      ),
       with: {
         user: {
           columns: {
@@ -147,6 +152,7 @@ app.get(
         content: true,
         currency: true,
         budget: true,
+        category: true
       },
     });
 
@@ -433,12 +439,13 @@ app.post(
     createRequestSchema,
   ),
   async (c) => {
-    const { content, budget, currency } = c.req.valid("json");
+    const { content, budget, currency, category } = c.req.valid("json");
     const session = c.get("session");
 
     const request = await db.insert(requestsTable).values({
       content,
       userId: session.user.id,
+      category,
       currency,
       budget,
     }).returning();
@@ -464,13 +471,14 @@ app.put(
   ),
   async (c) => {
     const { requestId } = c.req.valid("param");
-    const { content, budget } = c.req.valid("json");
+    const { content, budget, category } = c.req.valid("json");
     const session = c.get("session");
 
     const request = await db.update(requestsTable)
       .set({
         content,
         budget,
+        category,
       })
       .where(and(
         eq(requestsTable.id, requestId),

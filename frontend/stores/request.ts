@@ -2,6 +2,7 @@ import type { Request } from '@/types/request';
 
 export const useRequestStore = defineStore('request', () => {
   const query = ref('');
+  const category = ref('');
   const isFetching = ref(false);
   const api = useApi();
 
@@ -11,7 +12,8 @@ export const useRequestStore = defineStore('request', () => {
       isFetching.value = true;
       const response = await api.get('/request', {
         params: {
-          content: query.value
+          content: query.value,
+          category: category.value
         }
       });
       isFetching.value = false;
@@ -23,6 +25,7 @@ export const useRequestStore = defineStore('request', () => {
     requests,
     isFetching,
     refresh,
-    query
+    query,
+    category
   };
 });

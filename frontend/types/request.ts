@@ -8,4 +8,5 @@ export interface Request {
   budget: number;
   currency: string;
   offers: Offer[];
+  category: string;
 }

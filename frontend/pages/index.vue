@@ -5,12 +5,20 @@
         <h2 class="text-2xl sm:text-3xl font-semibold text-center">
           <WhatDoYouWant />
         </h2>
-        <UiInput
-          v-model="requestStore.query"
-          placeholder="An iPhone..."
-          class="w-full"
-          @update:model-value="requestStore.refresh()"
-        />
+        <div class="flex gap-2">
+          <UiInput
+            v-model="requestStore.query"
+            placeholder="An iPhone..."
+            class="w-2/3"
+            @update:model-value="requestStore.refresh()"
+          />
+          <CategoryDropdown
+            v-model="requestStore.category"
+            placeholder="Category"
+            class="w-1/3"
+            @update:model-value="requestStore.refresh()"
+          />
+        </div>
         <div
           v-if="!requestStore.isFetching"
           class="flex flex-col gap-2 sm:mb-32 mb-4"
@@ -27,5 +35,6 @@
 </template>
 
 <script setup lang="ts">
+import CategoryDropdown from "~/components/CategoryDropdown.vue";
 const requestStore = useRequestStore();
 </script>

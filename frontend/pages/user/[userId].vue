@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-2xl mx-auto">
+  <div class="max-w-2xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <UiCard v-if="!error && user" class="m-4">
       <div class="m-4 flex flex-col gap-4">
         <div class="flex flex-col items-center gap-2">

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-3xl mx-auto min-h-[calc(100vh-8.5rem)]">
       <h1 class="text-xl font-semibold my-4 px-4">Request</h1>
       <UiCard v-if="!error" class="m-4">
         <div v-if="request" class="mb-4">

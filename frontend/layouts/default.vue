@@ -38,6 +38,18 @@
       :is-open="isAddRequestModalOpen"
       @close="isAddRequestModalOpen = false"
     />
+    <footer
+      class="bg-neutral-950 border-t border-neutral-800 h-16 px-4 flex gap-2 justify-between items-center"
+    >
+      <p>© {{ new Date().getFullYear() }} A2Innovate.</p>
+      <NuxtLink
+        to="https://github.com/A2Innovate/WantIt"
+        class="flex hover:text-neutral-300 transition-colors"
+        target="_blank"
+      >
+        <Icon name="mdi:github" size="2em" />
+      </NuxtLink>
+    </footer>
   </div>
 </template>
 

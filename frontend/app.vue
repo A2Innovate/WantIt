@@ -11,6 +11,7 @@
 const userStore = useUserStore();
 const messageStore = useMessageStore();
 const currencyStore = useCurrencyStore();
+const notificationStore = useNotificationStore();
 
 if (!userStore.current) {
   await userStore.fetchUser();
@@ -18,4 +19,5 @@ if (!userStore.current) {
 
 currencyStore.fetchRates();
 messageStore.fetchLastMessages();
+notificationStore.fetchNotifications();
 </script>

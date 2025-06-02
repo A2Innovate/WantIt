@@ -45,6 +45,10 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 
+definePageMeta({
+  middleware: 'auth'
+});
+
 const messageStore = useMessageStore();
 
 messageStore.fetchLastMessages();

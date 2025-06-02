@@ -27,22 +27,39 @@
       >
         <NuxtLink :to="getLink(notification)" class="text-sm">
           <p v-if="notification.type === NotificationType.NEW_OFFER">
-            {{ notification.relatedRequest?.content }} has a new offer
+            <span class="font-semibold">{{
+              notification.relatedRequest?.content
+            }}</span>
+            has a new offer
           </p>
           <p v-else-if="notification.type === NotificationType.NEW_MESSAGE">
-            {{ notification.relatedUser?.name }} sent you a message
+            <span class="font-semibold">{{
+              notification.relatedUser?.name
+            }}</span>
+            sent you a message
           </p>
           <p
             v-else-if="notification.type === NotificationType.NEW_OFFER_COMMENT"
           >
-            {{ notification.relatedUser?.name }} commented on your offer
-            {{ notification.relatedOffer?.content }}
+            <span class="font-semibold">{{
+              notification.relatedUser?.name
+            }}</span>
+            commented on your offer
+            <span class="font-semibold">{{
+              notification.relatedOffer?.content
+            }}</span>
           </p>
           <small class="text-neutral-400 text-xs">{{
             formatTime(new Date(notification.createdAt))
           }}</small>
         </NuxtLink>
       </DropdownBaseElement>
+      <p
+        v-if="!notificationStore.current.length"
+        class="text-center m-4 text-neutral-400"
+      >
+        No notifications
+      </p>
     </DropdownBasePopup>
   </div>
 </template>

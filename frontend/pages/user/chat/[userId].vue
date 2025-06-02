@@ -63,6 +63,10 @@ import { sendChatMessageSchema } from '~/schema/services/chat';
 import type { Message } from '~/types/message';
 import type { Channel } from 'pusher-js';
 
+definePageMeta({
+  middleware: 'auth'
+});
+
 const route = useRoute();
 const userStore = useUserStore();
 const pusher = usePusher();

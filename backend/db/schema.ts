@@ -178,3 +178,21 @@ export const notificationsTable = pgTable("notifications", {
   type: notificationTypes().notNull(),
   createdAt: timestamp().notNull().defaultNow(),
 });
+
+export const notificationsRelations = relations(
+  notificationsTable,
+  ({ one }) => ({
+    relatedUser: one(usersTable, {
+      fields: [notificationsTable.relatedUserId],
+      references: [usersTable.id],
+    }),
+    relatedOffer: one(offersTable, {
+      fields: [notificationsTable.relatedOfferId],
+      references: [offersTable.id],
+    }),
+    relatedRequest: one(requestsTable, {
+      fields: [notificationsTable.relatedRequestId],
+      references: [requestsTable.id],
+    }),
+  }),
+);

@@ -16,6 +16,7 @@
           >
             <Icon name="material-symbols:add" />
           </div>
+          <DropdownNotifications />
           <AccountDropdown>
             <div
               class="flex gap-2 items-center bg-neutral-900 h-8 px-2 rounded-full cursor-pointer"

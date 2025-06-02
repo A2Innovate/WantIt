@@ -22,6 +22,23 @@ app.get(
       columns: {
         userId: false,
       },
+      with: {
+        relatedRequest: {
+          columns: {
+            content: true,
+          },
+        },
+        relatedOffer: {
+          columns: {
+            content: true,
+          },
+        },
+        relatedUser: {
+          columns: {
+            name: true,
+          },
+        },
+      },
     });
 
     return c.json(notifications);

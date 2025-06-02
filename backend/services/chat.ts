@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
 import { and, asc, desc, eq, notInArray, or } from "drizzle-orm";
-import { messagesTable, usersTable } from "@/db/schema.ts";
+import { messagesTable, notificationsTable, usersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
 import {
   paramPersonIdSchema,
@@ -142,6 +142,25 @@ app.post(
       `private-user-${personId}-chat-${session.user.id}`,
       "new-message",
       message[0],
+    ).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    const notification = await db.insert(notificationsTable).values({
+      userId: personId,
+      relatedUserId: session.user.id,
+      type: "NEW_MESSAGE",
+    }).returning();
+
+    pusher.trigger(
+      `private-user-${personId}`,
+      "new-notification",
+      {
+        ...notification[0],
+        relatedUser: {
+          name: session.user.name,
+        },
+      },
     ).catch((e) => {
       console.error(`Async Pusher trigger error: ${e}`);
     });

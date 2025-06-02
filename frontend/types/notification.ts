@@ -18,5 +18,6 @@ export interface Notification {
   relatedOffer?: Offer;
   relatedRequest?: Request;
   type: NotificationType;
+  read: boolean;
   createdAt: string;
 }

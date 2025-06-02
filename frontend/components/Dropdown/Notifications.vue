@@ -5,17 +5,25 @@
       @click="toggleDropdown"
     >
       <span
-        v-if="notificationStore.current.length"
+        v-if="notificationStore.current.filter((n) => !n.read).length"
         class="text-xs rounded-full bg-red-500 w-4 h-4 flex items-center justify-center absolute bottom-5 left-5"
-        >{{ notificationStore.current.length }}</span
+        >{{ notificationStore.current.filter((n) => !n.read).length }}</span
       >
       <Icon name="material-symbols:notifications" />
     </button>
     <DropdownBasePopup :is-open="isOpen" popup-class="right-0">
       <DropdownBaseElement
-        v-for="notification in notificationStore.current"
+        v-for="notification in notificationStore.current.sort(
+          (a, b) => b.id - a.id
+        )"
         :key="notification.id"
-        @click="isOpen = false"
+        @click="
+          isOpen = false;
+          notificationStore.deleteNotification(notification);
+        "
+        @mouseover="
+          !notification.read && notificationStore.markAsRead(notification)
+        "
       >
         <NuxtLink :to="getLink(notification)" class="text-sm">
           <p v-if="notification.type === NotificationType.NEW_OFFER">
@@ -28,6 +36,7 @@
             v-else-if="notification.type === NotificationType.NEW_OFFER_COMMENT"
           >
             {{ notification.relatedUser?.name }} commented on your offer
+            {{ notification.relatedOffer?.content }}
           </p>
           <small class="text-neutral-400 text-xs">{{
             formatTime(new Date(notification.createdAt))

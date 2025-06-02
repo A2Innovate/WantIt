@@ -176,6 +176,7 @@ export const notificationsTable = pgTable("notifications", {
   relatedRequestId: integer()
     .references(() => requestsTable.id, { onDelete: "cascade" }),
   type: notificationTypes().notNull(),
+  read: boolean().notNull().default(false),
   createdAt: timestamp().notNull().defaultNow(),
 });
 

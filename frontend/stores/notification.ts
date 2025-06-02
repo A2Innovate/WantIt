@@ -17,8 +17,20 @@ export const useNotificationStore = defineStore('notification', () => {
     current.value = response.value ?? [];
   }
 
+  async function markAsRead(notification: Notification) {
+    notification.read = true;
+    await useApi().post(`/notification/${notification.id}/read`);
+  }
+
+  async function deleteNotification(notification: Notification) {
+    current.value = current.value.filter((n) => n.id !== notification.id);
+    await useApi().delete(`/notification/${notification.id}`);
+  }
+
   return {
     current,
-    fetchNotifications
+    fetchNotifications,
+    markAsRead,
+    deleteNotification
   };
 });

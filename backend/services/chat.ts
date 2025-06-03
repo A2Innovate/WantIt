@@ -124,6 +124,10 @@ app.post(
     const { personId } = c.req.valid("param");
     const { content } = c.req.valid("json");
 
+    if (personId === session.user.id) {
+      return c.json({ message: "You cannot send a message to yourself" }, 400);
+    }
+
     const person = await db.query.usersTable.findFirst({
       where: eq(usersTable.id, personId),
     });

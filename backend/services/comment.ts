@@ -66,29 +66,31 @@ app.post(
         console.error("Async Pusher trigger error: ", e);
       });
 
-      const notification = await db.insert(notificationsTable).values({
-        type: "NEW_OFFER_COMMENT",
-        relatedRequestId: offer.requestId,
-        relatedOfferId: offer.id,
-        relatedUserId: session.user.id,
-        userId: offer.userId,
-      }).returning();
+      if (offer.userId !== session.user.id) {
+        const notification = await db.insert(notificationsTable).values({
+          type: "NEW_OFFER_COMMENT",
+          relatedRequestId: offer.requestId,
+          relatedOfferId: offer.id,
+          relatedUserId: session.user.id,
+          userId: offer.userId,
+        }).returning();
 
-      pusher.trigger(
-        `private-user-${offer.userId}`,
-        "new-notification",
-        {
-          ...notification[0],
-          relatedUser: {
-            name: session.user.name,
+        pusher.trigger(
+          `private-user-${offer.userId}`,
+          "new-notification",
+          {
+            ...notification[0],
+            relatedUser: {
+              name: session.user.name,
+            },
+            relatedOffer: {
+              content: offer.content,
+            },
           },
-          relatedOffer: {
-            content: offer.content,
-          },
-        },
-      ).catch((e) => {
-        console.error("Async Pusher trigger error: ", e);
-      });
+        ).catch((e) => {
+          console.error("Async Pusher trigger error: ", e);
+        });
+      }
 
       return c.json({
         message: "Comment added successfully",

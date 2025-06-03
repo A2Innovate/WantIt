@@ -227,29 +227,31 @@ app.post(
         console.error("Async Pusher trigger error: ", e);
       });
 
-      const notification = await db.insert(notificationsTable).values({
-        type: "NEW_OFFER",
-        relatedRequestId: requestId,
-        relatedOfferId: offer.id,
-        relatedUserId: session.user.id,
-        userId: request.userId,
-      }).returning();
+      if (request.userId !== session.user.id) {
+        const notification = await db.insert(notificationsTable).values({
+          type: "NEW_OFFER",
+          relatedRequestId: requestId,
+          relatedOfferId: offer.id,
+          relatedUserId: session.user.id,
+          userId: request.userId,
+        }).returning();
 
-      pusher.trigger(
-        `private-user-${request.userId}`,
-        "new-notification",
-        {
-          ...notification[0],
-          relatedUser: {
-            name: session.user.name,
+        pusher.trigger(
+          `private-user-${request.userId}`,
+          "new-notification",
+          {
+            ...notification[0],
+            relatedUser: {
+              name: session.user.name,
+            },
+            relatedRequest: {
+              content: request.content,
+            },
           },
-          relatedRequest: {
-            content: request.content,
-          },
-        },
-      ).catch((e) => {
-        console.error("Async Pusher trigger error: ", e);
-      });
+        ).catch((e) => {
+          console.error("Async Pusher trigger error: ", e);
+        });
+      }
 
       return c.json(offer);
     } catch (e) {

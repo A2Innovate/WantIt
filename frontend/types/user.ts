@@ -5,3 +5,8 @@ export interface User {
   email: string;
   preferredCurrency: string;
 }
+
+export interface UserSession {
+  id: number;
+  expiresAt: Date;
+}

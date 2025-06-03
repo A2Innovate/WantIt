@@ -40,6 +40,7 @@
         </form>
       </UiCard>
       <UserChangePassword />
+      <UserSecurity />
     </div>
   </div>
 </template>

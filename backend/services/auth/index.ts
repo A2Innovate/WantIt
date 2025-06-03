@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { db } from "@/db/index.ts";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { userSessionsTable, usersTable } from "@/db/schema.ts";
 import {
   generateEmailVerificationToken,
@@ -39,6 +39,21 @@ app.get("/", authRequired, (c) => {
     username: session.user.username,
     preferredCurrency: session.user.preferredCurrency,
   });
+});
+
+app.get("/sessions", authRequired, async (c) => {
+  const session = c.get("session");
+
+  const sessions = await db.query.userSessionsTable.findMany({
+    where: eq(userSessionsTable.userId, session.user.id),
+    columns: {
+      id: true,
+      expiresAt: true,
+    },
+    orderBy: desc(userSessionsTable.expiresAt),
+  });
+
+  return c.json(sessions);
 });
 
 app.post(

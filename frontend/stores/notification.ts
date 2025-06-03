@@ -18,18 +18,35 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   async function markAsRead(notification: Notification) {
-    notification.read = true;
-    await useApi().post(`/notification/${notification.id}/read`);
+    try {
+      notification.read = true;
+      await useApi().post(`/notification/${notification.id}/read`);
+    } catch (e) {
+      console.error(e);
+      notification.read = false;
+    }
   }
 
   async function deleteNotification(notification: Notification) {
-    current.value = current.value.filter((n) => n.id !== notification.id);
-    await useApi().delete(`/notification/${notification.id}`);
+    try {
+      current.value = current.value.filter((n) => n.id !== notification.id);
+      await useApi().delete(`/notification/${notification.id}`);
+    } catch (e) {
+      console.error(e);
+      current.value.push(notification);
+    }
   }
 
   async function clearNotifications() {
-    current.value = [];
-    await useApi().post('/notification/clear');
+    const oldNotifications = [...current.value];
+
+    try {
+      current.value = [];
+      await useApi().post('/notification/clear');
+    } catch (e) {
+      console.error(e);
+      current.value = oldNotifications;
+    }
   }
 
   return {

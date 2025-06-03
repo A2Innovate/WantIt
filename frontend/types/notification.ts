@@ -11,9 +11,9 @@ export enum NotificationType {
 export interface Notification {
   id: number;
   userId: number;
-  relatedUserId: number;
-  relatedOfferId: number;
-  relatedRequestId: number;
+  relatedUserId: number | null;
+  relatedOfferId: number | null;
+  relatedRequestId: number | null;
   relatedUser?: Pick<User, 'name'>;
   relatedOffer?: Offer;
   relatedRequest?: Request;

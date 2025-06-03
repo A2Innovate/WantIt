@@ -119,9 +119,12 @@ function getLink(notification: Notification) {
   ) {
     return `/request/${notification.relatedRequestId}`;
   }
+
   if (notification.type === NotificationType.NEW_MESSAGE) {
     return `/user/chat/${notification.relatedUserId}`;
   }
+
+  return '#';
 }
 
 onMounted(() => {

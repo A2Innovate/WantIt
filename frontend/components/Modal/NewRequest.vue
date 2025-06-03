@@ -2,8 +2,12 @@
   <UiModal card-class="sm:min-w-md" :is-open="isOpen" @close="emit('close')">
     <h2 class="text-2xl font-semibold">New request</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="addRequest">
-      <UiLabel for="location">Location</UiLabel>
-      <UiMapRadiusPicker id="location" v-model="location" />
+      <div class="flex items-center gap-2 self-center">
+        <UiLabel for="locationGlobal">Local</UiLabel>
+        <UiToggle id="locationGlobal" v-model="locationGlobal" />
+        <UiLabel for="locationGlobal">Global</UiLabel>
+      </div>
+      <UiMapRadiusPicker v-if="!locationGlobal" v-model="location" />
       <UiLabel for="content">What do you want?</UiLabel>
       <UiInput id="content" v-model="content" placeholder="An iPhone..." />
       <UiLabel for="budget">Budget</UiLabel>
@@ -42,36 +46,32 @@ const location = ref({
   lng: -122.419,
   radius: 3000
 });
+const locationGlobal = ref(false);
 const error = ref('');
 
 async function addRequest() {
   try {
-    const validation = validate(createRequestSchema, {
+    const payload = {
       content: content.value,
       budget: Number(budget.value),
       currency: selectedCurrency.value,
-      location: {
-        x: location.value.lng,
-        y: location.value.lat
-      },
-      radius: location.value.radius
-    });
+      location: locationGlobal.value
+        ? null
+        : {
+            x: location.value.lng,
+            y: location.value.lat
+          },
+      radius: locationGlobal.value ? null : location.value.radius
+    };
+
+    const validation = validate(createRequestSchema, payload);
 
     if (validation) {
       error.value = validation;
       return;
     }
 
-    const response = await api.post('/request', {
-      content: content.value,
-      budget: Number(budget.value),
-      currency: selectedCurrency.value,
-      location: {
-        x: location.value.lng,
-        y: location.value.lat
-      },
-      radius: location.value.radius
-    });
+    const response = await api.post('/request', payload);
 
     navigateTo(`/request/${response.data.id}`);
     emit('close');
@@ -83,6 +83,7 @@ async function addRequest() {
       lng: -122.419,
       radius: 3000
     };
+    locationGlobal.value = false;
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
       error.value = e.response.data.message;

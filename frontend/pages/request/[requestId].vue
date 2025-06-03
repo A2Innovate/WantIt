@@ -4,7 +4,7 @@
       <h1 v-if="request" class="text-xl font-semibold my-4 px-4">Request</h1>
       <UiSkeleton v-else class="h-6 w-20 my-4 mx-4" />
       <UiCard v-if="!error" class="m-4">
-        <div v-if="request" class="mb-4">
+        <div v-if="request && request.location" class="mb-4">
           <LMap
             style="height: 15rem"
             :zoom="2"
@@ -24,7 +24,7 @@
             <LMarker :lat-lng="[request.location.y, request.location.x]" />
           </LMap>
         </div>
-        <UiSkeletonLoader v-else class="h-60 mb-4 w-full" />
+        <UiSkeletonLoader v-else-if="!request" class="h-60 mb-4 w-full" />
 
         <p v-if="request">{{ request.content }}</p>
         <UiSkeleton v-else class="h-6 w-1/2" />

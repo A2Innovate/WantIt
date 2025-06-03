@@ -10,7 +10,7 @@ export interface Request {
   location: {
     x: number;
     y: number;
-  };
-  radius: number;
+  } | null;
+  radius: number | null;
   offers: Offer[];
 }

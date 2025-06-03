@@ -78,6 +78,8 @@ app.get(
         content: true,
         currency: true,
         budget: true,
+        location: true,
+        radius: true,
       },
     });
 

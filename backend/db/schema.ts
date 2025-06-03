@@ -27,6 +27,7 @@ export const usersTable = pgTable("users", {
   passwordResetToken: text().unique(),
   isAdmin: boolean().notNull().default(false),
   preferredCurrency: currencies().notNull().default("USD"),
+  createdAt: timestamp().notNull().defaultNow(),
 });
 
 export const userRelations = relations(usersTable, ({ many }) => ({
@@ -41,6 +42,7 @@ export const userSessionsTable = pgTable("user_sessions", {
   sessionToken: text().notNull().unique(),
   ip: text(),
   expiresAt: timestamp().notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
 });
 
 export const userSessionsRelations = relations(
@@ -86,6 +88,7 @@ export const requestsTable = pgTable("requests", {
   currency: currencies().notNull().default("USD"),
   location: geometry("location", { type: "point", mode: "xy", srid: 4326 }),
   radius: integer(),
+  createdAt: timestamp().notNull().defaultNow(),
 });
 
 export const requestsRelations = relations(requestsTable, ({ one, many }) => ({
@@ -107,6 +110,7 @@ export const offersTable = pgTable("offers", {
   content: text().notNull(),
   price: integer().notNull(),
   negotiation: boolean().notNull().default(false),
+  createdAt: timestamp().notNull().defaultNow(),
 });
 
 export const offerImagesTable = pgTable("offer_images", {

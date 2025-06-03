@@ -3,7 +3,12 @@ import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, eq, ilike } from "drizzle-orm";
-import { offerImagesTable, offersTable, requestsTable } from "@/db/schema.ts";
+import {
+  notificationsTable,
+  offerImagesTable,
+  offersTable,
+  requestsTable,
+} from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
   createOfferSchema,
@@ -181,6 +186,14 @@ app.post(
     const session = c.get("session");
 
     try {
+      const request = await db.query.requestsTable.findFirst({
+        where: eq(requestsTable.id, requestId),
+      });
+
+      if (!request) {
+        return c.json({ message: "Request not found" }, 404);
+      }
+
       const [offer] = await db.insert(offersTable).values({
         requestId,
         content,
@@ -214,14 +227,35 @@ app.post(
         console.error("Async Pusher trigger error: ", e);
       });
 
+      if (request.userId !== session.user.id) {
+        const notification = await db.insert(notificationsTable).values({
+          type: "NEW_OFFER",
+          relatedRequestId: requestId,
+          relatedOfferId: offer.id,
+          relatedUserId: session.user.id,
+          userId: request.userId,
+        }).returning();
+
+        pusher.trigger(
+          `private-user-${request.userId}`,
+          "new-notification",
+          {
+            ...notification[0],
+            relatedUser: {
+              name: session.user.name,
+            },
+            relatedRequest: {
+              content: request.content,
+            },
+          },
+        ).catch((e) => {
+          console.error("Async Pusher trigger error: ", e);
+        });
+      }
+
       return c.json(offer);
     } catch (e) {
-      if (
-        e instanceof Error &&
-        e.message.includes("offers_requestId_requests_id_fk")
-      ) {
-        return c.json({ message: "Request not found" }, 404);
-      }
+      console.error("Error creating offer: ", e);
 
       return c.json(
         { message: "Something went wrong while creating offer" },

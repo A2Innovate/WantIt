@@ -56,18 +56,23 @@ app.post(
     const { socket_id, channel_name } = c.req.valid("json");
     const channel_parts = channel_name.split("-");
 
-    if (
-      channel_parts.length !== 5 || channel_parts[0] !== "private" ||
-      channel_parts[1] !== "user" ||
-      channel_parts[2] !== session.user.id.toString() ||
-      channel_parts[3] !== "chat"
-    ) {
-      return c.json({ message: "Unauthorized" }, 401);
+    const isValidChatChannel = channel_parts.length === 5 &&
+      channel_parts[0] === "private" &&
+      channel_parts[1] === "user" &&
+      channel_parts[2] === session.user.id.toString() &&
+      channel_parts[3] === "chat";
+
+    const isValidUserChannel = channel_parts.length === 3 &&
+      channel_parts[0] === "private" &&
+      channel_parts[1] === "user" &&
+      channel_parts[2] === session.user.id.toString();
+
+    if (isValidChatChannel || isValidUserChannel) {
+      const auth = pusher.authorizeChannel(socket_id, channel_name);
+      return c.json(auth);
     }
 
-    const auth = pusher.authorizeChannel(socket_id, channel_name);
-
-    return c.json(auth);
+    return c.json({ message: "Unauthorized" }, 401);
   },
 );
 

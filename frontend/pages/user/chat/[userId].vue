@@ -63,6 +63,10 @@ import { sendChatMessageSchema } from '~/schema/services/chat';
 import type { Message } from '~/types/message';
 import type { Channel } from 'pusher-js';
 
+definePageMeta({
+  middleware: 'auth'
+});
+
 const route = useRoute();
 const userStore = useUserStore();
 const pusher = usePusher();
@@ -72,6 +76,10 @@ const requestFetch = useRequestFetch();
 const content = ref('');
 const messagesContainer = ref<HTMLDivElement>();
 let channel: Channel;
+
+if (Number(route.params.userId) === userStore.current?.id) {
+  navigateTo('/');
+}
 
 const { data, error } = useAsyncData<Chat>(async () => {
   const response = await requestFetch<Chat>(

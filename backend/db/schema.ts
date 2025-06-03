@@ -8,9 +8,13 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { CURRENCIES } from "../utils/global.ts";
+import { CURRENCIES, NOTIFICATION_TYPES } from "../utils/global.ts";
 
 export const currencies = pgEnum("currencies", CURRENCIES);
+export const notificationTypes = pgEnum(
+  "notification_types",
+  NOTIFICATION_TYPES,
+);
 
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -159,3 +163,37 @@ export const commentsRelations = relations(commentsTable, ({ one }) => ({
     references: [offersTable.id],
   }),
 }));
+
+export const notificationsTable = pgTable("notifications", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  relatedUserId: integer()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  relatedOfferId: integer()
+    .references(() => offersTable.id, { onDelete: "cascade" }),
+  relatedRequestId: integer()
+    .references(() => requestsTable.id, { onDelete: "cascade" }),
+  type: notificationTypes().notNull(),
+  read: boolean().notNull().default(false),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const notificationsRelations = relations(
+  notificationsTable,
+  ({ one }) => ({
+    relatedUser: one(usersTable, {
+      fields: [notificationsTable.relatedUserId],
+      references: [usersTable.id],
+    }),
+    relatedOffer: one(offersTable, {
+      fields: [notificationsTable.relatedOfferId],
+      references: [offersTable.id],
+    }),
+    relatedRequest: one(requestsTable, {
+      fields: [notificationsTable.relatedRequestId],
+      references: [requestsTable.id],
+    }),
+  }),
+);

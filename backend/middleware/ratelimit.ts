@@ -1,5 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { client } from "@/utils/redis.ts";
+import { getIp } from "@/utils/ip.ts";
 
 export const rateLimit = ({
   windowMs,
@@ -10,7 +11,7 @@ export const rateLimit = ({
 }) =>
   createMiddleware(async (c, next) => {
     try {
-      const ip = c.req.header("x-real-ip") || c.req.header("cf-connecting-ip");
+      const ip = getIp(c);
 
       if (!ip) {
         console.warn("Rate limit: IP not found, skipping");

@@ -16,6 +16,7 @@ import {
   OAUTH_GOOGLE_CLIENT_SECRET,
 } from "@/utils/global.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
+import { getIp } from "@/utils/ip.ts";
 
 const app = new Hono();
 
@@ -140,6 +141,7 @@ app.get(
         await db.insert(userSessionsTable).values({
           userId: existingUser.id,
           sessionToken,
+          ip: getIp(c),
           expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
         });
 
@@ -167,6 +169,7 @@ app.get(
       await db.insert(userSessionsTable).values({
         userId: user[0].id,
         sessionToken,
+        ip: getIp(c),
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
       });
 

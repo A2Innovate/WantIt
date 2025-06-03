@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { db } from "@/db/index.ts";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { userSessionsTable, usersTable } from "@/db/schema.ts";
 import {
   generateEmailVerificationToken,
@@ -24,41 +24,95 @@ import { rateLimit } from "@/middleware/ratelimit.ts";
 import { COOKIE_DOMAIN, COOKIE_SECURE, FRONTEND_URL } from "@/utils/global.ts";
 import { pusher } from "@/utils/pusher.ts";
 import { z } from "zod";
+import { getIp } from "@/utils/ip.ts";
 
 const app = new Hono();
 
 app.route("/oauth", oauth);
 
-app.get("/", authRequired, (c) => {
-  const session = c.get("session");
+app.get(
+  "/",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  (c) => {
+    const session = c.get("session");
 
-  return c.json({
-    id: session.user.id,
-    email: session.user.email,
-    name: session.user.name,
-    username: session.user.username,
-    preferredCurrency: session.user.preferredCurrency,
-  });
-});
+    return c.json({
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      username: session.user.username,
+      preferredCurrency: session.user.preferredCurrency,
+      sessionId: session.id,
+    });
+  },
+);
 
-app.get("/sessions", authRequired, async (c) => {
-  const session = c.get("session");
+app.get(
+  "/sessions",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  async (c) => {
+    const session = c.get("session");
 
-  const sessions = await db.query.userSessionsTable.findMany({
-    where: eq(userSessionsTable.userId, session.user.id),
-    columns: {
-      id: true,
-      expiresAt: true,
-    },
-    orderBy: desc(userSessionsTable.expiresAt),
-  });
+    const sessions = await db.query.userSessionsTable.findMany({
+      where: eq(userSessionsTable.userId, session.user.id),
+      columns: {
+        id: true,
+        ip: true,
+        expiresAt: true,
+      },
+      orderBy: desc(userSessionsTable.expiresAt),
+    });
 
-  return c.json(sessions);
-});
+    return c.json(sessions);
+  },
+);
+
+app.delete(
+  "/session/:sessionId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  zValidator(
+    "param",
+    z.object({
+      sessionId: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "sessionId must be a valid number",
+      ).transform((value) => Number(value)),
+    }),
+  ),
+  async (c) => {
+    const session = c.get("session");
+    const { sessionId } = c.req.valid("param");
+
+    await db.delete(userSessionsTable).where(
+      and(
+        eq(userSessionsTable.id, sessionId),
+        eq(userSessionsTable.userId, session.user.id),
+      ),
+    );
+
+    return c.json({ message: "Session revoked successfully" }, 200);
+  },
+);
 
 app.post(
   "/pusher",
   authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
   zValidator(
     "json",
     z.object({
@@ -186,6 +240,7 @@ app.post(
     await db.insert(userSessionsTable).values({
       userId: user.id,
       sessionToken,
+      ip: getIp(c),
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
     });
 

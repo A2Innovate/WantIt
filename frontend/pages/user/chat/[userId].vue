@@ -1,24 +1,32 @@
 <template>
   <div class="max-w-2xl mx-auto min-h-[calc(100vh-8.5rem)]">
-    <UiCard v-if="!error && data" class="m-4">
+    <UiCard v-if="!error" class="m-4">
       <div class="flex flex-col gap-4">
-        <div class="flex flex-col items-center gap-2">
+        <div class="flex items-center gap-2">
           <div class="w-16 h-16 rounded-full bg-neutral-700">
             <div
               class="w-full h-full flex items-center justify-center font-medium text-2xl"
             >
-              {{ data.person.name.charAt(0) }}
+              {{ data?.person.name.charAt(0) }}
             </div>
           </div>
-          <h2 class="text-2xl font-semibold mt-2">{{ data.person.name }}</h2>
-          <h3 class="text-sm">@{{ data.person.username }}</h3>
+          <div>
+            <h2 v-if="data" class="text-xl font-semibold">
+              {{ data.person.name }}
+            </h2>
+            <UiSkeleton v-else class="w-24 h-4" />
+            <h3 v-if="data" class="text-xs text-neutral-400">
+              @{{ data.person.username }}
+            </h3>
+            <UiSkeleton v-else class="w-16 h-4 mt-1" />
+          </div>
         </div>
         <div
           ref="messagesContainer"
           class="flex flex-col gap-2 px-0.5 max-h-[calc(90vh-13rem)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-500"
         >
           <UiMessage
-            v-for="message in data.messages"
+            v-for="message in data?.messages"
             :key="message.id"
             :content="message.content"
             :time="new Date(message.createdAt)"
@@ -26,6 +34,14 @@
               useUserStore().current?.id === message.senderId ? 'right' : 'left'
             "
           />
+          <div v-if="!data" class="flex flex-col gap-2">
+            <UiSkeleton
+              v-for="i in 5"
+              :key="i"
+              class="h-18 w-3/5"
+              :class="i % 2 === 0 ? 'self-end' : 'self-start'"
+            />
+          </div>
         </div>
       </div>
       <form class="flex gap-2 mt-2" @submit.prevent="handleSend">

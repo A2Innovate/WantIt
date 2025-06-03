@@ -6,5 +6,5 @@ export interface Comment {
   content: string;
   createdAt: string;
   edited: boolean;
-  user: Omit<User, 'email' | 'preferredCurrency' | 'name'>;
+  user: Omit<User, 'email' | 'preferredCurrency' | 'name' | 'sessionId'>;
 }

@@ -32,7 +32,7 @@ export const editRequestSchema = z.object({
   radius: z.number().min(3000).max(1000000).nullable(),
 });
 
-export const createOfferSchema = z.object({
+export const createAndEditOfferSchema = z.object({
   content: z
     .string()
     .min(4, "Content must be at least 4 characters long")

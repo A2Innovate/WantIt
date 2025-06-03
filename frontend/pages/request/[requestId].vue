@@ -195,6 +195,17 @@ onMounted(() => {
     }
   });
 
+  channel.bind('update-offer', (data: Partial<Offer>) => {
+    if (request.value) {
+      const offer = request.value.offers.find((offer) => offer.id === data.id);
+      if (offer) {
+        offer.content = data.content ?? offer.content;
+        offer.price = data.price ?? offer.price;
+        offer.negotiation = data.negotiation ?? offer.negotiation;
+      }
+    }
+  });
+
   channel.bind('delete-offer', (offerId: number) => {
     if (request.value) {
       request.value.offers = request.value.offers.filter(
@@ -211,6 +222,20 @@ onMounted(() => {
       );
       if (offer) {
         offer.images = data.images.map((image) => ({ name: image }));
+      }
+    }
+  );
+
+  channel.bind(
+    'delete-offer-images',
+    (data: { offerId: number; images: string[] }) => {
+      const offer = request.value?.offers.find(
+        (offer) => offer.id === data.offerId
+      );
+      if (offer) {
+        offer.images = offer.images.filter(
+          (image) => !data.images.includes(image.name)
+        );
       }
     }
   );

@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { createOfferSchema } from '@/schema/services/request';
+import { createAndEditOfferSchema } from '@/schema/services/request';
 import { AxiosError } from 'axios';
 import type { Request } from '~/types/request';
 
@@ -53,7 +53,7 @@ const isLoading = ref(false);
 async function addOffer() {
   try {
     isLoading.value = true;
-    const validation = validate(createOfferSchema, {
+    const validation = validate(createAndEditOfferSchema, {
       content: content.value,
       price: Number(price.value),
       negotiation: negotiation.value

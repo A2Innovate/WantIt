@@ -52,8 +52,12 @@
         v-if="
           userStore.current?.id === offer.user.id || userStore.current?.isAdmin
         "
-        class="flex justify-end"
+        class="flex justify-end gap-2"
       >
+        <UiButton @click="isEditModalOpen = true">
+          <Icon name="material-symbols:edit-rounded" />
+          <span class="hidden sm:block">Edit</span>
+        </UiButton>
         <UiButton @click="isDeleteModalOpen = true">
           <Icon name="material-symbols:delete-rounded" />
           <span class="hidden sm:block">Delete</span>
@@ -96,6 +100,14 @@
         Are you sure you want to delete this offer?
       </ModalConfirm>
     </Teleport>
+    <Teleport to="body">
+      <ModalEditOffer
+        :is-open="isEditModalOpen"
+        :offer="offer"
+        :currency="currency"
+        @close="isEditModalOpen = false"
+      />
+    </Teleport>
   </UiCard>
 </template>
 
@@ -108,6 +120,7 @@ const props = defineProps<{ offer: Offer; currency: string }>();
 const api = useApi();
 const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
+const isEditModalOpen = ref(false);
 
 async function deleteOffer() {
   try {

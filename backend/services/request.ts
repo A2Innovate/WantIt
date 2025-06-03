@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, ilike } from "drizzle-orm";
+import { and, eq, ilike, inArray } from "drizzle-orm";
 import {
   notificationsTable,
   offerImagesTable,
@@ -11,7 +11,7 @@ import {
 } from "@/db/schema.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import {
-  createOfferSchema,
+  createAndEditOfferSchema,
   createRequestSchema,
   editRequestSchema,
   offerByIdSchema,
@@ -180,7 +180,7 @@ app.post(
   ),
   zValidator(
     "json",
-    createOfferSchema,
+    createAndEditOfferSchema,
   ),
   async (c) => {
     const { requestId } = c.req.valid("param");
@@ -456,6 +456,138 @@ app.post(
     });
 
     return c.json(offerImages);
+  },
+);
+
+app.delete(
+  "/:requestId/offer/:offerId/images",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 30,
+  }),
+  zValidator(
+    "param",
+    z.object({
+      ...requestByIdSchema.shape,
+      ...offerByIdSchema.shape,
+    }),
+  ),
+  zValidator(
+    "json",
+    z.object({
+      images: z.array(z.string()),
+    }),
+  ),
+  async (c) => {
+    const { requestId, offerId } = c.req.valid("param");
+    const { images } = c.req.valid("json");
+    const session = c.get("session");
+
+    const offer = await db.query.offersTable.findFirst({
+      where: and(
+        eq(offersTable.id, offerId),
+        eq(offersTable.requestId, requestId),
+        eq(offersTable.userId, session.user.id),
+      ),
+      with: {
+        images: true,
+      },
+    });
+
+    if (!offer) {
+      return c.json({ message: "Offer not found" }, 404);
+    }
+
+    if (
+      !images.every((imageName) =>
+        offer.images.some((image) => image.name === imageName)
+      )
+    ) {
+      return c.json(
+        { message: "Some images do not belong to this offer" },
+        400,
+      );
+    }
+
+    for (const image of images) {
+      await deleteFile(
+        `request/${requestId}/offer/${offerId}/images/${image}`,
+      );
+    }
+
+    await db.delete(offerImagesTable)
+      .where(and(
+        eq(offerImagesTable.offerId, offerId),
+        inArray(offerImagesTable.name, images),
+      ));
+
+    pusher.trigger(
+      `public-request-${requestId}`,
+      "delete-offer-images",
+      {
+        offerId,
+        images,
+      },
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
+
+    return c.json({
+      message: "Images deleted successfully",
+    });
+  },
+);
+
+app.put(
+  "/:requestId/offer/:offerId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 30,
+  }),
+  zValidator(
+    "param",
+    z.object({
+      ...requestByIdSchema.shape,
+      ...offerByIdSchema.shape,
+    }),
+  ),
+  zValidator(
+    "json",
+    createAndEditOfferSchema,
+  ),
+  async (c) => {
+    const { requestId, offerId } = c.req.valid("param");
+    const { content, price, negotiation } = c.req.valid("json");
+    const session = c.get("session");
+
+    const offer = await db.update(offersTable)
+      .set({
+        content,
+        price,
+        negotiation,
+      })
+      .where(and(
+        eq(offersTable.id, offerId),
+        eq(offersTable.requestId, requestId),
+        eq(offersTable.userId, session.user.id),
+      ))
+      .returning();
+
+    if (!offer[0]) {
+      return c.json({ message: "Offer not found" }, 404);
+    }
+
+    pusher.trigger(
+      `public-request-${requestId}`,
+      "update-offer",
+      offer[0],
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
+
+    return c.json(offer[0]);
   },
 );
 

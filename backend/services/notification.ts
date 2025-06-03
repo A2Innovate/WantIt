@@ -72,13 +72,15 @@ app.post(
       ),
     );
 
-    await pusher.trigger(
+    pusher.trigger(
       `private-user-${session.userId}`,
       "notification-read",
       {
         notificationId,
       },
-    );
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
 
     return c.json({
       message: "Notification marked as read",
@@ -108,16 +110,46 @@ app.delete(
       ),
     );
 
-    await pusher.trigger(
+    pusher.trigger(
       `private-user-${session.userId}`,
       "notification-delete",
       {
         notificationId,
       },
-    );
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
 
     return c.json({
       message: "Notification deleted",
+    });
+  },
+);
+
+app.post(
+  "/clear",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  async (c) => {
+    const session = c.get("session");
+
+    await db.delete(notificationsTable).where(
+      eq(notificationsTable.userId, session.userId),
+    );
+
+    pusher.trigger(
+      `private-user-${session.userId}`,
+      "notification-clear",
+      {},
+    ).catch((e) => {
+      console.error("Async Pusher trigger error: ", e);
+    });
+
+    return c.json({
+      message: "Notifications cleared",
     });
   },
 );

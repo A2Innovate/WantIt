@@ -27,10 +27,16 @@ export const useNotificationStore = defineStore('notification', () => {
     await useApi().delete(`/notification/${notification.id}`);
   }
 
+  async function clearNotifications() {
+    current.value = [];
+    await useApi().post('/notification/clear');
+  }
+
   return {
     current,
     fetchNotifications,
     markAsRead,
-    deleteNotification
+    deleteNotification,
+    clearNotifications
   };
 });

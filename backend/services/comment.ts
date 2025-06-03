@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/index.ts";
-import { commentsTable } from "@/db/schema.ts";
+import { commentsTable, notificationsTable } from "@/db/schema.ts";
 import { pusher } from "@/utils/pusher.ts";
 import {
   addCommentSchema,
@@ -62,6 +62,30 @@ app.post(
         `public-request-${offer.requestId}`,
         "new-offer-comment",
         completeComment,
+      ).catch((e) => {
+        console.error("Async Pusher trigger error: ", e);
+      });
+
+      const notification = await db.insert(notificationsTable).values({
+        type: "NEW_OFFER_COMMENT",
+        relatedRequestId: offer.requestId,
+        relatedOfferId: offer.id,
+        relatedUserId: session.user.id,
+        userId: offer.userId,
+      }).returning();
+
+      pusher.trigger(
+        `private-user-${offer.userId}`,
+        "new-notification",
+        {
+          ...notification[0],
+          relatedUser: {
+            name: session.user.name,
+          },
+          relatedOffer: {
+            content: offer.content,
+          },
+        },
       ).catch((e) => {
         console.error("Async Pusher trigger error: ", e);
       });

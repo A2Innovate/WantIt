@@ -19,7 +19,9 @@
     <span v-if="comment.edited" class="text-xs text-neutral-500">Edited</span>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
     <div
-      v-if="userStore.current?.id === comment.user.id"
+      v-if="
+        userStore.current?.id === comment.user.id || userStore.current?.isAdmin
+      "
       class="flex gap-2 justify-end"
     >
       <UiButton
@@ -83,9 +85,26 @@ async function handleEdit() {
         error.value = '';
         isSavingEdit.value = true;
 
-        await api.put(`/comment/${props.comment.id}`, {
-          content: editedCommentContent.value
-        });
+        if (
+          userStore.current?.isAdmin &&
+          userStore.current.id !== props.comment.user.id
+        ) {
+          await api.put(
+            `/comment/${props.comment.id}`,
+            {
+              content: editedCommentContent.value
+            },
+            {
+              params: {
+                pretendUser: props.comment.user.id
+              }
+            }
+          );
+        } else {
+          await api.put(`/comment/${props.comment.id}`, {
+            content: editedCommentContent.value
+          });
+        }
 
         isEditing.value = false;
       } catch (e) {
@@ -106,7 +125,18 @@ async function handleEdit() {
 async function deleteComment() {
   try {
     isDeleting.value = true;
-    await api.delete(`/comment/${props.comment.id}`);
+    if (
+      userStore.current?.isAdmin &&
+      userStore.current.id !== props.comment.user.id
+    ) {
+      await api.delete(`/comment/${props.comment.id}`, {
+        params: {
+          pretendUser: props.comment.user.id
+        }
+      });
+    } else {
+      await api.delete(`/comment/${props.comment.id}`);
+    }
   } finally {
     isDeleting.value = false;
   }

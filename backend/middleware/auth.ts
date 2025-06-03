@@ -4,6 +4,7 @@ import { deleteCookie, getCookie } from "hono/cookie";
 import { eq } from "drizzle-orm";
 import { InferSelectModel } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
+import { z } from "zod";
 
 export const authRequired = createMiddleware<{
   Variables: {
@@ -32,6 +33,44 @@ export const authRequired = createMiddleware<{
     return c.json({
       message: "Incorrect session token.",
     }, 401);
+  }
+
+  if (session.user.isAdmin && c.req.query("pretendUser")) {
+    let pretendUserId;
+
+    try {
+      pretendUserId = z.number().min(1).parse(
+        Number(c.req.query("pretendUser")),
+      );
+    } catch {
+      return c.json({
+        message: "Invalid pretend user ID.",
+      }, 400);
+    }
+
+    const pretendUser = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, pretendUserId),
+    });
+
+    if (!pretendUser) {
+      return c.json({
+        message: "Pretend user not found.",
+      }, 404);
+    }
+
+    if (pretendUser.id === session.user.id) {
+      return c.json({
+        message: "You cannot pretend to be yourself.",
+      }, 400);
+    }
+
+    if (pretendUser.isAdmin) {
+      return c.json({
+        message: "You cannot pretend to be another admin.",
+      }, 400);
+    }
+
+    session.user = pretendUser;
   }
 
   c.set("session", session);

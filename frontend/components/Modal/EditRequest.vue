@@ -36,6 +36,7 @@ const props = defineProps<{
   request: Request;
 }>();
 
+const userStore = useUserStore();
 const emit = defineEmits(['close', 'update']);
 const api = useApi();
 
@@ -71,7 +72,18 @@ async function editRequest() {
       return;
     }
 
-    await api.put(`/request/${props.request.id}`, payload);
+    if (
+      userStore.current?.isAdmin &&
+      userStore.current.id !== props.request.user.id
+    ) {
+      await api.put(`/request/${props.request.id}`, payload, {
+        params: {
+          pretendUser: props.request.user.id
+        }
+      });
+    } else {
+      await api.put(`/request/${props.request.id}`, payload);
+    }
 
     emit('update');
     emit('close');

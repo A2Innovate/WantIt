@@ -25,6 +25,7 @@ export const usersTable = pgTable("users", {
   emailVerificationToken: text().unique(),
   password: text(),
   passwordResetToken: text().unique(),
+  isAdmin: boolean().notNull().default(false),
   preferredCurrency: currencies().notNull().default("USD"),
 });
 

@@ -49,7 +49,9 @@
       </p>
 
       <div
-        v-if="userStore.current?.id === offer.user.id"
+        v-if="
+          userStore.current?.id === offer.user.id || userStore.current?.isAdmin
+        "
         class="flex justify-end"
       >
         <UiButton @click="isDeleteModalOpen = true">
@@ -110,9 +112,23 @@ const isDeleting = ref(false);
 async function deleteOffer() {
   try {
     isDeleting.value = true;
-    await api.delete(
-      `/request/${props.offer.requestId}/offer/${props.offer.id}`
-    );
+    if (
+      userStore.current?.isAdmin &&
+      userStore.current.id !== props.offer.user.id
+    ) {
+      await api.delete(
+        `/request/${props.offer.requestId}/offer/${props.offer.id}`,
+        {
+          params: {
+            pretendUser: props.offer.user.id
+          }
+        }
+      );
+    } else {
+      await api.delete(
+        `/request/${props.offer.requestId}/offer/${props.offer.id}`
+      );
+    }
   } finally {
     isDeleting.value = false;
   }

@@ -41,7 +41,9 @@
         <div class="flex justify-between items-center mt-4">
           <div
             v-if="
-              userStore.current && userStore.current.id === request?.user.id
+              (userStore.current &&
+                userStore.current.id === request?.user.id) ||
+              userStore.current?.isAdmin
             "
             class="flex gap-2"
           >
@@ -164,7 +166,18 @@ const {
 async function deleteRequest() {
   try {
     isDeletingRequest.value = true;
-    await api.delete(`/request/${route.params.requestId}`);
+    if (
+      userStore.current?.isAdmin &&
+      userStore.current.id !== request.value?.user.id
+    ) {
+      await api.delete(`/request/${route.params.requestId}`, {
+        params: {
+          pretendUser: request.value?.user.id
+        }
+      });
+    } else {
+      await api.delete(`/request/${route.params.requestId}`);
+    }
     navigateTo('/');
   } catch (error) {
     console.error(error);

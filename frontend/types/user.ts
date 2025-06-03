@@ -5,6 +5,7 @@ export interface User {
   email: string;
   preferredCurrency: string;
   sessionId: number;
+  isAdmin: boolean;
 }
 
 export interface UserSession {

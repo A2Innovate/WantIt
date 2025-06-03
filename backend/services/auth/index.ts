@@ -47,6 +47,7 @@ app.get(
       username: session.user.username,
       preferredCurrency: session.user.preferredCurrency,
       sessionId: session.id,
+      isAdmin: session.user.isAdmin,
     });
   },
 );

@@ -71,6 +71,7 @@ const route = useRoute();
 const userStore = useUserStore();
 const pusher = usePusher();
 const api = useApi();
+const messageStore = useMessageStore();
 const sendError = ref('');
 const requestFetch = useRequestFetch();
 const content = ref('');
@@ -119,6 +120,14 @@ async function handleSend() {
     data.value?.messages.push(response.data);
 
     scrollToBottom();
+
+    messageStore.upsertLastMessage({
+      personId: Number(route.params.userId),
+      senderName: userStore.current!.name,
+      senderUsername: userStore.current!.username,
+      createdAt: response.data.createdAt,
+      content: response.data.content
+    });
   } catch (e) {
     if (e instanceof AxiosError) {
       error.value = e.response?.data.message;
@@ -135,6 +144,14 @@ onMounted(() => {
   channel.bind('new-message', (message: Message) => {
     data.value?.messages.push(message);
     scrollToBottom();
+
+    messageStore.upsertLastMessage({
+      personId: Number(route.params.userId),
+      senderName: data.value!.person.name,
+      senderUsername: data.value!.person.username,
+      createdAt: message.createdAt,
+      content: message.content
+    });
   });
 });
 

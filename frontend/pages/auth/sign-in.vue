@@ -55,6 +55,7 @@ const email = ref('');
 const password = ref('');
 const api = useApi();
 const userStore = useUserStore();
+const messageStore = useMessageStore();
 
 const error = ref('');
 
@@ -80,6 +81,7 @@ async function signIn() {
     });
 
     userStore.current = response.data;
+    messageStore.fetchLastMessages();
     navigateTo('/');
   } catch (e) {
     if (e instanceof AxiosError) {

@@ -25,9 +25,11 @@
                   <h3 class="font-medium truncate">
                     @{{ message.person.username }}
                   </h3>
-                  <span class="text-sm text-neutral-400">
-                    {{ formatTime(new Date(message.createdAt)) }}
-                  </span>
+                  <ClientOnly>
+                    <span class="text-sm text-neutral-400">
+                      {{ formatTime(new Date(message.createdAt)) }}
+                    </span>
+                  </ClientOnly>
                 </div>
                 <p class="text-sm text-neutral-400 truncate">
                   {{ message.content }}
@@ -50,6 +52,4 @@ definePageMeta({
 });
 
 const messageStore = useMessageStore();
-
-messageStore.fetchLastMessages();
 </script>

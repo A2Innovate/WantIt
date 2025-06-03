@@ -63,6 +63,10 @@ onMounted(() => {
         return;
       }
 
+      if (data.type === NotificationType.NEW_MESSAGE) {
+        messageStore.refreshLastMessages();
+      }
+
       notificationStore.current.push(data);
     });
 

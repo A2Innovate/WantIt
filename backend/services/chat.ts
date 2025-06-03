@@ -162,6 +162,7 @@ app.post(
       {
         ...notification[0],
         relatedUser: {
+          id: session.user.id,
           name: session.user.name,
         },
       },

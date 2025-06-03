@@ -71,6 +71,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close']);
 const api = useApi();
+const userStore = useUserStore();
 
 const imagesMarkedForDeletion = ref<string[]>([]);
 const newImages = ref<FileList | null>();
@@ -84,11 +85,13 @@ async function editOffer() {
   try {
     isLoading.value = true;
 
-    const validation = validate(createAndEditOfferSchema, {
+    const mainPayload = {
       content: content.value,
       price: Number(price.value),
       negotiation: negotiation.value
-    });
+    };
+
+    const validation = validate(createAndEditOfferSchema, mainPayload);
 
     if (validation) {
       error.value = validation;
@@ -117,32 +120,77 @@ async function editOffer() {
     }
 
     if (imagesMarkedForDeletion.value.length) {
-      await api.delete(
-        `/request/${props.offer.requestId}/offer/${props.offer.id}/images`,
+      if (
+        userStore.current?.isAdmin &&
+        userStore.current.id !== props.offer.user.id
+      ) {
+        await api.delete(
+          `/request/${props.offer.requestId}/offer/${props.offer.id}/images`,
+          {
+            data: {
+              images: imagesMarkedForDeletion.value
+            },
+            params: {
+              pretendUser: props.offer.user.id
+            }
+          }
+        );
+      } else {
+        await api.delete(
+          `/request/${props.offer.requestId}/offer/${props.offer.id}/images`,
+          {
+            data: {
+              images: imagesMarkedForDeletion.value
+            }
+          }
+        );
+      }
+    }
+
+    if (
+      userStore.current?.isAdmin &&
+      userStore.current.id !== props.offer.user.id
+    ) {
+      await api.put(
+        `/request/${props.offer.requestId}/offer/${props.offer.id}`,
+        mainPayload,
         {
-          data: {
-            images: imagesMarkedForDeletion.value
+          params: {
+            pretendUser: props.offer.user.id
           }
         }
       );
+    } else {
+      await api.put(
+        `/request/${props.offer.requestId}/offer/${props.offer.id}`,
+        mainPayload
+      );
     }
 
-    const response = await api.put(
-      `/request/${props.offer.requestId}/offer/${props.offer.id}`,
-      {
-        content: content.value,
-        price: Number(price.value),
-        negotiation: negotiation.value
-      }
-    );
-
     if (newImages.value) {
-      await api.postForm(
-        `/request/${props.offer.requestId}/offer/${response.data.id}/image`,
-        {
-          images: newImages.value
-        }
-      );
+      if (
+        userStore.current?.isAdmin &&
+        userStore.current.id !== props.offer.user.id
+      ) {
+        await api.postForm(
+          `/request/${props.offer.requestId}/offer/${props.offer.id}/image`,
+          {
+            images: newImages.value
+          },
+          {
+            params: {
+              pretendUser: props.offer.user.id
+            }
+          }
+        );
+      } else {
+        await api.postForm(
+          `/request/${props.offer.requestId}/offer/${props.offer.id}/image`,
+          {
+            images: newImages.value
+          }
+        );
+      }
     }
 
     emit('close');

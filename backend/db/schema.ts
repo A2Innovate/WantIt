@@ -64,6 +64,7 @@ export const messagesTable = pgTable("messages", {
     .notNull()
     .references(() => usersTable.id, { onDelete: "cascade" }),
   content: text().notNull(),
+  edited: boolean().notNull().default(false),
   createdAt: timestamp().notNull().defaultNow(),
 });
 

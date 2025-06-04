@@ -28,11 +28,7 @@
           <UiMessage
             v-for="message in data?.messages"
             :key="message.id"
-            :content="message.content"
-            :time="new Date(message.createdAt)"
-            :side="
-              useUserStore().current?.id === message.senderId ? 'right' : 'left'
-            "
+            :message="message"
           />
           <div v-if="!data" class="flex flex-col gap-2">
             <UiSkeleton
@@ -168,6 +164,17 @@ onMounted(() => {
       createdAt: message.createdAt,
       content: message.content
     });
+  });
+
+  channel.bind('update-message', (update: { id: number; content: string }) => {
+    const index = data.value?.messages.findIndex((m) => m.id === update.id);
+    if (index) {
+      data.value!.messages[index] = {
+        ...data.value!.messages[index],
+        content: update.content,
+        edited: true
+      };
+    }
   });
 });
 

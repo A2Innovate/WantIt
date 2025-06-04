@@ -9,6 +9,7 @@ import {
   sendChatMessageSchema,
 } from "@/schema/services/chat.ts";
 import { pusher } from "@/utils/pusher.ts";
+import z from "zod";
 
 const app = new Hono();
 
@@ -174,4 +175,67 @@ app.post(
   },
 );
 
+app.put(
+  "/message/:messageId",
+  authRequired,
+  zValidator(
+    "param",
+    z.object({
+      messageId: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "messageId must be a valid number",
+      ).transform((value) => Number(value)),
+    }),
+  ),
+  zValidator(
+    "json",
+    sendChatMessageSchema,
+  ),
+  async (c) => {
+    const session = c.get("session");
+    const { messageId } = c.req.valid("param");
+    const { content } = c.req.valid("json");
+
+    const message = await db.query.messagesTable.findFirst({
+      where: eq(messagesTable.id, messageId),
+    });
+
+    if (!message) {
+      return c.json({ message: "Message not found" }, 404);
+    }
+
+    if (message.senderId !== session.user.id) {
+      return c.json({ message: "You cannot edit this message" }, 400);
+    }
+
+    await db.update(messagesTable).set({
+      content,
+      edited: true,
+    }).where(eq(messagesTable.id, messageId));
+
+    pusher.trigger(
+      `private-user-${message.receiverId}-chat-${session.user.id}`,
+      "update-message",
+      {
+        id: messageId,
+        content,
+      },
+    ).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    pusher.trigger(
+      `private-user-${session.user.id}-chat-${message.receiverId}`,
+      "update-message",
+      {
+        id: messageId,
+        content,
+      },
+    ).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    return c.json({ message: "Message edited" }, 200);
+  },
+);
 export default app;

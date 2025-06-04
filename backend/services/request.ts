@@ -80,6 +80,7 @@ app.get(
         budget: true,
         location: true,
         radius: true,
+        createdAt: true,
       },
     });
 

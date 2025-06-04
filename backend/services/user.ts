@@ -34,6 +34,7 @@ app.get(
             content: true,
             budget: true,
             currency: true,
+            createdAt: true,
           },
         },
       },

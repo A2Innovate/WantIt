@@ -57,15 +57,17 @@
             </UiButton>
           </div>
 
-          <div
-            class="flex w-fit gap-2 items-center bg-neutral-900 h-8 px-2 rounded-full"
+          <NuxtLink
+            v-if="request"
+            :to="`/user/${request.user.id}`"
+            class="flex w-fit gap-2 items-center bg-neutral-900 hover:bg-neutral-500 transition-colors h-8 px-2 rounded-full"
           >
             <Icon name="material-symbols:account-circle" class="shrink-0" />
-            <p v-if="request" class="text-sm break-all">
+            <p class="text-sm break-all">
               {{ request.user.username }}
             </p>
-            <UiSkeleton v-else class="h-4 w-24" />
-          </div>
+          </NuxtLink>
+          <UiSkeleton v-else class="h-6 w-24" />
         </div>
       </UiCard>
       <UiCard v-else-if="error" class="m-4">

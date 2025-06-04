@@ -86,23 +86,22 @@ if (userStore.current) {
 
 async function signUp() {
   try {
-    const validation = validate(signUpSchema, {
+    error.value = '';
+    const payload = {
       name: name.value,
       username: username.value,
       email: email.value,
       password: password.value
-    });
+    };
+
+    const validation = validate(signUpSchema, payload);
 
     if (validation) {
       error.value = validation;
       return;
     }
 
-    await api.post('/auth/register', {
-      name: name.value,
-      email: email.value,
-      password: password.value
-    });
+    await api.post('/auth/register', payload);
 
     navigateTo('/auth/sign-in');
   } catch (e) {

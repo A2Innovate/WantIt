@@ -74,38 +74,45 @@ app.put(
     }
 
     if (session.user.email !== email) {
-      const existingUser = await db.select().from(usersTable).where(
-        eq(usersTable.email, email),
-      );
+      const existingUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.email, email),
+      });
 
-      if (existingUser.length > 0) {
+      if (existingUser) {
         return c.json({ message: "User with this email already exists" }, 409);
       }
 
-      await db.delete(userSessionsTable).where(
-        eq(userSessionsTable.sessionToken, session.sessionToken),
-      );
-
       const emailVerificationToken = await generateEmailVerificationToken();
 
-      await db.update(usersTable).set({
-        email: email,
-        isEmailVerified: false,
-        emailVerificationToken: emailVerificationToken,
-      }).where(eq(usersTable.id, session.user.id));
+      try {
+        await sendMail({
+          to: email,
+          subject: "WantIt - Email verification",
+          text: `Hi ${session.user.name}!
 
-      await sendMail({
-        to: email,
-        subject: "WantIt - Email verification",
+          To confirm your email update, click the link below:
+          ${FRONTEND_URL}/auth/verify-email/${emailVerificationToken}
+          
+          Best regards,
+          WantIt Team`,
+        });
+      } catch (error) {
+        console.error("Failed to send email:", error);
+        return c.json({
+          message: "Sending verification email failed, please try again later.",
+        }, 500);
+      }
 
-        text: `Hi ${session.user.name}!
+      await db.transaction(async (tx) => {
+        await tx.update(usersTable).set({
+          email,
+          isEmailVerified: false,
+          emailVerificationToken,
+        }).where(eq(usersTable.id, session.user.id));
 
-        To confirm your email update, click the link below:
-        ${FRONTEND_URL}/auth/verify-email/${emailVerificationToken}
-        
-        Best regards,
-        WantIt Team
-        `,
+        await tx.delete(userSessionsTable).where(
+          eq(userSessionsTable.userId, session.user.id),
+        );
       });
     }
 

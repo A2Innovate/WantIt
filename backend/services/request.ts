@@ -117,6 +117,7 @@ app.get(
             requestId: true,
             price: true,
             negotiation: true,
+            createdAt: true,
           },
           with: {
             user: {

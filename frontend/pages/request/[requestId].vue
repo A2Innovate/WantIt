@@ -86,22 +86,31 @@
         Offers
       </h2>
 
+      <div class="flex justify-between m-4">
+        <UiDropdown
+          v-if="request"
+          class="h-10"
+          :model-value="offerSortingModeReadable"
+          :options="offerSortingModes"
+          @update:model-value="offerSortingMode = $event"
+        />
+        <UiButton
+          v-if="request && userStore.current"
+          @click="isAddOfferModalOpen = true"
+        >
+          <Icon name="material-symbols:add-rounded" />
+          <span>New offer</span>
+        </UiButton>
+        <UiSkeleton v-else-if="!request" class="h-8 w-24" />
+      </div>
+
       <div v-if="request?.offers.length" class="flex flex-col gap-2 m-4">
         <CardOffer
-          v-for="offer in request.offers"
+          v-for="offer in sortedOffers"
           :key="offer.id"
           :offer="offer"
           :currency="request.currency"
         />
-      </div>
-
-      <div class="flex justify-end m-4">
-        <UiButton
-          v-if="request && userStore.current"
-          @click="isAddOfferModalOpen = true"
-          >Add offer</UiButton
-        >
-        <UiSkeleton v-else-if="!request" class="h-8 w-24" />
       </div>
     </div>
 
@@ -154,6 +163,53 @@ const isEditRequestModalOpen = ref(false);
 const isAddOfferModalOpen = ref(false);
 const isDeleteRequestModalOpen = ref(false);
 const isDeletingRequest = ref(false);
+const offerSortingModes = [
+  {
+    value: 'newest_first',
+    label: 'Newest first'
+  },
+  {
+    value: 'oldest_first',
+    label: 'Oldest first'
+  },
+  {
+    value: 'cheapest_first',
+    label: 'Cheapest first'
+  },
+  {
+    value: 'expensive_first',
+    label: 'Expensive first'
+  }
+];
+const offerSortingMode = ref<
+  'cheapest_first' | 'expensive_first' | 'newest_first' | 'oldest_first'
+>('newest_first');
+const offerSortingModeReadable = computed(() => {
+  return offerSortingModes.find(
+    (mode) => mode.value === offerSortingMode.value
+  )!.label;
+});
+const sortedOffers = computed(() => {
+  if (!request.value?.offers) {
+    return [];
+  }
+  return [...request.value.offers].sort((a, b) => {
+    if (offerSortingMode.value === 'newest_first') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (offerSortingMode.value === 'oldest_first') {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    if (offerSortingMode.value === 'cheapest_first') {
+      return a.price - b.price;
+    }
+    if (offerSortingMode.value === 'expensive_first') {
+      return b.price - a.price;
+    }
+    return 0;
+  });
+});
+
 let channel: Channel;
 
 const {
@@ -193,6 +249,7 @@ onMounted(() => {
 
   channel.bind('new-offer', (data: Offer) => {
     if (!request.value?.offers.find((offer) => offer.id === data.id)) {
+      data.createdAt = new Date().toISOString();
       request.value?.offers.push(data);
     }
   });
@@ -256,7 +313,7 @@ onMounted(() => {
       (offer) => offer.id === data.offerId
     );
     if (offer) {
-      data.createdAt = new Date().toString();
+      data.createdAt = new Date().toISOString();
       offer.comments.push(data);
     }
   });

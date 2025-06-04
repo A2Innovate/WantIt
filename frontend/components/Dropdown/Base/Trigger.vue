@@ -4,7 +4,8 @@
       'flex items-center h-full px-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-l-lg transition-all',
       {
         'justify-center w-14': readonly,
-        'justify-between w-18': !readonly
+        'justify-between w-18': !readonly,
+        'w-full': wfull
       }
     ]"
     type="button"
@@ -25,6 +26,7 @@
 defineProps<{
   readonly?: boolean;
   isOpen?: boolean;
+  wfull?: boolean;
 }>();
 
 const emit = defineEmits(['click']);

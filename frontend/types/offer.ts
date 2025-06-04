@@ -12,4 +12,5 @@ export interface Offer {
     name: string;
   }[];
   comments: Comment[];
+  createdAt: string;
 }

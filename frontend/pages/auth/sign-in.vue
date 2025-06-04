@@ -38,7 +38,9 @@
           >Forgot password?</NuxtLink
         >
       </div>
-      <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
+      <p v-if="error" class="text-red-500 text-sm mt-2 text-center">
+        {{ error }}
+      </p>
     </form>
   </div>
 </template>

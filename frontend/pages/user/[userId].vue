@@ -32,7 +32,12 @@
         <Icon name="material-symbols:chat" />
         Send message
       </UiButton>
-      <UiSkeleton v-else-if="!user" class="h-8 w-full" />
+      <UiSkeleton
+        v-else-if="
+          !user && Number(route.params.userId) != userStore.current?.id
+        "
+        class="h-8 w-full"
+      />
       <h2
         v-if="user?.requests.length"
         class="text-xl font-semibold mt-6 mb-4 mx-4"

@@ -170,22 +170,28 @@ app.post(
     const hashedPassword = await argon2.hash(password);
     const emailVerificationToken = await generateEmailVerificationToken();
 
-    await sendMail({
-      to: email,
-      subject: "WantIt - Email verification",
+    try {
+      await sendMail({
+        to: email,
+        subject: "WantIt - Email verification",
+        text: `Hi ${name}!
 
-      text: `Hi ${name}!
-
-      Thank you for registering to WantIt!
-      To activate your account, click the link below:
-      ${FRONTEND_URL}/auth/verify-email/${emailVerificationToken}
-      
-      If you did not register to WantIt, please ignore this email.
-      
-      Best regards,
-      WantIt Team
-      `,
-    });
+        Thank you for registering to WantIt!
+        To activate your account, click the link below:
+        ${FRONTEND_URL}/auth/verify-email/${emailVerificationToken}
+        
+        If you did not register to WantIt, please ignore this email.
+        
+        Best regards,
+        WantIt Team`,
+      });
+    } catch (error) {
+      console.error("Failed to send email:", error);
+      return c.json({
+        message:
+          "Sending verification email failed, please try again later or use OAuth to register.",
+      }, 500);
+    }
 
     await db.insert(usersTable).values({
       name,

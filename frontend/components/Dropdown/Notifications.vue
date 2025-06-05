@@ -74,6 +74,12 @@
               notification.relatedOffer?.content
             }}</span>
           </p>
+          <p v-else-if="notification.type === NotificationType.NEW_ALERT_MATCH">
+            <span class="font-semibold">{{
+              notification.relatedRequest?.content
+            }}</span>
+            matched with your alert
+          </p>
           <small class="text-neutral-400 text-xs">{{
             formatTime(new Date(notification.createdAt))
           }}</small>
@@ -115,7 +121,8 @@ function closeDropdown(e: MouseEvent) {
 function getLink(notification: Notification) {
   if (
     notification.type === NotificationType.NEW_OFFER ||
-    notification.type === NotificationType.NEW_OFFER_COMMENT
+    notification.type === NotificationType.NEW_OFFER_COMMENT ||
+    notification.type === NotificationType.NEW_ALERT_MATCH
   ) {
     return `/request/${notification.relatedRequestId}`;
   }

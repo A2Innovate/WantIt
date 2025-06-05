@@ -7,8 +7,17 @@
           <Icon name="material-symbols:add" />
         </UiButton>
       </div>
-      <UiCard>
-        {{ data }}
+      <UiCard class="flex flex-col gap-2">
+        <UiCard
+          v-for="alert in data"
+          :key="alert.id"
+          :as="NuxtLink"
+          :to="`/user/alert/${alert.id}`"
+          class="hover:bg-neutral-700 transition-colors"
+        >
+          <h3 class="font-semibold">{{ alert.content }}</h3>
+          <p>{{ alert.budget }}</p>
+        </UiCard>
       </UiCard>
     </div>
     <Teleport to="body">
@@ -18,6 +27,9 @@
 </template>
 
 <script setup lang="ts">
+import { NuxtLink } from '#components';
+import type { Alert } from '~/types/alert';
+
 definePageMeta({
   middleware: 'auth'
 });
@@ -26,7 +38,7 @@ const isOpen = ref(false);
 const requestFetch = useRequestFetch();
 
 const { data } = useAsyncData('alerts', async () => {
-  const response = await requestFetch(
+  const response = await requestFetch<Alert[]>(
     useRuntimeConfig().public.apiBase + '/api/user/alerts',
     {
       credentials: 'include'

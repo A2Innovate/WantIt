@@ -37,5 +37,6 @@ export const CURRENCIES = CURRENCIES_NAMES.map((currency) => currency.currency);
 export const NOTIFICATION_TYPES = [
   'NEW_OFFER',
   'NEW_MESSAGE',
-  'NEW_OFFER_COMMENT'
+  'NEW_OFFER_COMMENT',
+  'NEW_ALERT_MATCH'
 ];

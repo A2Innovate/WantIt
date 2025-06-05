@@ -1,9 +1,14 @@
 import { Hono } from "hono";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
-import { eq } from "drizzle-orm";
+import { and, eq, ilike, sql } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
-import { alertsTable, userSessionsTable, usersTable } from "@/db/schema.ts";
+import {
+  alertsTable,
+  requestsTable,
+  userSessionsTable,
+  usersTable,
+} from "@/db/schema.ts";
 import { generateEmailVerificationToken } from "@/utils/generate.ts";
 import { sendMail } from "@/utils/mail.ts";
 import {
@@ -13,6 +18,7 @@ import {
 } from "@/schema/services/user.ts";
 import { FRONTEND_URL } from "@/utils/global.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
+import { z } from "zod";
 
 const app = new Hono();
 
@@ -40,6 +46,55 @@ app.get(
     });
 
     return c.json(alerts);
+  },
+);
+
+app.get(
+  "/alert/:alertId",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
+  authRequired,
+  zValidator(
+    "param",
+    z.object({
+      alertId: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "alertId must be a valid number",
+      ).transform((value) => Number(value)),
+    }),
+  ),
+  async (c) => {
+    const session = c.get("session");
+    const { alertId } = c.req.valid("param");
+
+    const alert = await db.query.alertsTable.findFirst({
+      where: and(
+        eq(alertsTable.id, alertId),
+        eq(alertsTable.userId, session.user.id),
+      ),
+    });
+
+    if (!alert) {
+      return c.json({ message: "Alert not found" }, 404);
+    }
+
+    const requests = await db.select().from(requestsTable)
+      .where(
+        and(
+          sql`ST_Intersects(
+          ST_Buffer(${requestsTable.location}::geography, ${requestsTable.radius})::geometry,
+          ST_Buffer(ST_SetSRID(ST_MakePoint(${alert.location?.x}, ${alert.location?.y})::geography, 4326), ${alert.radius})::geometry
+        )`,
+          ilike(requestsTable.content, `%${alert.content}%`),
+        ),
+      );
+
+    return c.json({
+      alert,
+      requests,
+    });
   },
 );
 

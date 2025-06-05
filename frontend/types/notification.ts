@@ -5,7 +5,8 @@ import type { Request } from './request';
 export enum NotificationType {
   NEW_OFFER = 'NEW_OFFER',
   NEW_MESSAGE = 'NEW_MESSAGE',
-  NEW_OFFER_COMMENT = 'NEW_OFFER_COMMENT'
+  NEW_OFFER_COMMENT = 'NEW_OFFER_COMMENT',
+  NEW_ALERT_MATCH = 'NEW_ALERT_MATCH'
 }
 
 export interface Notification {

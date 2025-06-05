@@ -10,17 +10,22 @@ export const useRequestStore = defineStore('request', () => {
   const { data, refresh } = useAsyncData<Request[]>(
     'requests',
     async (): Promise<Request[]> => {
+      const isSameQuery = query.value === lastQuery.value;
+      lastQuery.value = query.value;
+      if (!isSameQuery) {
+        data.value = [];
+      }
+
       isFetching.value = true;
       const response = await api.get('/request', {
         params: {
           content: query.value,
-          offset: lastQuery.value === query.value ? data.value?.length : 0
+          offset: data.value?.length ?? 0
         }
       });
 
       isFetching.value = false;
-      if (query.value !== lastQuery.value) {
-        lastQuery.value = query.value;
+      if (!isSameQuery) {
         return response.data;
       } else {
         return [...new Set([...(data.value ?? []), ...response.data])];

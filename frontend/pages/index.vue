@@ -11,15 +11,15 @@
           class="w-full"
           @update:model-value="requestStore.refresh()"
         />
-        <div
-          v-if="!requestStore.isFetching"
-          class="flex flex-col gap-2 sm:mb-32 mb-4"
-        >
+        <div class="flex flex-col gap-2 sm:mb-32 mb-4">
           <CardRequest
             v-for="request in requestStore.requests"
             :key="request.id"
             :request="request"
           />
+          <div v-if="requestStore.isFetching" class="flex flex-col gap-2">
+            <UiSkeletonLoader v-for="i in 2" :key="i" class="h-28" />
+          </div>
           <UiButton
             v-if="requestStore.requests?.length"
             @click="
@@ -38,4 +38,6 @@
 
 <script setup lang="ts">
 const requestStore = useRequestStore();
+
+requestStore.refresh();
 </script>

@@ -3,10 +3,22 @@
     <div class="m-4 flex flex-col gap-4">
       <h1 class="text-xl font-semibold">Alert</h1>
       <UiCard>
-        <UiMapPoints :data="mapPoints" />
+        <UiMapPoints
+          :data="mapPoints"
+          @marker:click="
+            (event) => $router.replace({ hash: `#request-${event.id}` })
+          "
+        />
         <h3 class="font-semibold">{{ data?.alert?.content }}</h3>
         <p>{{ data?.alert?.budget }}</p>
       </UiCard>
+      <div v-if="data?.requests.length" class="flex flex-col gap-2">
+        <CardRequest
+          v-for="request in data.requests"
+          :key="`request-${request.id}`"
+          :request="request"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -40,14 +52,15 @@ const mapPoints = computed(() => {
       location: request.location,
       radius: request.radius,
       content: request.content,
-      color: 'blue'
+      color: 'blue',
+      clickable: true
     }));
 
   const alert = {
     id: data.value.alert.id,
     location: data.value.alert.location,
     radius: data.value.alert.radius,
-    content: data.value.alert.content,
+    content: 'Your alert',
     color: 'red'
   };
 

@@ -15,7 +15,8 @@
       <LMarker
         v-for="item in data"
         :key="item.id"
-        :lat-lng="[item.location!.y, item.location!.x]"
+        :lat-lng="[item.location.y, item.location.x]"
+        @click="item.clickable ? emit('marker:click', item) : undefined"
       >
         <LTooltip>{{ item.content }}</LTooltip>
       </LMarker>
@@ -31,16 +32,21 @@
 </template>
 
 <script setup lang="ts">
+interface Point {
+  id: number;
+  color: string;
+  location: {
+    x: number;
+    y: number;
+  };
+  radius: number;
+  content: string;
+  clickable?: boolean;
+}
+
 defineProps<{
-  data: {
-    id: number;
-    color: string;
-    location: {
-      x: number;
-      y: number;
-    };
-    radius: number;
-    content: string;
-  }[];
+  data: Point[];
 }>();
+
+const emit = defineEmits(['marker:click']);
 </script>

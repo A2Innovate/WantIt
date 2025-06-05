@@ -80,7 +80,21 @@ app.get(
       return c.json({ message: "Alert not found" }, 404);
     }
 
-    const requests = await db.select().from(requestsTable)
+    const requests = await db.select(
+      {
+        id: requestsTable.id,
+        content: requestsTable.content,
+        budget: requestsTable.budget,
+        currency: requestsTable.currency,
+        location: requestsTable.location,
+        radius: requestsTable.radius,
+        user: {
+          id: usersTable.id,
+          username: usersTable.username,
+        },
+        createdAt: requestsTable.createdAt,
+      },
+    ).from(requestsTable)
       .where(
         and(
           sql`ST_Intersects(
@@ -89,7 +103,9 @@ app.get(
         )`,
           ilike(requestsTable.content, `%${alert.content}%`),
         ),
-      );
+      )
+      .innerJoin(usersTable, eq(requestsTable.userId, usersTable.id));
+
 
     return c.json({
       alert,

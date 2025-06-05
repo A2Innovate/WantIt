@@ -52,7 +52,11 @@ if (!requestStore.requests?.length) {
 }
 
 function handleScroll() {
-  if (requestStore.requests?.length && !requestStore.loadedAll) {
+  if (
+    requestStore.requests?.length &&
+    !requestStore.loadedAll &&
+    requestStore.status !== 'pending'
+  ) {
     const distanceToBottom =
       document.documentElement.scrollHeight -
       (window.scrollY + window.innerHeight);

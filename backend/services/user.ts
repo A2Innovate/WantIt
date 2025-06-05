@@ -3,10 +3,11 @@ import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
 import { eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
-import { userSessionsTable, usersTable } from "@/db/schema.ts";
+import { alertsTable, userSessionsTable, usersTable } from "@/db/schema.ts";
 import { generateEmailVerificationToken } from "@/utils/generate.ts";
 import { sendMail } from "@/utils/mail.ts";
 import {
+  createAlertSchema,
   getUserByIdSchema,
   updateProfileSchema,
 } from "@/schema/services/user.ts";
@@ -16,39 +17,57 @@ import { rateLimit } from "@/middleware/ratelimit.ts";
 const app = new Hono();
 
 app.get(
-  "/:userId",
+  "/alerts",
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    limit: 50,
+    limit: 15,
   }),
-  zValidator("param", getUserByIdSchema),
+  authRequired,
   async (c) => {
-    const { userId } = c.req.valid("param");
+    const session = c.get("session");
 
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, userId),
-      with: {
-        requests: {
-          columns: {
-            id: true,
-            content: true,
-            budget: true,
-            currency: true,
-            createdAt: true,
-          },
-        },
-      },
+    const alerts = await db.query.alertsTable.findMany({
+      where: eq(alertsTable.userId, session.user.id),
       columns: {
-        name: true,
-        username: true,
+        id: true,
+        content: true,
+        budget: true,
+        currency: true,
+        location: true,
+        radius: true,
+        createdAt: true,
       },
     });
 
-    if (!user) {
-      return c.json({ message: "User not found" }, 404);
-    }
+    return c.json(alerts);
+  },
+);
 
-    return c.json(user);
+app.post(
+  "/alert",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
+  zValidator(
+    "json",
+    createAlertSchema,
+  ),
+  authRequired,
+  async (c) => {
+    const session = c.get("session");
+    const { content, budget, location, radius, currency } = c.req.valid("json");
+
+    await db.insert(alertsTable).values({
+      content,
+      budget,
+      location,
+      radius,
+      currency,
+      userId: session.user.id,
+    }).returning();
+
+    return c.json({ message: "Alert created successfully" }, 201);
   },
 );
 
@@ -139,6 +158,43 @@ app.put(
     }
 
     return c.json({ message: "Updated successfully" }, 200);
+  },
+);
+
+app.get(
+  "/:userId",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  zValidator("param", getUserByIdSchema),
+  async (c) => {
+    const { userId } = c.req.valid("param");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+      with: {
+        requests: {
+          columns: {
+            id: true,
+            content: true,
+            budget: true,
+            currency: true,
+            createdAt: true,
+          },
+        },
+      },
+      columns: {
+        name: true,
+        username: true,
+      },
+    });
+
+    if (!user) {
+      return c.json({ message: "User not found" }, 404);
+    }
+
+    return c.json(user);
   },
 );
 

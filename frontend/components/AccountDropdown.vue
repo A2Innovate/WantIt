@@ -33,6 +33,13 @@
           </li>
           <li>
             <NuxtLink
+              to="/user/alerts"
+              class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
+              ><Icon name="material-symbols:release-alert-rounded" /> Alerts
+            </NuxtLink>
+          </li>
+          <li>
+            <NuxtLink
               to="/user/settings"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
               ><Icon name="material-symbols:settings" /> Settings

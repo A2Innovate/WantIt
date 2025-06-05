@@ -203,3 +203,16 @@ export const notificationsRelations = relations(
     }),
   }),
 );
+
+export const alertsTable = pgTable("alerts", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  content: text().notNull(),
+  budget: integer().notNull(),
+  currency: currencies().notNull().default("USD"),
+  location: geometry("location", { type: "point", mode: "xy", srid: 4326 }),
+  radius: integer(),
+  createdAt: timestamp().notNull().defaultNow(),
+});

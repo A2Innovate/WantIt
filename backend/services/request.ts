@@ -2,8 +2,9 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, desc, eq, ilike, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import {
+  alertsTable,
   notificationsTable,
   offerImagesTable,
   offersTable,
@@ -621,6 +622,21 @@ app.post(
       location,
       radius,
     }).returning();
+
+    db.select().from(alertsTable)
+      .where(
+        and(
+          sql`ST_Intersects(
+            ST_Buffer(${alertsTable.location}::geography, ${alertsTable.radius})::geometry,
+            ST_Buffer(ST_SetSRID(ST_MakePoint(${location?.x}, ${location?.y})::geography, 4326), ${radius})::geometry
+          )`,
+          ilike(alertsTable.content, `%${content}%`),
+        ),
+      ).then((alerts) => {
+        for (const alert of alerts) {
+          console.log(alert);
+        }
+      });
 
     return c.json(request[0]);
   },

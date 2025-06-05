@@ -25,6 +25,7 @@ import { ImagePipelineInputs } from "@huggingface/transformers";
 import { pusher } from "@/utils/pusher.ts";
 import sharp from "sharp";
 import { pipeline } from "@huggingface/transformers";
+import { isRequestMatchingAlertBudget } from "../utils/filter.ts";
 
 const app = new Hono();
 
@@ -634,6 +635,10 @@ app.post(
         ),
       ).then(async (alerts) => {
         for (const alert of alerts) {
+          if (!await isRequestMatchingAlertBudget(request, alert)) {
+            continue;
+          }
+
           const notification = await db.insert(notificationsTable).values({
             type: "NEW_ALERT_MATCH",
             relatedRequestId: request.id,

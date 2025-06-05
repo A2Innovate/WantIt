@@ -19,6 +19,7 @@ import {
 import { FRONTEND_URL } from "@/utils/global.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { z } from "zod";
+import { isRequestMatchingAlertBudget } from "@/utils/filter.ts";
 
 const app = new Hono();
 
@@ -130,6 +131,12 @@ app.get(
       });
     }
 
+    for (const request of requests) {
+      if (!await isRequestMatchingAlertBudget(request, alert)) {
+        requests.splice(requests.indexOf(request), 1);
+      }
+    }
+
     return c.json({
       alert,
       requests,
@@ -150,7 +157,14 @@ app.post(
   authRequired,
   async (c) => {
     const session = c.get("session");
-    const { content, budget, location, radius, currency } = c.req.valid("json");
+    const {
+      content,
+      budget,
+      location,
+      radius,
+      currency,
+      budgetComparisonMode,
+    } = c.req.valid("json");
 
     await db.insert(alertsTable).values({
       content,
@@ -158,6 +172,7 @@ app.post(
       location,
       radius,
       currency,
+      budgetComparisonMode,
       userId: session.user.id,
     }).returning();
 

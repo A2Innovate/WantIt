@@ -16,8 +16,12 @@
           class="hover:bg-neutral-700 transition-colors"
         >
           <h3 class="font-semibold">{{ alert.content }}</h3>
-          <p>{{ alert.budget }}</p>
+          <p>{{ priceFmt(alert.budget, alert.currency) }}</p>
         </UiCard>
+        <UiSkeletonLoader v-if="!data && !error" class="h-96 w-full" />
+        <p v-else-if="error" class="text-red-500 text-center">
+          {{ error.message }}
+        </p>
       </UiCard>
     </div>
     <Teleport to="body">
@@ -37,7 +41,7 @@ definePageMeta({
 const isOpen = ref(false);
 const requestFetch = useRequestFetch();
 
-const { data } = useAsyncData('alerts', async () => {
+const { data, error } = useAsyncData('alerts', async () => {
   const response = await requestFetch<Alert[]>(
     useRuntimeConfig().public.apiBase + '/api/user/alerts',
     {

@@ -10,7 +10,7 @@
       <UiMapRadiusPicker v-if="!locationGlobal" v-model="location" />
       <UiLabel for="content">Content</UiLabel>
       <UiInput id="content" v-model="content" placeholder="Galaxy S23..." />
-      <UiLabel for="budget">Price</UiLabel>
+      <UiLabel for="budget">Budget</UiLabel>
       <div class="flex">
         <DropdownCurrency v-model="selectedCurrency" />
         <UiInput
@@ -20,7 +20,13 @@
           type="number"
         />
       </div>
-      <UiDropdown v-model="budgetComparisonMode" :options="comparisonModes" />
+      <UiDropdown
+        v-if="budget"
+        class="h-10"
+        :model-value="budgetComparisonModeReadable"
+        :options="comparisonModes"
+        @update:model-value="budgetComparisonMode = $event"
+      />
       <UiButton type="submit" class="mt-2">Add</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
@@ -53,7 +59,7 @@ const budgetComparisonMode = ref('EQUALS');
 const comparisonModes = computed(() => [
   {
     value: 'EQUALS',
-    label: `Equals ${budget.value} ${selectedCurrency.value}`
+    label: `Equal to ${budget.value} ${selectedCurrency.value}`
   },
   {
     value: 'LESS_THAN',
@@ -69,9 +75,14 @@ const comparisonModes = computed(() => [
   },
   {
     value: 'GREATER_THAN_OR_EQUAL_TO',
-    label: `Greater than ${budget.value} ${selectedCurrency.value} or equal to ${budget.value} ${selectedCurrency.value}`
+    label: `Greater than or equal to ${budget.value} ${selectedCurrency.value}`
   }
 ]);
+const budgetComparisonModeReadable = computed(() => {
+  return comparisonModes.value.find(
+    (mode) => mode.value === budgetComparisonMode.value
+  )!.label;
+});
 
 async function addAlert() {
   try {
@@ -85,7 +96,8 @@ async function addAlert() {
             x: location.value.lng,
             y: location.value.lat
           },
-      radius: locationGlobal.value ? null : location.value.radius
+      radius: locationGlobal.value ? null : location.value.radius,
+      budgetComparisonMode: budgetComparisonMode.value
     };
 
     const validation = validate(createAlertSchema, payload);

@@ -5,6 +5,7 @@
       <UiCard>
         <UiMapPoints
           v-if="data?.alert.location"
+          class="mb-4"
           :data="mapPoints"
           @marker:click="
             (event) => {
@@ -13,8 +14,18 @@
             }
           "
         />
-        <h3 class="font-semibold">{{ data?.alert?.content }}</h3>
-        <p>{{ data?.alert?.budget }}</p>
+        <UiSkeletonLoader v-else-if="!data" class="mb-4 h-60 w-full" />
+        <h3 v-if="data">{{ data.alert.content }}</h3>
+        <UiSkeleton v-else class="h-6 w-1/2" />
+        <p v-if="data" class="flex items-center gap-1">
+          {{ priceFmt(data.alert.budget, data.alert.currency) }}
+          <ConvertedPrice
+            class="text-xs"
+            :currency="data.alert.currency"
+            :amount="data.alert.budget"
+          />
+        </p>
+        <UiSkeleton v-else class="h-6 w-24 mt-1" />
       </UiCard>
       <div v-if="data?.requests.length" class="flex flex-col gap-2">
         <CardRequest
@@ -22,7 +33,7 @@
           :id="`request-${request.id}`"
           :key="request.id"
           :class="{
-            'ring-1': highlightId === request.id
+            'ring-1 ring-neutral-400': highlightId === request.id
           }"
           :request="request"
         />

@@ -6,7 +6,10 @@
         <UiMapPoints
           :data="mapPoints"
           @marker:click="
-            (event) => $router.replace({ hash: `#request-${event.id}` })
+            (event) => {
+              highlightId = event.id;
+              $router.replace({ hash: `#request-${event.id}` });
+            }
           "
         />
         <h3 class="font-semibold">{{ data?.alert?.content }}</h3>
@@ -15,7 +18,11 @@
       <div v-if="data?.requests.length" class="flex flex-col gap-2">
         <CardRequest
           v-for="request in data.requests"
-          :key="`request-${request.id}`"
+          :id="`request-${request.id}`"
+          :key="request.id"
+          :class="{
+            'ring-1': highlightId === request.id
+          }"
           :request="request"
         />
       </div>
@@ -33,6 +40,7 @@ definePageMeta({
 
 const route = useRoute();
 const requestFetch = useRequestFetch();
+const highlightId = ref<number | null>(null);
 const mapPoints = computed(() => {
   if (!data.value) {
     return [];

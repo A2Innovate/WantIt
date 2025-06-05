@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, ilike, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray } from "drizzle-orm";
 import {
   notificationsTable,
   offerImagesTable,
@@ -22,9 +22,7 @@ import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { ImagePipelineInputs } from "@huggingface/transformers";
 import { pusher } from "@/utils/pusher.ts";
-
 import sharp from "sharp";
-
 import { pipeline } from "@huggingface/transformers";
 
 const app = new Hono();
@@ -58,13 +56,17 @@ app.get(
     "query",
     z.object({
       content: z.string().optional(),
+      offset: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "offset must be a valid number",
+      ).transform((value) => Number(value)).optional(),
     }),
   ),
   async (c) => {
-    const query = c.req.valid("query");
+    const { content, offset } = c.req.valid("query");
 
     const requests = await db.query.requestsTable.findMany({
-      where: ilike(requestsTable.content, `%${query.content}%`),
+      where: content ? ilike(requestsTable.content, `%${content}%`) : undefined,
       with: {
         user: {
           columns: {
@@ -82,6 +84,9 @@ app.get(
         radius: true,
         createdAt: true,
       },
+      limit: 10,
+      offset,
+      orderBy: desc(requestsTable.id),
     });
 
     return c.json(requests);

@@ -18,7 +18,7 @@ export const rateLimit = ({
         return next();
       }
 
-      const key = `ratelimit:${ip}:${c.req.routePath}`;
+      const key = `ratelimit:${ip}:${c.req.method}:${c.req.routePath}`;
       const now = Date.now();
       const windowStart = now - windowMs;
 

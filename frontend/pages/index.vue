@@ -24,6 +24,12 @@
             <UiSkeletonLoader v-for="i in 10" :key="i" class="h-28" />
           </div>
           <p
+            v-if="requestStore.requests?.length"
+            class="text-center text-neutral-500"
+          >
+            {{ requestStore.requests?.length }} loaded
+          </p>
+          <p
             v-if="
               !requestStore.requests?.length &&
               requestStore.status === 'success'

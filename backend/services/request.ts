@@ -22,9 +22,7 @@ import { generateUniqueOfferImageUUID } from "@/utils/generate.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { ImagePipelineInputs } from "@huggingface/transformers";
 import { pusher } from "@/utils/pusher.ts";
-
 import sharp from "sharp";
-
 import { pipeline } from "@huggingface/transformers";
 
 const app = new Hono();
@@ -68,7 +66,7 @@ app.get(
     const { content, offset } = c.req.valid("query");
 
     const requests = await db.query.requestsTable.findMany({
-      where: ilike(requestsTable.content, `%${content}%`),
+      where: content ? ilike(requestsTable.content, `%${content}%`) : undefined,
       with: {
         user: {
           columns: {

@@ -1,5 +1,7 @@
 import type { Request } from '@/types/request';
 
+const PAGE_SIZE = 10;
+
 export const useRequestStore = defineStore('request', () => {
   const loadedAll = ref(false);
   const lastQuery = ref('');
@@ -24,7 +26,7 @@ export const useRequestStore = defineStore('request', () => {
         }
       });
 
-      if (response.data.length < 10) {
+      if (response.data.length < PAGE_SIZE) {
         loadedAll.value = true;
       }
 

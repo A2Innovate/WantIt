@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, ilike, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray } from "drizzle-orm";
 import {
   notificationsTable,
   offerImagesTable,
@@ -88,6 +88,7 @@ app.get(
       },
       limit: 2, // For testing purposes
       offset,
+      orderBy: desc(requestsTable.id),
     });
 
     return c.json(requests);

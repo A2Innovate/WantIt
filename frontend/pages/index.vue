@@ -17,15 +17,24 @@
             :key="request.id"
             :request="request"
           />
-          <div v-if="requestStore.isFetching" class="flex flex-col gap-2">
+          <div
+            v-if="requestStore.status === 'pending'"
+            class="flex flex-col gap-2"
+          >
             <UiSkeletonLoader v-for="i in 2" :key="i" class="h-28" />
           </div>
+          <p
+            v-if="
+              !requestStore.requests?.length &&
+              requestStore.status === 'success'
+            "
+            class="text-center text-neutral-500"
+          >
+            No requests found
+          </p>
           <UiButton
             v-if="requestStore.requests?.length"
-            @click="
-              requestStore.offset = requestStore.requests.length;
-              requestStore.refresh();
-            "
+            @click="requestStore.refresh()"
           >
             <Icon name="material-symbols:arrow-downward-rounded" />
             Load more
@@ -39,5 +48,7 @@
 <script setup lang="ts">
 const requestStore = useRequestStore();
 
-requestStore.refresh();
+if (!requestStore.requests?.length) {
+  requestStore.refresh();
+}
 </script>

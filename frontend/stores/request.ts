@@ -1,13 +1,11 @@
 import type { Request } from '@/types/request';
 
 export const useRequestStore = defineStore('request', () => {
-  const offset = ref(0);
   const lastQuery = ref('');
   const query = ref('');
-  const isFetching = ref(false);
   const api = useApi();
 
-  const { data, refresh } = useAsyncData<Request[]>(
+  const { data, refresh, status } = useAsyncData<Request[]>(
     'requests',
     async (): Promise<Request[]> => {
       const isSameQuery = query.value === lastQuery.value;
@@ -16,7 +14,6 @@ export const useRequestStore = defineStore('request', () => {
         data.value = [];
       }
 
-      isFetching.value = true;
       const response = await api.get('/request', {
         params: {
           content: query.value,
@@ -24,7 +21,6 @@ export const useRequestStore = defineStore('request', () => {
         }
       });
 
-      isFetching.value = false;
       if (!isSameQuery) {
         return response.data;
       } else {
@@ -38,9 +34,8 @@ export const useRequestStore = defineStore('request', () => {
 
   return {
     requests: data,
-    isFetching,
+    status,
     refresh,
-    offset,
     query
   };
 });

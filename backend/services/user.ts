@@ -106,7 +106,6 @@ app.get(
       )
       .innerJoin(usersTable, eq(requestsTable.userId, usersTable.id));
 
-
     return c.json({
       alert,
       requests,

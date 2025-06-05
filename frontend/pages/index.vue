@@ -21,7 +21,7 @@
             v-if="requestStore.status === 'pending'"
             class="flex flex-col gap-2"
           >
-            <UiSkeletonLoader v-for="i in 2" :key="i" class="h-28" />
+            <UiSkeletonLoader v-for="i in 10" :key="i" class="h-28" />
           </div>
           <p
             v-if="
@@ -32,13 +32,6 @@
           >
             No requests found
           </p>
-          <UiButton
-            v-if="requestStore.requests?.length"
-            @click="requestStore.refresh()"
-          >
-            <Icon name="material-symbols:arrow-downward-rounded" />
-            Load more
-          </UiButton>
         </div>
       </div>
     </div>
@@ -51,4 +44,23 @@ const requestStore = useRequestStore();
 if (!requestStore.requests?.length) {
   requestStore.refresh();
 }
+
+function handleScroll() {
+  if (requestStore.requests?.length && !requestStore.loadedAll) {
+    const distanceToBottom =
+      document.documentElement.scrollHeight -
+      (window.scrollY + window.innerHeight);
+    if (distanceToBottom < window.innerHeight) {
+      requestStore.refresh();
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 </script>

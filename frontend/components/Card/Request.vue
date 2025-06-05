@@ -13,9 +13,11 @@
       </span>
     </div>
     <div class="flex justify-between items-center">
-      <p class="text-xs text-neutral-400">
-        {{ formatTime(new Date(request.createdAt)) }}
-      </p>
+      <ClientOnly>
+        <p class="text-xs text-neutral-400">
+          {{ formatTime(new Date(request.createdAt)) }}
+        </p>
+      </ClientOnly>
       <div
         v-if="request.user.id"
         class="flex w-fit gap-2 items-center bg-neutral-900 h-8 px-2 rounded-full"

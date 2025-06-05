@@ -86,7 +86,7 @@ app.get(
         radius: true,
         createdAt: true,
       },
-      limit: 2, // For testing purposes
+      limit: 10,
       offset,
       orderBy: desc(requestsTable.id),
     });

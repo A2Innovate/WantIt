@@ -1,6 +1,7 @@
 import type { Request } from '@/types/request';
 
 export const useRequestStore = defineStore('request', () => {
+  const loadedAll = ref(false);
   const lastQuery = ref('');
   const query = ref('');
   const api = useApi();
@@ -10,8 +11,10 @@ export const useRequestStore = defineStore('request', () => {
     async (): Promise<Request[]> => {
       const isSameQuery = query.value === lastQuery.value;
       lastQuery.value = query.value;
+
       if (!isSameQuery) {
         data.value = [];
+        loadedAll.value = false;
       }
 
       const response = await api.get('/request', {
@@ -21,11 +24,11 @@ export const useRequestStore = defineStore('request', () => {
         }
       });
 
-      if (!isSameQuery) {
-        return response.data;
-      } else {
-        return [...new Set([...(data.value ?? []), ...response.data])];
+      if (response.data.length < 10) {
+        loadedAll.value = true;
       }
+
+      return [...(data.value ?? []), ...response.data];
     },
     {
       dedupe: 'cancel'
@@ -35,6 +38,7 @@ export const useRequestStore = defineStore('request', () => {
   return {
     requests: data,
     status,
+    loadedAll,
     refresh,
     query
   };

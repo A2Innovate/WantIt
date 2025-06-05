@@ -4,6 +4,7 @@
       <h1 class="text-xl font-semibold">Alert</h1>
       <UiCard>
         <UiMapPoints
+          v-if="data?.alert.location"
           :data="mapPoints"
           @marker:click="
             (event) => {

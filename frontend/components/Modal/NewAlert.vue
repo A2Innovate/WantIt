@@ -20,6 +20,7 @@
           type="number"
         />
       </div>
+      <UiDropdown v-model="budgetComparisonMode" :options="comparisonModes" />
       <UiButton type="submit" class="mt-2">Add</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
@@ -48,6 +49,29 @@ const location = ref({
 });
 const locationGlobal = ref(false);
 const error = ref('');
+const budgetComparisonMode = ref('EQUALS');
+const comparisonModes = computed(() => [
+  {
+    value: 'EQUALS',
+    label: `Equals ${budget.value} ${selectedCurrency.value}`
+  },
+  {
+    value: 'LESS_THAN',
+    label: `Less than ${budget.value} ${selectedCurrency.value}`
+  },
+  {
+    value: 'LESS_THAN_OR_EQUAL_TO',
+    label: `Less than or equal to ${budget.value} ${selectedCurrency.value}`
+  },
+  {
+    value: 'GREATER_THAN',
+    label: `Greater than ${budget.value} ${selectedCurrency.value}`
+  },
+  {
+    value: 'GREATER_THAN_OR_EQUAL_TO',
+    label: `Greater than ${budget.value} ${selectedCurrency.value} or equal to ${budget.value} ${selectedCurrency.value}`
+  }
+]);
 
 async function addAlert() {
   try {

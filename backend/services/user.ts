@@ -80,31 +80,55 @@ app.get(
       return c.json({ message: "Alert not found" }, 404);
     }
 
-    const requests = await db.select(
-      {
-        id: requestsTable.id,
-        content: requestsTable.content,
-        budget: requestsTable.budget,
-        currency: requestsTable.currency,
-        location: requestsTable.location,
-        radius: requestsTable.radius,
-        user: {
-          id: usersTable.id,
-          username: usersTable.username,
+    let requests;
+    if (alert.location) {
+      requests = await db.select(
+        {
+          id: requestsTable.id,
+          content: requestsTable.content,
+          budget: requestsTable.budget,
+          currency: requestsTable.currency,
+          location: requestsTable.location,
+          radius: requestsTable.radius,
+          user: {
+            id: usersTable.id,
+            username: usersTable.username,
+          },
+          createdAt: requestsTable.createdAt,
         },
-        createdAt: requestsTable.createdAt,
-      },
-    ).from(requestsTable)
-      .where(
-        and(
-          sql`ST_Intersects(
+      ).from(requestsTable)
+        .where(
+          and(
+            sql`ST_Intersects(
           ST_Buffer(${requestsTable.location}::geography, ${requestsTable.radius})::geometry,
           ST_Buffer(ST_SetSRID(ST_MakePoint(${alert.location?.x}, ${alert.location?.y})::geography, 4326), ${alert.radius})::geometry
         )`,
-          ilike(requestsTable.content, `%${alert.content}%`),
-        ),
-      )
-      .innerJoin(usersTable, eq(requestsTable.userId, usersTable.id));
+            ilike(requestsTable.content, `%${alert.content}%`),
+          ),
+        )
+        .innerJoin(usersTable, eq(requestsTable.userId, usersTable.id));
+    } else {
+      requests = await db.query.requestsTable.findMany({
+        where: ilike(requestsTable.content, `%${alert.content}%`),
+        columns: {
+          id: true,
+          content: true,
+          budget: true,
+          currency: true,
+          location: true,
+          radius: true,
+          createdAt: true,
+        },
+        with: {
+          user: {
+            columns: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+      });
+    }
 
     return c.json({
       alert,

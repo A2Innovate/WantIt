@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CURRENCIES } from "@/utils/global.ts";
+import { COMPARISON_MODES, CURRENCIES } from "@/utils/global.ts";
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters long").max(
@@ -30,6 +30,7 @@ export const createAlertSchema = z.object({
   budget: z
     .number()
     .max(2147483647, "Budget must be at most 2147483647"),
+  budgetComparisonMode: z.enum(COMPARISON_MODES),
   location: z
     .object({
       x: z.number().min(-180).max(180),

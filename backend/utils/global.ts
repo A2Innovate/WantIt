@@ -118,4 +118,5 @@ export const NOTIFICATION_TYPES = [
   "NEW_OFFER",
   "NEW_MESSAGE",
   "NEW_OFFER_COMMENT",
+  "NEW_ALERT_MATCH",
 ] as const;

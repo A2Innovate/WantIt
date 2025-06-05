@@ -614,7 +614,7 @@ app.post(
     const { content, budget, currency, location, radius } = c.req.valid("json");
     const session = c.get("session");
 
-    const request = await db.insert(requestsTable).values({
+    const [request] = await db.insert(requestsTable).values({
       content,
       userId: session.user.id,
       currency,
@@ -632,13 +632,30 @@ app.post(
           )`,
           ilike(alertsTable.content, `%${content}%`),
         ),
-      ).then((alerts) => {
+      ).then(async (alerts) => {
         for (const alert of alerts) {
-          console.log(alert);
+          const notification = await db.insert(notificationsTable).values({
+            type: "NEW_ALERT_MATCH",
+            relatedRequestId: request.id,
+            userId: alert.userId,
+          }).returning();
+
+          pusher.trigger(
+            `private-user-${alert.userId}`,
+            "new-notification",
+            {
+              ...notification[0],
+              relatedRequest: {
+                content: request.content,
+              },
+            },
+          ).catch((e) => {
+            console.error(`Async Pusher trigger error: ${e}`);
+          });
         }
       });
 
-    return c.json(request[0]);
+    return c.json(request);
   },
 );
 

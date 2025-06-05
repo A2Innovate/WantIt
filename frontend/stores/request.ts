@@ -1,28 +1,41 @@
 import type { Request } from '@/types/request';
 
 export const useRequestStore = defineStore('request', () => {
+  const offset = ref(0);
+  const lastQuery = ref('');
   const query = ref('');
   const isFetching = ref(false);
   const api = useApi();
 
-  const { data: requests, refresh } = useAsyncData<Request[]>(
+  const { data, refresh } = useAsyncData<Request[]>(
     'requests',
-    async () => {
+    async (): Promise<Request[]> => {
       isFetching.value = true;
       const response = await api.get('/request', {
         params: {
-          content: query.value
+          content: query.value,
+          offset: lastQuery.value === query.value ? data.value?.length : 0
         }
       });
+
       isFetching.value = false;
-      return response.data;
+      if (query.value !== lastQuery.value) {
+        lastQuery.value = query.value;
+        return response.data;
+      } else {
+        return [...new Set([...(data.value ?? []), ...response.data])];
+      }
+    },
+    {
+      dedupe: 'cancel'
     }
   );
 
   return {
-    requests,
+    requests: data,
     isFetching,
     refresh,
+    offset,
     query
   };
 });

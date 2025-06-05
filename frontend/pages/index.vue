@@ -20,6 +20,16 @@
             :key="request.id"
             :request="request"
           />
+          <UiButton
+            v-if="requestStore.requests?.length"
+            @click="
+              requestStore.offset = requestStore.requests.length;
+              requestStore.refresh();
+            "
+          >
+            <Icon name="material-symbols:arrow-downward-rounded" />
+            Load more
+          </UiButton>
         </div>
       </div>
     </div>

@@ -58,13 +58,17 @@ app.get(
     "query",
     z.object({
       content: z.string().optional(),
+      offset: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "offset must be a valid number",
+      ).transform((value) => Number(value)).optional(),
     }),
   ),
   async (c) => {
-    const query = c.req.valid("query");
+    const { content, offset } = c.req.valid("query");
 
     const requests = await db.query.requestsTable.findMany({
-      where: ilike(requestsTable.content, `%${query.content}%`),
+      where: ilike(requestsTable.content, `%${content}%`),
       with: {
         user: {
           columns: {
@@ -82,6 +86,8 @@ app.get(
         radius: true,
         createdAt: true,
       },
+      limit: 2, // For testing purposes
+      offset,
     });
 
     return c.json(requests);

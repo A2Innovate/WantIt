@@ -134,15 +134,16 @@ app.get(
       });
     }
 
+    const filteredRequests = [];
     for (const request of requests) {
-      if (!await isRequestMatchingAlertBudget(request, alert)) {
-        requests.splice(requests.indexOf(request), 1);
+      if (await isRequestMatchingAlertBudget(request, alert)) {
+        filteredRequests.push(request);
       }
     }
 
     return c.json({
       alert,
-      requests,
+      requests: filteredRequests,
     });
   },
 );

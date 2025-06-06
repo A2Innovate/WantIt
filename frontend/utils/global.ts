@@ -37,5 +37,29 @@ export const CURRENCIES = CURRENCIES_NAMES.map((currency) => currency.currency);
 export const NOTIFICATION_TYPES = [
   'NEW_OFFER',
   'NEW_MESSAGE',
-  'NEW_OFFER_COMMENT'
+  'NEW_OFFER_COMMENT',
+  'NEW_ALERT_MATCH'
+];
+
+export const COMPARISON_MODES = [
+  {
+    value: 'EQUALS',
+    label: `Equal to`
+  },
+  {
+    value: 'LESS_THAN',
+    label: `Less than`
+  },
+  {
+    value: 'LESS_THAN_OR_EQUAL_TO',
+    label: `Less than or equal to`
+  },
+  {
+    value: 'GREATER_THAN',
+    label: `Greater than`
+  },
+  {
+    value: 'GREATER_THAN_OR_EQUAL_TO',
+    label: `Greater than or equal to`
+  }
 ];

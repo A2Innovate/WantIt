@@ -8,7 +8,11 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { CURRENCIES, NOTIFICATION_TYPES } from "../utils/global.ts";
+import {
+  COMPARISON_MODES,
+  CURRENCIES,
+  NOTIFICATION_TYPES,
+} from "../utils/global.ts";
 
 export const currencies = pgEnum("currencies", CURRENCIES);
 export const notificationTypes = pgEnum(
@@ -203,3 +207,19 @@ export const notificationsRelations = relations(
     }),
   }),
 );
+
+export const comparisonModes = pgEnum("comparison_modes", COMPARISON_MODES);
+
+export const alertsTable = pgTable("alerts", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  content: text().notNull(),
+  budget: integer().notNull(),
+  budgetComparisonMode: comparisonModes().notNull().default("EQUALS"),
+  currency: currencies().notNull().default("USD"),
+  location: geometry("location", { type: "point", mode: "xy", srid: 4326 }),
+  radius: integer(),
+  createdAt: timestamp().notNull().defaultNow(),
+});

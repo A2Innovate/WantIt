@@ -137,7 +137,23 @@ app.post(
       channel_parts[1] === "user" &&
       channel_parts[2] === session.user.id.toString();
 
-    if (isValidChatChannel || isValidUserChannel) {
+    const isValidUserAlertsChannel = channel_parts.length === 4 &&
+      channel_parts[0] === "private" &&
+      channel_parts[1] === "user" &&
+      channel_parts[2] === session.user.id.toString() &&
+      channel_parts[3] === "alerts";
+
+    const isValidUserAlertChannel = channel_parts.length === 5 &&
+      channel_parts[0] === "private" &&
+      channel_parts[1] === "user" &&
+      channel_parts[2] === session.user.id.toString() &&
+      channel_parts[3] === "alert" &&
+      !isNaN(Number(channel_parts[4]));
+
+    if (
+      isValidChatChannel || isValidUserChannel || isValidUserAlertsChannel ||
+      isValidUserAlertChannel
+    ) {
       const auth = pusher.authorizeChannel(socket_id, channel_name);
       return c.json(auth);
     }

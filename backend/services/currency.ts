@@ -1,6 +1,5 @@
 import { Hono } from "hono";
-import { getRates } from "@/utils/rates.ts";
-import { client } from "@/utils/redis.ts";
+import { getCachedRates } from "@/utils/rates.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 
 const app = new Hono();
@@ -12,19 +11,9 @@ app.get(
     limit: 150,
   }),
   async (c) => {
-    const rates = await client.get("currency:rates");
+    const rates = await getCachedRates();
 
-    if (rates) {
-      return c.json(JSON.parse(rates));
-    } else {
-      const rates = await getRates();
-
-      await client.set("currency:rates", JSON.stringify(rates));
-
-      await client.expire("currency:rates", 60 * 60);
-
-      return c.json(rates);
-    }
+    return c.json(rates);
   },
 );
 

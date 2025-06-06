@@ -114,8 +114,18 @@ export const CURRENCIES = [
   "THB",
   "ZAR",
 ] as const;
+
 export const NOTIFICATION_TYPES = [
   "NEW_OFFER",
   "NEW_MESSAGE",
   "NEW_OFFER_COMMENT",
+  "NEW_ALERT_MATCH",
+] as const;
+
+export const COMPARISON_MODES = [
+  "EQUALS",
+  "LESS_THAN",
+  "LESS_THAN_OR_EQUAL_TO",
+  "GREATER_THAN",
+  "GREATER_THAN_OR_EQUAL_TO",
 ] as const;

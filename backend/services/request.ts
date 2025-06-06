@@ -2,8 +2,9 @@ import { Hono } from "hono";
 import { db } from "@/db/index.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, desc, eq, ilike, inArray } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import {
+  alertsTable,
   notificationsTable,
   offerImagesTable,
   offersTable,
@@ -24,6 +25,7 @@ import { ImagePipelineInputs } from "@huggingface/transformers";
 import { pusher } from "@/utils/pusher.ts";
 import sharp from "sharp";
 import { pipeline } from "@huggingface/transformers";
+import { isRequestMatchingAlertBudget } from "../utils/filter.ts";
 
 const app = new Hono();
 
@@ -613,7 +615,7 @@ app.post(
     const { content, budget, currency, location, radius } = c.req.valid("json");
     const session = c.get("session");
 
-    const request = await db.insert(requestsTable).values({
+    const [request] = await db.insert(requestsTable).values({
       content,
       userId: session.user.id,
       currency,
@@ -622,7 +624,57 @@ app.post(
       radius,
     }).returning();
 
-    return c.json(request[0]);
+    db.select().from(alertsTable)
+      .where(
+        and(
+          sql`ST_Intersects(
+            ST_Buffer(${alertsTable.location}::geography, ${alertsTable.radius})::geometry,
+            ST_Buffer(ST_SetSRID(ST_MakePoint(${location?.x}, ${location?.y})::geography, 4326), ${radius})::geometry
+          )`,
+          ilike(alertsTable.content, `%${content}%`),
+        ),
+      ).then(async (alerts) => {
+        for (const alert of alerts) {
+          if (!await isRequestMatchingAlertBudget(request, alert)) {
+            continue;
+          }
+
+          const notification = await db.insert(notificationsTable).values({
+            type: "NEW_ALERT_MATCH",
+            relatedRequestId: request.id,
+            userId: alert.userId,
+          }).returning();
+
+          pusher.trigger(
+            `private-user-${alert.userId}`,
+            "new-notification",
+            {
+              ...notification[0],
+              relatedRequest: {
+                content: request.content,
+              },
+            },
+          ).catch((e) => {
+            console.error(`Async Pusher trigger error: ${e}`);
+          });
+
+          pusher.trigger(
+            `private-user-${alert.userId}-alert-${alert.id}`,
+            "new-match",
+            {
+              ...request,
+              user: {
+                id: session.user.id,
+                username: session.user.username,
+              },
+            },
+          ).catch((e) => {
+            console.error(`Async Pusher trigger error: ${e}`);
+          });
+        }
+      });
+
+    return c.json(request);
   },
 );
 

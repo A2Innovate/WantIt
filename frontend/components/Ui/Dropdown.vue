@@ -18,7 +18,7 @@
           emit('update:modelValue', option.value);
         "
       >
-        <p>{{ option.label }}</p>
+        <p class="break-all">{{ option.label }}</p>
       </DropdownBaseElement>
     </DropdownBasePopup>
   </div>

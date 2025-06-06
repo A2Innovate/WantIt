@@ -23,7 +23,7 @@
       <LCircle
         v-for="item in data"
         :key="item.id"
-        :lat-lng="[item.location!.y, item.location!.x]"
+        :lat-lng="[item.location.y, item.location.x]"
         :radius="item.radius"
         :color="item.color"
       />

@@ -32,7 +32,7 @@
         "
         @update:model-value="budgetComparisonMode = $event"
       />
-      <UiButton type="submit" class="mt-2">Add</UiButton>
+      <UiButton type="submit" class="mt-2" :disabled="isLoading">Add</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>
@@ -60,10 +60,12 @@ const location = ref({
 });
 const locationGlobal = ref(false);
 const error = ref('');
+const isLoading = ref(false);
 const budgetComparisonMode = ref('EQUALS');
 
 async function addAlert() {
   try {
+    isLoading.value = true;
     const payload = {
       content: content.value,
       budget: Number(budget.value),
@@ -103,6 +105,8 @@ async function addAlert() {
     } else {
       error.value = 'Something went wrong';
     }
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

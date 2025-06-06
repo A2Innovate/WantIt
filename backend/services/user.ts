@@ -216,12 +216,12 @@ app.delete(
     const session = c.get("session");
     const { alertId } = c.req.valid("param");
 
-    const deletedAlert = await db.delete(alertsTable).where(
+    const [deletedAlert] = await db.delete(alertsTable).where(
       and(
         eq(alertsTable.id, alertId),
         eq(alertsTable.userId, session.user.id),
       ),
-    );
+    ).returning({ id: alertsTable.id });
 
     if (!deletedAlert) {
       return c.json({ message: "Alert not found" }, 404);

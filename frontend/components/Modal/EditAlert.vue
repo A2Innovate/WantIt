@@ -1,7 +1,7 @@
 <template>
   <UiModal card-class="sm:min-w-md" :is-open="isOpen" @close="emit('close')">
     <h2 class="text-2xl font-semibold">Edit alert</h2>
-    <form class="flex flex-col gap-2 mt-2" @submit.prevent="addAlert">
+    <form class="flex flex-col gap-2 mt-2" @submit.prevent="updateAlert">
       <div class="flex items-center gap-2 self-center">
         <UiLabel for="locationGlobal">Local</UiLabel>
         <UiToggle id="locationGlobal" v-model="locationGlobal" />
@@ -32,7 +32,7 @@
         "
         @update:model-value="budgetComparisonMode = $event"
       />
-      <UiButton type="submit" class="mt-2">Save</UiButton>
+      <UiButton type="submit" class="mt-2" :disabled="isLoading">Save</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>
@@ -61,10 +61,12 @@ const location = ref({
 });
 const locationGlobal = ref(!props.alert.location);
 const error = ref('');
+const isLoading = ref(false);
 const budgetComparisonMode = ref(props.alert.budgetComparisonMode);
 
-async function addAlert() {
+async function updateAlert() {
   try {
+    isLoading.value = true;
     const payload = {
       content: content.value,
       budget: Number(budget.value),
@@ -95,6 +97,8 @@ async function addAlert() {
     } else {
       error.value = 'Something went wrong';
     }
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

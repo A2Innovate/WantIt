@@ -8,5 +8,6 @@ export interface Alert {
     y: number;
   };
   radius: number;
+  budgetComparisonMode: string;
   createdAt: string;
 }

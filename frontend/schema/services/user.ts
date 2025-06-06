@@ -22,13 +22,15 @@ export const getUserByIdSchema = z.object({
     .transform((value) => Number(value))
 });
 
-export const createAlertSchema = z.object({
+export const createEditAlertSchema = z.object({
   content: z
     .string()
     .min(4, 'Content must be at least 4 characters long')
     .max(512, 'Content must be at most 512 characters long'),
   budget: z.number().max(2147483647, 'Budget must be at most 2147483647'),
-  budgetComparisonMode: z.enum(COMPARISON_MODES as [string, ...string[]]),
+  budgetComparisonMode: z.enum(
+    COMPARISON_MODES.map((mode) => mode.value) as [string, ...string[]]
+  ),
   location: z
     .object({
       x: z.number().min(-180).max(180),

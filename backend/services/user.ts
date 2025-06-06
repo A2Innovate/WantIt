@@ -12,7 +12,8 @@ import {
 import { generateEmailVerificationToken } from "@/utils/generate.ts";
 import { sendMail } from "@/utils/mail.ts";
 import {
-  createAlertSchema,
+  alertByIdSchema,
+  createEditAlertSchema,
   getUserByIdSchema,
   updateProfileSchema,
 } from "@/schema/services/user.ts";
@@ -152,7 +153,7 @@ app.post(
   }),
   zValidator(
     "json",
-    createAlertSchema,
+    createEditAlertSchema,
   ),
   authRequired,
   async (c) => {
@@ -177,6 +178,70 @@ app.post(
     }).returning();
 
     return c.json({ message: "Alert created successfully" }, 201);
+  },
+);
+
+app.delete(
+  "/alert/:alertId",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
+  zValidator(
+    "param",
+    alertByIdSchema,
+  ),
+  authRequired,
+  async (c) => {
+    const session = c.get("session");
+    const { alertId } = c.req.valid("param");
+
+    await db.delete(alertsTable).where(
+      and(
+        eq(alertsTable.id, alertId),
+        eq(alertsTable.userId, session.user.id),
+      ),
+    );
+
+    return c.json({ message: "Alert deleted successfully" }, 200);
+  },
+);
+
+app.put(
+  "/alert/:alertId",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
+  zValidator(
+    "param",
+    alertByIdSchema,
+  ),
+  zValidator(
+    "json",
+    createEditAlertSchema,
+  ),
+  authRequired,
+  async (c) => {
+    const session = c.get("session");
+    const { alertId } = c.req.valid("param");
+    const data = c.req.valid("json");
+
+    await db.update(alertsTable).set({
+      content: data.content,
+      budget: data.budget,
+      location: data.location,
+      radius: data.radius,
+      currency: data.currency,
+      budgetComparisonMode: data.budgetComparisonMode,
+    }).where(
+      and(
+        eq(alertsTable.id, alertId),
+        eq(alertsTable.userId, session.user.id),
+      ),
+    );
+
+    return c.json({ message: "Alert updated successfully" }, 200);
   },
 );
 

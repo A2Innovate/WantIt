@@ -1,6 +1,6 @@
 <template>
   <UiModal card-class="sm:min-w-md" :is-open="isOpen" @close="emit('close')">
-    <h2 class="text-2xl font-semibold">New alert</h2>
+    <h2 class="text-2xl font-semibold">Edit alert</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="addAlert">
       <div class="flex items-center gap-2 self-center">
         <UiLabel for="locationGlobal">Local</UiLabel>
@@ -32,7 +32,7 @@
         "
         @update:model-value="budgetComparisonMode = $event"
       />
-      <UiButton type="submit" class="mt-2">Add</UiButton>
+      <UiButton type="submit" class="mt-2">Save</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>
@@ -41,26 +41,27 @@
 <script setup lang="ts">
 import { AxiosError } from 'axios';
 import { createEditAlertSchema } from '@/schema/services/user';
+import type { Alert } from '@/types/alert';
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
+  alert: Alert;
 }>();
 
-const userStore = useUserStore();
 const emit = defineEmits(['close']);
 const api = useApi();
 
-const content = ref('');
-const selectedCurrency = ref(userStore.current?.preferredCurrency ?? 'USD');
-const budget = ref('');
+const content = ref(props.alert.content);
+const selectedCurrency = ref(props.alert.currency);
+const budget = ref(props.alert.budget.toString());
 const location = ref({
-  lat: 37.78,
-  lng: -122.419,
-  radius: 3000
+  lat: props.alert.location?.y,
+  lng: props.alert.location?.x,
+  radius: props.alert.radius
 });
-const locationGlobal = ref(false);
+const locationGlobal = ref(!props.alert.location);
 const error = ref('');
-const budgetComparisonMode = ref('EQUALS');
+const budgetComparisonMode = ref(props.alert.budgetComparisonMode);
 
 async function addAlert() {
   try {
@@ -85,18 +86,9 @@ async function addAlert() {
       return;
     }
 
-    await api.post('/user/alert', payload);
+    await api.put(`/user/alert/${props.alert.id}`, payload);
 
     emit('close');
-    content.value = '';
-    budget.value = '';
-    error.value = '';
-    location.value = {
-      lat: 37.78,
-      lng: -122.419,
-      radius: 3000
-    };
-    locationGlobal.value = false;
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
       error.value = e.response.data.message;

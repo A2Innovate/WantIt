@@ -42,9 +42,24 @@ export const NOTIFICATION_TYPES = [
 ];
 
 export const COMPARISON_MODES = [
-  'EQUALS',
-  'LESS_THAN',
-  'LESS_THAN_OR_EQUAL_TO',
-  'GREATER_THAN',
-  'GREATER_THAN_OR_EQUAL_TO'
+  {
+    value: 'EQUALS',
+    label: `Equal to`
+  },
+  {
+    value: 'LESS_THAN',
+    label: `Less than`
+  },
+  {
+    value: 'LESS_THAN_OR_EQUAL_TO',
+    label: `Less than or equal to`
+  },
+  {
+    value: 'GREATER_THAN',
+    label: `Greater than`
+  },
+  {
+    value: 'GREATER_THAN_OR_EQUAL_TO',
+    label: `Greater than or equal to`
+  }
 ];

@@ -22,7 +22,7 @@ export const getUserByIdSchema = z.object({
   ).transform((value) => Number(value)),
 });
 
-export const createAlertSchema = z.object({
+export const createEditAlertSchema = z.object({
   content: z
     .string()
     .min(4, "Content must be at least 4 characters long")
@@ -39,4 +39,11 @@ export const createAlertSchema = z.object({
     .nullable(),
   radius: z.number().min(3000).max(1000000).nullable(),
   currency: z.enum(CURRENCIES),
+});
+
+export const alertByIdSchema = z.object({
+  alertId: z.string().refine(
+    (value) => !isNaN(Number(value)),
+    "alertId must be a valid number",
+  ).transform((value) => Number(value)),
 });

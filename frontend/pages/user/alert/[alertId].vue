@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-2xl mx-auto min-h-[calc(100vh-8.5rem)]">
+  <div class="max-w-3xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
       <h1 class="text-xl font-semibold">Alert</h1>
       <UiCard>
@@ -18,6 +18,11 @@
         <h3 v-if="data">{{ data.alert.content }}</h3>
         <UiSkeleton v-else class="h-6 w-1/2" />
         <p v-if="data" class="flex items-center gap-1">
+          {{
+            COMPARISON_MODES.find(
+              (mode) => mode.value === data?.alert.budgetComparisonMode
+            )?.label
+          }}
           {{ priceFmt(data.alert.budget, data.alert.currency) }}
           <ConvertedPrice
             class="text-xs"
@@ -26,6 +31,16 @@
           />
         </p>
         <UiSkeleton v-else class="h-6 w-24 mt-1" />
+        <div v-if="data" class="flex gap-2 mt-4">
+          <UiButton @click="isEditAlertModalOpen = true">
+            <Icon name="material-symbols:edit-rounded" />
+            <span class="hidden sm:block">Edit</span>
+          </UiButton>
+          <UiButton @click="isDeleteAlertModalOpen = true">
+            <Icon name="material-symbols:delete-rounded" />
+            <span class="hidden sm:block">Delete</span>
+          </UiButton>
+        </div>
       </UiCard>
       <div v-if="data?.requests.length" class="flex flex-col gap-2">
         <CardRequest
@@ -38,6 +53,24 @@
           :request="request"
         />
       </div>
+      <Teleport to="body">
+        <ModalConfirm
+          :is-open="isDeleteAlertModalOpen"
+          :is-loading="isDeletingAlert"
+          @cancel="isDeleteAlertModalOpen = false"
+          @confirm="deleteAlert"
+        >
+          <p class="text-center">Are you sure you want to delete this alert?</p>
+        </ModalConfirm>
+      </Teleport>
+      <Teleport to="body">
+        <ModalEditAlert
+          v-if="data"
+          :is-open="isEditAlertModalOpen"
+          :alert="data.alert"
+          @close="isEditAlertModalOpen = false"
+        />
+      </Teleport>
     </div>
   </div>
 </template>
@@ -52,6 +85,10 @@ definePageMeta({
 
 const route = useRoute();
 const requestFetch = useRequestFetch();
+const isDeleteAlertModalOpen = ref(false);
+const isDeletingAlert = ref(false);
+const isEditAlertModalOpen = ref(false);
+const api = useApi();
 const highlightId = ref<number | null>(null);
 const mapPoints = computed(() => {
   if (!data.value) {
@@ -98,4 +135,16 @@ const { data } = useAsyncData('alert', async () => {
   );
   return response;
 });
+
+async function deleteAlert() {
+  try {
+    isDeletingAlert.value = true;
+    await api.delete(`/user/alert/${route.params.alertId}`);
+    navigateTo('/user/alerts');
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isDeletingAlert.value = false;
+  }
+}
 </script>

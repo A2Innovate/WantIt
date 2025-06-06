@@ -77,6 +77,7 @@
 
 <script setup lang="ts">
 import type { Alert } from '~/types/alert';
+import type { Channel } from 'pusher-js';
 import type { Request } from '~/types/request';
 
 definePageMeta({
@@ -89,7 +90,9 @@ const isDeleteAlertModalOpen = ref(false);
 const isDeletingAlert = ref(false);
 const isEditAlertModalOpen = ref(false);
 const api = useApi();
+const pusher = usePusher();
 const highlightId = ref<number | null>(null);
+let channel: Channel;
 const mapPoints = computed(() => {
   if (!data.value) {
     return [];
@@ -147,4 +150,33 @@ async function deleteAlert() {
     isDeletingAlert.value = false;
   }
 }
+
+onMounted(() => {
+  channel = pusher.subscribe(
+    `private-user-${useUserStore().current?.id}-alert-${route.params.alertId}`
+  );
+
+  channel.bind('update-alert', ({ alert }: { alert: Alert }) => {
+    if (data.value) {
+      data.value.alert = alert;
+    }
+  });
+
+  channel.bind('delete-alert', () => {
+    navigateTo('/user/alerts');
+  });
+
+  channel.bind('new-match', (request: Request) => {
+    if (data.value) {
+      data.value.requests.push(request);
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (channel) {
+    channel.unbind_all();
+    channel.unsubscribe();
+  }
+});
 </script>

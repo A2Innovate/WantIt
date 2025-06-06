@@ -16,11 +16,22 @@
           class="hover:bg-neutral-700 transition-colors"
         >
           <h3 class="font-semibold">{{ alert.content }}</h3>
-          <p>{{ priceFmt(alert.budget, alert.currency) }}</p>
+          <p>
+            <span class="text-sm text-neutral-400">{{
+              COMPARISON_MODES.find(
+                (mode) => mode.value === alert.budgetComparisonMode
+              )?.label
+            }}</span>
+
+            {{ priceFmt(alert.budget, alert.currency) }}
+          </p>
         </UiCard>
         <UiSkeletonLoader v-if="!data && !error" class="h-96 w-full" />
         <p v-else-if="error" class="text-red-500 text-center">
           {{ error.message }}
+        </p>
+        <p v-else-if="data?.length === 0" class="text-center text-neutral-400">
+          No alerts found
         </p>
       </UiCard>
     </div>
@@ -33,13 +44,16 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 import type { Alert } from '~/types/alert';
+import type { Channel } from 'pusher-js';
 
 definePageMeta({
   middleware: 'auth'
 });
 
+const pusher = usePusher();
 const isOpen = ref(false);
 const requestFetch = useRequestFetch();
+let channel: Channel;
 
 const { data, error } = useAsyncData('alerts', async () => {
   const response = await requestFetch<Alert[]>(
@@ -49,5 +63,39 @@ const { data, error } = useAsyncData('alerts', async () => {
     }
   );
   return response;
+});
+
+onMounted(() => {
+  channel = pusher.subscribe(
+    `private-user-${useUserStore().current?.id}-alerts`
+  );
+
+  channel.bind('new-alert', (alert: Alert) => {
+    if (data.value) {
+      data.value.push(alert);
+    }
+  });
+
+  channel.bind('delete-alert', ({ alertId }: { alertId: number }) => {
+    if (data.value) {
+      data.value = data.value.filter((alert) => alert.id !== alertId);
+    }
+  });
+
+  channel.bind('update-alert', ({ alert }: { alert: Alert }) => {
+    if (data.value) {
+      const index = data.value.findIndex((a) => a.id === alert.id);
+      if (index !== -1) {
+        data.value[index] = alert;
+      }
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (channel) {
+    channel.unbind_all();
+    channel.unsubscribe();
+  }
 });
 </script>

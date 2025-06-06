@@ -657,6 +657,20 @@ app.post(
           ).catch((e) => {
             console.error(`Async Pusher trigger error: ${e}`);
           });
+
+          pusher.trigger(
+            `private-user-${alert.userId}-alert-${alert.id}`,
+            "new-match",
+            {
+              ...request,
+              user: {
+                id: session.user.id,
+                username: session.user.username,
+              },
+            },
+          ).catch((e) => {
+            console.error(`Async Pusher trigger error: ${e}`);
+          });
         }
       });
 

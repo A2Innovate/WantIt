@@ -21,6 +21,7 @@ import { FRONTEND_URL } from "@/utils/global.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { z } from "zod";
 import { isRequestMatchingAlertBudget } from "@/utils/filter.ts";
+import { pusher } from "../utils/pusher.ts";
 
 const app = new Hono();
 
@@ -43,6 +44,7 @@ app.get(
         currency: true,
         location: true,
         radius: true,
+        budgetComparisonMode: true,
         createdAt: true,
       },
     });
@@ -167,7 +169,7 @@ app.post(
       budgetComparisonMode,
     } = c.req.valid("json");
 
-    await db.insert(alertsTable).values({
+    const [alert] = await db.insert(alertsTable).values({
       content,
       budget,
       location,
@@ -175,7 +177,24 @@ app.post(
       currency,
       budgetComparisonMode,
       userId: session.user.id,
-    }).returning();
+    }).returning({
+      id: alertsTable.id,
+      content: alertsTable.content,
+      budget: alertsTable.budget,
+      location: alertsTable.location,
+      radius: alertsTable.radius,
+      currency: alertsTable.currency,
+      budgetComparisonMode: alertsTable.budgetComparisonMode,
+      createdAt: alertsTable.createdAt,
+    });
+
+    pusher.trigger(
+      `private-user-${session.user.id}-alerts`,
+      "new-alert",
+      alert,
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
 
     return c.json({ message: "Alert created successfully" }, 201);
   },
@@ -196,12 +215,29 @@ app.delete(
     const session = c.get("session");
     const { alertId } = c.req.valid("param");
 
-    await db.delete(alertsTable).where(
+    const deletedAlert = await db.delete(alertsTable).where(
       and(
         eq(alertsTable.id, alertId),
         eq(alertsTable.userId, session.user.id),
       ),
     );
+
+    if (!deletedAlert) {
+      return c.json({ message: "Alert not found" }, 404);
+    }
+
+    pusher.trigger(
+      [
+        `private-user-${session.user.id}-alerts`,
+        `private-user-${session.user.id}-alert-${alertId}`,
+      ],
+      "delete-alert",
+      {
+        alertId,
+      },
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
 
     return c.json({ message: "Alert deleted successfully" }, 200);
   },
@@ -227,7 +263,7 @@ app.put(
     const { alertId } = c.req.valid("param");
     const data = c.req.valid("json");
 
-    await db.update(alertsTable).set({
+    const [alert] = await db.update(alertsTable).set({
       content: data.content,
       budget: data.budget,
       location: data.location,
@@ -239,7 +275,33 @@ app.put(
         eq(alertsTable.id, alertId),
         eq(alertsTable.userId, session.user.id),
       ),
-    );
+    ).returning({
+      id: alertsTable.id,
+      content: alertsTable.content,
+      budget: alertsTable.budget,
+      location: alertsTable.location,
+      radius: alertsTable.radius,
+      currency: alertsTable.currency,
+      budgetComparisonMode: alertsTable.budgetComparisonMode,
+      createdAt: alertsTable.createdAt,
+    });
+
+    if (!alert) {
+      return c.json({ message: "Alert not found" }, 404);
+    }
+
+    pusher.trigger(
+      [
+        `private-user-${session.user.id}-alerts`,
+        `private-user-${session.user.id}-alert-${alert.id}`,
+      ],
+      "update-alert",
+      {
+        alert,
+      },
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
 
     return c.json({ message: "Alert updated successfully" }, 200);
   },

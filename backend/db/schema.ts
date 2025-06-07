@@ -28,6 +28,8 @@ export const usersTable = pgTable("users", {
   email: text().notNull(),
   isEmailVerified: boolean().notNull().default(false),
   emailVerificationToken: text().unique(),
+  accountDeletionToken: text().unique(),
+  accountDeletionTokenExpiresAt: timestamp(),
   password: text(),
   passwordResetToken: text().unique(),
   isAdmin: boolean().notNull().default(false),

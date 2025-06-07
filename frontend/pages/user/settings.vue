@@ -41,6 +41,7 @@
       </UiCard>
       <UserChangePassword />
       <UserSecurity />
+      <UserDanger />
     </div>
   </div>
 </template>

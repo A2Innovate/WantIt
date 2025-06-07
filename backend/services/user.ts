@@ -10,7 +10,10 @@ import {
   userSessionsTable,
   usersTable,
 } from "@/db/schema.ts";
-import { generateEmailVerificationToken } from "@/utils/generate.ts";
+import {
+  generateEmailVerificationToken,
+  generateUniqueAccountDeletionToken,
+} from "@/utils/generate.ts";
 import { sendMail } from "@/utils/mail.ts";
 import {
   addEditReviewSchema,
@@ -627,6 +630,46 @@ app.delete(
     });
 
     return c.json({ message: "Review deleted successfully" }, 200);
+  },
+);
+
+app.delete(
+  "/",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 1,
+  }),
+  async (c) => {
+    const session = c.get("session");
+
+    const accountDeletionToken = await generateUniqueAccountDeletionToken();
+    const accountDeletionTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await sendMail({
+      to: session.user.email,
+      subject: "WantIt - Confirm account deletion",
+      text: `Hi ${session.user.name}!
+
+      To confirm your account deletion, click the link below:
+      ${FRONTEND_URL}/user/delete-account/${accountDeletionToken}
+
+      This link expires at ${accountDeletionTokenExpiresAt.toString()}. 
+      You can request a new link at any time in the settings.
+
+      Best regards,
+      WantIt Team`,
+    });
+
+    await db.update(usersTable).set({
+      accountDeletionToken,
+      accountDeletionTokenExpiresAt,
+    }).where(eq(usersTable.id, session.user.id));
+
+    return c.json({
+      message:
+        "Please check your email to confirm the deletion of your account",
+    }, 200);
   },
 );
 

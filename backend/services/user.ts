@@ -1,16 +1,20 @@
 import { Hono } from "hono";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
-import { and, eq, ilike, sql } from "drizzle-orm";
+import { and, eq, ilike, inArray, sql } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import {
   alertsTable,
+  offersTable,
   requestsTable,
   userReviewsTable,
   userSessionsTable,
   usersTable,
 } from "@/db/schema.ts";
-import { generateEmailVerificationToken } from "@/utils/generate.ts";
+import {
+  generateEmailVerificationToken,
+  generateUniqueAccountDeletionToken,
+} from "@/utils/generate.ts";
 import { sendMail } from "@/utils/mail.ts";
 import {
   addEditReviewSchema,
@@ -25,6 +29,7 @@ import { rateLimit } from "@/middleware/ratelimit.ts";
 import { z } from "zod";
 import { isRequestMatchingAlertBudget } from "@/utils/filter.ts";
 import { pusher } from "../utils/pusher.ts";
+import { deleteRecursive } from "../utils/s3.ts";
 
 const app = new Hono();
 
@@ -627,6 +632,108 @@ app.delete(
     });
 
     return c.json({ message: "Review deleted successfully" }, 200);
+  },
+);
+
+app.delete(
+  "/",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 1,
+  }),
+  async (c) => {
+    const session = c.get("session");
+
+    const accountDeletionToken = await generateUniqueAccountDeletionToken();
+    const accountDeletionTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await sendMail({
+      to: session.user.email,
+      subject: "WantIt - Confirm account deletion",
+      text: `Hi ${session.user.name}!
+
+      To confirm your account deletion, click the link below:
+      ${FRONTEND_URL}/user/delete-account/${accountDeletionToken}
+
+      This link expires at ${accountDeletionTokenExpiresAt.toString()}. 
+      You can request a new link at any time in the settings.
+
+      Best regards,
+      WantIt Team`,
+    });
+
+    await db.update(usersTable).set({
+      accountDeletionToken,
+      accountDeletionTokenExpiresAt,
+    }).where(eq(usersTable.id, session.user.id));
+
+    return c.json({
+      message:
+        "Please check your email to confirm the deletion of your account",
+    }, 200);
+  },
+);
+
+app.post(
+  "/delete-account",
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 1,
+  }),
+  zValidator(
+    "json",
+    z.object({
+      token: z.string(),
+    }),
+  ),
+  async (c) => {
+    const { token } = c.req.valid("json");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.accountDeletionToken, token),
+    });
+
+    if (
+      !user ||
+      !user.accountDeletionToken ||
+      !user.accountDeletionTokenExpiresAt ||
+      user.accountDeletionTokenExpiresAt < new Date()
+    ) {
+      return c.json({ message: "Invalid token" }, 400);
+    }
+
+    await db.update(usersTable).set({
+      accountDeletionToken: null,
+      accountDeletionTokenExpiresAt: null,
+    }).where(eq(usersTable.id, user.id));
+
+    const offers = await db.query.offersTable.findMany({
+      where: eq(offersTable.userId, user.id),
+    });
+
+    try {
+      await Promise.all(
+        offers.map(async (offer) => {
+          await deleteRecursive(
+            `request/${offer.requestId}/offer/${offer.id}`,
+          );
+        }),
+      );
+
+      await db.delete(offersTable).where(
+        inArray(offersTable.id, offers.map((offer) => offer.id)),
+      );
+    } catch (error) {
+      console.error("Error deleting offer files:", error);
+      return c.json({ message: "Account deletion failed" }, 500);
+    }
+
+    await db.delete(usersTable).where(
+      eq(usersTable.id, user.id),
+    );
+
+    return c.json({ message: "Account deleted successfully" }, 200);
   },
 );
 

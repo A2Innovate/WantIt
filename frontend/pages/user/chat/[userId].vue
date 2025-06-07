@@ -23,7 +23,7 @@
         </div>
         <div
           ref="messagesContainer"
-          class="flex flex-col gap-2 px-0.5 max-h-[calc(90vh-13rem)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-500"
+          class="flex flex-col gap-2 px-0.5 h-[calc(90vh-13rem)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-500"
         >
           <UiMessage
             v-for="message in data?.messages"

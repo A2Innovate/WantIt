@@ -9,7 +9,11 @@
     >
       <span class="text-neutral-300 text-sm font-medium" v-text="modelValue" />
     </DropdownBaseTrigger>
-    <DropdownBasePopup :is-open="isOpen">
+    <DropdownBasePopup
+      :is-open="isOpen"
+      :dropdown-ref="dropdownRef"
+      @update:is-open="isOpen = $event"
+    >
       <DropdownBaseElement
         v-for="option in options"
         :key="option.value"
@@ -33,25 +37,11 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 const isOpen = ref(false);
-const dropdownRef = ref<HTMLElement | null>(null);
+const dropdownRef = ref<HTMLElement | undefined>(undefined);
 
 const toggleDropdown = () => {
   if (!props.readonly) {
     isOpen.value = !isOpen.value;
   }
 };
-
-function closeDropdown(e: MouseEvent) {
-  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
-    isOpen.value = false;
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', closeDropdown);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', closeDropdown);
-});
 </script>

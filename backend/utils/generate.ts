@@ -83,3 +83,17 @@ export async function generateUniqueUsername() {
 
   return username;
 }
+
+export async function generateUniqueAccountDeletionToken() {
+  const token = crypto.randomBytes(32).toString("hex");
+
+  const existingToken = await db.query.usersTable.findFirst({
+    where: eq(usersTable.accountDeletionToken, token),
+  });
+
+  if (existingToken) {
+    return generateUniqueAccountDeletionToken();
+  }
+
+  return token;
+}

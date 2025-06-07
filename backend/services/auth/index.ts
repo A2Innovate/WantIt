@@ -260,11 +260,13 @@ app.post(
 
     const sessionToken = await generateSessionToken();
 
-    await db.insert(userSessionsTable).values({
+    const [session] = await db.insert(userSessionsTable).values({
       userId: user.id,
       sessionToken,
       ip: getIp(c),
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+    }).returning({
+      id: userSessionsTable.id,
     });
 
     setCookie(c, "wantit_session", sessionToken, {
@@ -279,6 +281,10 @@ app.post(
       id: user.id,
       email: user.email,
       name: user.name,
+      username: user.username,
+      preferredCurrency: user.preferredCurrency,
+      isAdmin: user.isAdmin,
+      sessionId: session.id,
     }, 200);
   },
 );

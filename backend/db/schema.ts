@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import {
@@ -236,7 +237,12 @@ export const userReviewsTable = pgTable("user_reviews", {
   rating: integer().notNull(),
   edited: boolean().notNull().default(false),
   createdAt: timestamp().notNull().defaultNow(),
-});
+}, (reviews) => ({
+  uniqueReviewerReviewed: unique().on(
+    reviews.reviewerUserId,
+    reviews.reviewedUserId,
+  ),
+}));
 
 export const userReviewsRelations = relations(userReviewsTable, ({ one }) => ({
   reviewer: one(usersTable, {

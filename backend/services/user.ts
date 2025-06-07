@@ -464,6 +464,17 @@ app.post(
       return c.json({ message: "You cannot review yourself" }, 400);
     }
 
+    const existingReview = await db.query.userReviewsTable.findFirst({
+      where: and(
+        eq(userReviewsTable.reviewerUserId, session.user.id),
+        eq(userReviewsTable.reviewedUserId, userId),
+      ),
+    });
+
+    if (existingReview) {
+      return c.json({ message: "You have already reviewed this user" }, 400);
+    }
+
     const [review] = await db.insert(userReviewsTable).values({
       reviewerUserId: session.user.id,
       reviewedUserId: userId,

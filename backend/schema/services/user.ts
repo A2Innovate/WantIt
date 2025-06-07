@@ -39,7 +39,15 @@ export const createEditAlertSchema = z.object({
     .nullable(),
   radius: z.number().min(3000).max(1000000).nullable(),
   currency: z.enum(CURRENCIES),
-});
+}).refine(
+  (data) =>
+    (data.location !== null && data.radius !== null) ||
+    (data.location === null && data.radius === null),
+  {
+    message:
+      "Either both location and radius must be provided, or both must be null",
+  },
+);
 
 export const alertByIdSchema = z.object({
   alertId: z.string().refine(

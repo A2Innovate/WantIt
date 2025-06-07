@@ -1,10 +1,11 @@
 import { Hono } from "hono";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
-import { and, eq, ilike, sql } from "drizzle-orm";
+import { and, eq, ilike, inArray, sql } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import {
   alertsTable,
+  offersTable,
   requestsTable,
   userReviewsTable,
   userSessionsTable,
@@ -28,6 +29,7 @@ import { rateLimit } from "@/middleware/ratelimit.ts";
 import { z } from "zod";
 import { isRequestMatchingAlertBudget } from "@/utils/filter.ts";
 import { pusher } from "../utils/pusher.ts";
+import { deleteRecursive } from "../utils/s3.ts";
 
 const app = new Hono();
 
@@ -670,6 +672,64 @@ app.delete(
       message:
         "Please check your email to confirm the deletion of your account",
     }, 200);
+  },
+);
+
+app.post(
+  "/delete-account",
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 500,
+  }),
+  zValidator(
+    "json",
+    z.object({
+      token: z.string(),
+    }),
+  ),
+  async (c) => {
+    const { token } = c.req.valid("json");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.accountDeletionToken, token),
+    });
+
+    if (
+      !user || !user.accountDeletionTokenExpiresAt ||
+      user.accountDeletionTokenExpiresAt < new Date()
+    ) {
+      return c.json({ message: "Invalid token" }, 400);
+    }
+
+    const offers = await db.query.offersTable.findMany({
+      where: eq(offersTable.userId, user.id),
+    });
+
+    const deletedOfferIds: number[] = [];
+
+    try {
+      await Promise.all(
+        offers.map(async (offer) => {
+          await deleteRecursive(
+            `request/${offer.requestId}/offer/${offer.id}`,
+          );
+          deletedOfferIds.push(offer.id);
+        }),
+      );
+    } catch (error) {
+      await db.delete(offersTable).where(
+        inArray(offersTable.id, deletedOfferIds),
+      );
+
+      console.error("Error deleting offer files:", error);
+      return c.json({ message: "Account deletion failed" }, 500);
+    }
+
+    await db.delete(usersTable).where(
+      eq(usersTable.id, user.id),
+    );
+
+    return c.json({ message: "Account deleted successfully" }, 200);
   },
 );
 

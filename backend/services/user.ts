@@ -6,15 +6,18 @@ import { zValidator } from "@hono/zod-validator";
 import {
   alertsTable,
   requestsTable,
+  userReviewsTable,
   userSessionsTable,
   usersTable,
 } from "@/db/schema.ts";
 import { generateEmailVerificationToken } from "@/utils/generate.ts";
 import { sendMail } from "@/utils/mail.ts";
 import {
+  addEditReviewSchema,
   alertByIdSchema,
   createEditAlertSchema,
   getUserByIdSchema,
+  reviewByIdSchema,
   updateProfileSchema,
 } from "@/schema/services/user.ts";
 import { FRONTEND_URL } from "@/utils/global.ts";
@@ -27,11 +30,11 @@ const app = new Hono();
 
 app.get(
   "/alerts",
+  authRequired,
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
     limit: 15,
   }),
-  authRequired,
   async (c) => {
     const session = c.get("session");
 
@@ -55,11 +58,11 @@ app.get(
 
 app.get(
   "/alert/:alertId",
+  authRequired,
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
     limit: 15,
   }),
-  authRequired,
   zValidator(
     "param",
     z.object({
@@ -150,6 +153,7 @@ app.get(
 
 app.post(
   "/alert",
+  authRequired,
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
     limit: 15,
@@ -158,7 +162,6 @@ app.post(
     "json",
     createEditAlertSchema,
   ),
-  authRequired,
   async (c) => {
     const session = c.get("session");
     const {
@@ -203,6 +206,7 @@ app.post(
 
 app.delete(
   "/alert/:alertId",
+  authRequired,
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
     limit: 15,
@@ -211,7 +215,6 @@ app.delete(
     "param",
     alertByIdSchema,
   ),
-  authRequired,
   async (c) => {
     const session = c.get("session");
     const { alertId } = c.req.valid("param");
@@ -246,6 +249,7 @@ app.delete(
 
 app.put(
   "/alert/:alertId",
+  authRequired,
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
     limit: 15,
@@ -258,7 +262,6 @@ app.put(
     "json",
     createEditAlertSchema,
   ),
-  authRequired,
   async (c) => {
     const session = c.get("session");
     const { alertId } = c.req.valid("param");
@@ -310,6 +313,7 @@ app.put(
 
 app.put(
   "/update",
+  authRequired,
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
     limit: 15,
@@ -318,7 +322,6 @@ app.put(
     "json",
     updateProfileSchema,
   ),
-  authRequired,
   async (c) => {
     const session = c.get("session");
     const { name, email, preferredCurrency, username } = c.req.valid("json");
@@ -432,6 +435,198 @@ app.get(
     }
 
     return c.json(user);
+  },
+);
+
+app.post(
+  "/:userId/review",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 5,
+  }),
+  zValidator("param", getUserByIdSchema),
+  zValidator("json", addEditReviewSchema),
+  async (c) => {
+    const session = c.get("session");
+    const { userId } = c.req.valid("param");
+    const { content, rating } = c.req.valid("json");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+    });
+
+    if (!user) {
+      return c.json({ message: "User not found" }, 404);
+    }
+
+    if (session.user.id === userId) {
+      return c.json({ message: "You cannot review yourself" }, 400);
+    }
+
+    const existingReview = await db.query.userReviewsTable.findFirst({
+      where: and(
+        eq(userReviewsTable.reviewerUserId, session.user.id),
+        eq(userReviewsTable.reviewedUserId, userId),
+      ),
+    });
+
+    if (existingReview) {
+      return c.json({ message: "You have already reviewed this user" }, 400);
+    }
+
+    const [review] = await db.insert(userReviewsTable).values({
+      reviewerUserId: session.user.id,
+      reviewedUserId: userId,
+      content,
+      rating,
+    }).returning({
+      id: userReviewsTable.id,
+      content: userReviewsTable.content,
+      rating: userReviewsTable.rating,
+      createdAt: userReviewsTable.createdAt,
+      edited: userReviewsTable.edited,
+    });
+
+    pusher.trigger(
+      `public-user-${userId}-reviews`,
+      "add-review",
+      {
+        ...review,
+        reviewer: {
+          id: session.user.id,
+          username: session.user.username,
+          name: session.user.name,
+        },
+      },
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
+
+    return c.json({
+      message: "Review added successfully",
+    });
+  },
+);
+
+app.put(
+  "/review/:reviewId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 5,
+  }),
+  zValidator("param", reviewByIdSchema),
+  zValidator("json", addEditReviewSchema),
+  async (c) => {
+    const session = c.get("session");
+    const { reviewId } = c.req.valid("param");
+    const { content, rating } = c.req.valid("json");
+
+    const [review] = await db.update(userReviewsTable).set({
+      content,
+      rating,
+    }).where(
+      and(
+        eq(userReviewsTable.id, reviewId),
+        eq(userReviewsTable.reviewerUserId, session.user.id),
+      ),
+    ).returning({
+      id: userReviewsTable.id,
+      content: userReviewsTable.content,
+      rating: userReviewsTable.rating,
+      reviewedUserId: userReviewsTable.reviewedUserId,
+      createdAt: userReviewsTable.createdAt,
+    });
+
+    if (!review) {
+      return c.json({ message: "Review not found" }, 404);
+    }
+
+    pusher.trigger(
+      `public-user-${review.reviewedUserId}-reviews`,
+      "update-review",
+      review,
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
+
+    return c.json({
+      message: "Review edited successfully",
+    });
+  },
+);
+
+app.get(
+  "/:userId/reviews",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  zValidator("param", getUserByIdSchema),
+  async (c) => {
+    const { userId } = c.req.valid("param");
+
+    const reviews = await db.query.userReviewsTable.findMany({
+      where: eq(userReviewsTable.reviewedUserId, userId),
+      columns: {
+        id: true,
+        content: true,
+        rating: true,
+        createdAt: true,
+        edited: true,
+      },
+      with: {
+        reviewer: {
+          columns: {
+            id: true,
+            username: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return c.json(reviews);
+  },
+);
+
+app.delete(
+  "/review/:reviewId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
+  zValidator("param", reviewByIdSchema),
+  async (c) => {
+    const session = c.get("session");
+    const { reviewId } = c.req.valid("param");
+
+    const [deletedReview] = await db.delete(userReviewsTable).where(
+      and(
+        eq(userReviewsTable.id, reviewId),
+        eq(userReviewsTable.reviewerUserId, session.user.id),
+      ),
+    ).returning({
+      reviewedUserId: userReviewsTable.reviewedUserId,
+    });
+
+    if (!deletedReview) {
+      return c.json({ message: "Review not found" }, 404);
+    }
+
+    pusher.trigger(
+      `public-user-${deletedReview.reviewedUserId}-reviews`,
+      "delete-review",
+      {
+        reviewId,
+      },
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
+
+    return c.json({ message: "Review deleted successfully" }, 200);
   },
 );
 

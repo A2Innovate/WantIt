@@ -13,13 +13,15 @@ export const useMessageStore = defineStore('message', () => {
 
   async function fetchLastMessages() {
     const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData<LastMessage[]>(() =>
-      requestFetch<LastMessage[]>(
-        useRuntimeConfig().public.apiBase + '/api/chat',
-        {
-          credentials: 'include'
-        }
-      )
+    const { data: response } = await useAsyncData<LastMessage[]>(
+      'last-messages',
+      () =>
+        requestFetch<LastMessage[]>(
+          useRuntimeConfig().public.apiBase + '/api/chat',
+          {
+            credentials: 'include'
+          }
+        )
     );
 
     lastMessages.value = response.value ?? [];

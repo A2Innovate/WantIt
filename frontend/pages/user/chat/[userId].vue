@@ -99,15 +99,18 @@ if (Number(route.params.userId) === userStore.current?.id) {
   navigateTo('/');
 }
 
-const { data, error } = useAsyncData<Chat>(async () => {
-  const response = await requestFetch<Chat>(
-    useRuntimeConfig().public.apiBase + '/api/chat/' + route.params.userId,
-    {
-      credentials: 'include'
-    }
-  );
-  return response;
-});
+const { data, error } = useAsyncData<Chat>(
+  `chat-${route.params.userId}`,
+  async () => {
+    const response = await requestFetch<Chat>(
+      useRuntimeConfig().public.apiBase + '/api/chat/' + route.params.userId,
+      {
+        credentials: 'include'
+      }
+    );
+    return response;
+  }
+);
 
 function scrollToBottom() {
   requestAnimationFrame(() => {

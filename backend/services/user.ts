@@ -695,7 +695,9 @@ app.post(
     });
 
     if (
-      !user || !user.accountDeletionTokenExpiresAt ||
+      !user ||
+      !user.accountDeletionToken ||
+      !user.accountDeletionTokenExpiresAt ||
       user.accountDeletionTokenExpiresAt < new Date()
     ) {
       return c.json({ message: "Invalid token" }, 400);

@@ -38,6 +38,13 @@
               ><Icon name="material-symbols:release-alert-rounded" /> Alerts
             </NuxtLink>
           </li>
+          <li v-if="userStore.current?.isAdmin">
+            <NuxtLink
+              to="/admin"
+              class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
+              ><Icon name="material-symbols:tools-wrench" /> Admin
+            </NuxtLink>
+          </li>
           <li>
             <NuxtLink
               to="/user/settings"

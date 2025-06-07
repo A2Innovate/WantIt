@@ -77,3 +77,15 @@ export const authRequired = createMiddleware<{
 
   await next();
 });
+
+export const adminRequired = createMiddleware(async (c, next) => {
+  const session = c.get("session");
+
+  if (!session.user.isAdmin) {
+    return c.json({
+      message: "You do not have permission to perform this action.",
+    }, 403);
+  }
+
+  await next();
+});

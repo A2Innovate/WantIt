@@ -10,7 +10,11 @@
           <Icon name="material-symbols:location-on" />
           <span class="font-medium text-sm">Local</span>
         </div>
-        <UiToggle id="locationGlobal" v-model="locationGlobal" />
+        <UiToggle
+          id="locationGlobal"
+          v-model="locationGlobal"
+          :disabled="isLoading"
+        />
         <div
           class="flex items-center gap-1 transition-colors"
           :class="locationGlobal ? 'text-sky-400' : 'text-neutral-400'"

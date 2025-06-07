@@ -3,13 +3,25 @@
     <h2 class="text-2xl font-semibold">New request</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="addRequest">
       <div class="flex items-center gap-2 self-center">
-        <UiLabel for="locationGlobal">Local</UiLabel>
+        <div
+          class="flex items-center gap-1 transition-colors"
+          :class="locationGlobal ? 'text-neutral-400' : 'text-sky-400'"
+        >
+          <Icon name="material-symbols:location-on" />
+          <span class="font-medium text-sm">Local</span>
+        </div>
         <UiToggle
           id="locationGlobal"
           v-model="locationGlobal"
           :disabled="isLoading"
         />
-        <UiLabel for="locationGlobal">Global</UiLabel>
+        <div
+          class="flex items-center gap-1 transition-colors"
+          :class="locationGlobal ? 'text-sky-400' : 'text-neutral-400'"
+        >
+          <span class="font-medium text-sm">Global</span>
+          <Icon name="material-symbols:globe" />
+        </div>
       </div>
       <UiMapRadiusPicker v-if="!locationGlobal" v-model="location" />
       <UiLabel for="content">What do you want?</UiLabel>

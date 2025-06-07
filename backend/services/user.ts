@@ -679,7 +679,7 @@ app.post(
   "/delete-account",
   rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    limit: 500,
+    limit: 1,
   }),
   zValidator(
     "json",
@@ -701,11 +701,14 @@ app.post(
       return c.json({ message: "Invalid token" }, 400);
     }
 
+    await db.update(usersTable).set({
+      accountDeletionToken: null,
+      accountDeletionTokenExpiresAt: null,
+    }).where(eq(usersTable.id, user.id));
+
     const offers = await db.query.offersTable.findMany({
       where: eq(offersTable.userId, user.id),
     });
-
-    const deletedOfferIds: number[] = [];
 
     try {
       await Promise.all(
@@ -713,14 +716,13 @@ app.post(
           await deleteRecursive(
             `request/${offer.requestId}/offer/${offer.id}`,
           );
-          deletedOfferIds.push(offer.id);
         }),
       );
-    } catch (error) {
-      await db.delete(offersTable).where(
-        inArray(offersTable.id, deletedOfferIds),
-      );
 
+      await db.delete(offersTable).where(
+        inArray(offersTable.id, offers.map((offer) => offer.id)),
+      );
+    } catch (error) {
       console.error("Error deleting offer files:", error);
       return c.json({ message: "Account deletion failed" }, 500);
     }

@@ -44,10 +44,14 @@
         <UiInput
           v-model="content"
           placeholder="Type your message..."
+          :disabled="isSending"
           class="w-full"
         />
-        <UiButton type="submit">
-          <Icon name="material-symbols:send-rounded" />
+        <UiButton
+          type="submit"
+          :loading="isSending"
+          icon="material-symbols:send-rounded"
+        >
           Send
         </UiButton>
       </form>
@@ -87,6 +91,7 @@ const messageStore = useMessageStore();
 const sendError = ref('');
 const requestFetch = useRequestFetch();
 const content = ref('');
+const isSending = ref(false);
 const messagesContainer = ref<HTMLDivElement>();
 let channel: Channel;
 
@@ -113,6 +118,7 @@ function scrollToBottom() {
 
 async function handleSend() {
   try {
+    isSending.value = true;
     const validation = validate(sendChatMessageSchema, {
       content: content.value
     });
@@ -144,6 +150,8 @@ async function handleSend() {
     if (e instanceof AxiosError) {
       error.value = e.response?.data.message;
     }
+  } finally {
+    isSending.value = false;
   }
   content.value = '';
 }

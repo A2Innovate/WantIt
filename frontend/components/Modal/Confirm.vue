@@ -13,7 +13,7 @@
       <slot />
       <div class="flex w-full justify-end gap-2">
         <UiButton @click="emit('cancel')">Cancel</UiButton>
-        <UiButton :disabled="isLoading" @click="emit('confirm')"
+        <UiButton :loading="isLoading" @click="emit('confirm')"
           >Confirm</UiButton
         >
       </div>

@@ -1,11 +1,18 @@
 <template>
   <div class="p-3 rounded-lg bg-neutral-900">
     <div class="flex items-center justify-between mb-1">
-      <span class="text-xs text-neutral-400">@{{ comment.user.username }}</span>
+      <NuxtLink :to="'/user/' + comment.user.id">
+        <span
+          class="text-xs text-neutral-400 hover:text-neutral-300 transition-colors duration-100"
+          >@{{ comment.user.username }}</span
+        >
+      </NuxtLink>
       <ClientOnly
-        ><span class="text-xs text-neutral-500">{{
-          formatTime(new Date(comment.createdAt))
-        }}</span></ClientOnly
+        ><span
+          class="text-xs text-neutral-500"
+          :title="new Date(comment.createdAt).toLocaleString()"
+          >{{ formatTime(new Date(comment.createdAt)) }}</span
+        ></ClientOnly
       >
     </div>
     <p v-if="!isEditing" class="text-sm text-neutral-300">
@@ -25,24 +32,21 @@
       class="flex gap-2 justify-end"
     >
       <UiButton
-        class="border border-neutral-700"
-        :disabled="isSavingEdit"
+        variant="outline"
+        :loading="isSavingEdit"
+        :icon="
+          isEditing ? 'material-symbols:done' : 'material-symbols:edit-rounded'
+        "
         @click="handleEdit"
       >
-        <div v-if="!isEditing" class="flex items-center gap-2">
-          <Icon name="material-symbols:edit-rounded" />
-          <span class="hidden sm:block">Edit</span>
-        </div>
-        <div v-else class="flex items-center gap-2">
-          <Icon name="material-symbols:done" />
-          <span class="hidden sm:block">Save</span>
-        </div>
+        <span v-if="!isEditing" class="hidden sm:block">Edit</span>
+        <span v-else class="hidden sm:block">Save</span>
       </UiButton>
       <UiButton
-        class="border border-neutral-700"
+        icon="material-symbols:delete-rounded"
+        variant="outline"
         @click="isDeleteModalOpen = true"
       >
-        <Icon name="material-symbols:delete-rounded" />
         <span class="hidden sm:block">Delete</span>
       </UiButton>
     </div>

@@ -37,25 +37,30 @@
     </div>
     <p v-if="!editMode">{{ message.content }}</p>
     <UiTextArea v-else v-model="editedContent" class="mb-2 bg-neutral-950" />
-    <button
-      v-if="editMode"
-      class="p-1 px-2 border border-neutral-700 hover:bg-neutral-800 rounded-lg flex w-fit ml-auto transition cursor-pointer"
-      @click="handleEdit"
-    >
-      <p class="flex items-center gap-2 text-xs">
-        <Icon v-if="!isSavingEdit" name="material-symbols:done" />
-        <UiLoader v-else :size="1" variant="white" />
+    <div class="flex justify-end">
+      <UiButton
+        v-if="editMode"
+        :loading="isSavingEdit"
+        size="small"
+        variant="outline"
+        icon="material-symbols:done"
+        class="text-xs"
+        @click="handleEdit"
+      >
         <span v-if="!isSavingEdit">Save</span>
         <span v-else>Saving</span>
-      </p>
-    </button>
+      </UiButton>
+    </div>
     <span v-if="message.edited && !editMode" class="text-xs text-neutral-500"
       >(edited)
     </span>
 
     <div class="flex justify-between">
       <ClientOnly>
-        <span class="text-sm text-neutral-400 ml-auto">
+        <span
+          class="text-sm text-neutral-400 ml-auto"
+          :title="new Date(message.createdAt).toLocaleString()"
+        >
           {{ formatTime(new Date(message.createdAt)) }}
         </span>
       </ClientOnly>

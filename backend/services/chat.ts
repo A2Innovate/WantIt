@@ -94,6 +94,7 @@ app.get(
         content: true,
         createdAt: true,
         senderId: true,
+        edited: true,
       },
       orderBy: asc(messagesTable.createdAt),
     });

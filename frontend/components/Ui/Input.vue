@@ -1,6 +1,6 @@
 <template>
   <input
-    class="bg-neutral-900 px-4 py-2 rounded-lg outline-0 hover:ring focus:ring focus:ring-neutral-700 ring-neutral-800 transition-all"
+    class="bg-neutral-900 px-4 py-2 rounded-lg outline-0 hover:ring focus:ring focus:ring-neutral-700 ring-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
     :value="modelValue"
     v-bind="$attrs"
     @input="handleInput"

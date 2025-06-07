@@ -20,7 +20,9 @@
           type="number"
         />
       </div>
-      <UiButton type="submit" class="mt-2">Edit request</UiButton>
+      <UiButton type="submit" class="mt-2" :loading="isLoading"
+        >Edit request</UiButton
+      >
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>
@@ -49,9 +51,11 @@ const location = ref({
 });
 const locationGlobal = ref(!props.request.location);
 const error = ref('');
+const isLoading = ref(false);
 
 async function editRequest() {
   try {
+    isLoading.value = true;
     const payload = {
       content: content.value,
       budget: Number(budget.value),
@@ -93,6 +97,8 @@ async function editRequest() {
     } else {
       error.value = 'Something went wrong';
     }
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

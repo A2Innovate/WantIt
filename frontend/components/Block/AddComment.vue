@@ -7,7 +7,7 @@
         class="w-full"
         placeholder="Add comment..."
       />
-      <UiButton :disabled="isSending" class="h-10">Send</UiButton>
+      <UiButton :loading="isSending" class="h-10">Send</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">
       {{ error }}

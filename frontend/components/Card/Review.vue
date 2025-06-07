@@ -1,20 +1,24 @@
 <template>
   <div class="p-3 rounded-lg bg-neutral-900">
-    <div class="flex items-center justify-between mb-1">
+    <div class="flex items-start justify-between mb-1">
       <NuxtLink :to="'/user/' + review.reviewer.id">
         <span
           class="text-xs text-neutral-400 hover:text-neutral-300 transition-colors duration-100"
           >@{{ review.reviewer.username }}</span
         >
       </NuxtLink>
-      <ClientOnly
-        ><span
-          class="text-xs text-neutral-500"
-          :title="new Date(review.createdAt).toLocaleString()"
-          >{{ formatTime(new Date(review.createdAt)) }}</span
-        ></ClientOnly
-      >
+      <div class="flex flex-col justify-end">
+        <UiStars :value="review.rating" readonly />
+        <ClientOnly
+          ><span
+            class="text-xs text-neutral-500 text-right"
+            :title="new Date(review.createdAt).toLocaleString()"
+            >{{ formatTime(new Date(review.createdAt)) }}</span
+          ></ClientOnly
+        >
+      </div>
     </div>
+
     <p v-if="!isEditing" class="text-sm text-neutral-300">
       {{ review.content }}
     </p>

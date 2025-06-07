@@ -16,6 +16,7 @@ import {
   alertByIdSchema,
   createEditAlertSchema,
   getUserByIdSchema,
+  reviewByIdSchema,
   updateProfileSchema,
 } from "@/schema/services/user.ts";
 import { FRONTEND_URL } from "@/utils/global.ts";
@@ -468,6 +469,45 @@ app.get(
     });
 
     return c.json(reviews);
+  },
+);
+
+app.delete(
+  "/review/:reviewId",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 15,
+  }),
+  authRequired,
+  zValidator("param", reviewByIdSchema),
+  async (c) => {
+    const session = c.get("session");
+    const { reviewId } = c.req.valid("param");
+
+    const [deletedReview] = await db.delete(userReviewsTable).where(
+      and(
+        eq(userReviewsTable.id, reviewId),
+        eq(userReviewsTable.reviewerUserId, session.user.id),
+      ),
+    ).returning({
+      reviewedUserId: userReviewsTable.reviewedUserId,
+    });
+
+    if (!deletedReview) {
+      return c.json({ message: "Review not found" }, 404);
+    }
+
+    pusher.trigger(
+      `public-user-${deletedReview.reviewedUserId}-reviews`,
+      "delete-review",
+      {
+        reviewId,
+      },
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
+
+    return c.json({ message: "Review deleted successfully" }, 200);
   },
 );
 

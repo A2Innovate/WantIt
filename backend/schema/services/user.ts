@@ -55,3 +55,10 @@ export const alertByIdSchema = z.object({
     "alertId must be a valid number",
   ).transform((value) => Number(value)),
 });
+
+export const reviewByIdSchema = z.object({
+  reviewId: z.string().refine(
+    (value) => !isNaN(Number(value)),
+    "reviewId must be a valid number",
+  ).transform((value) => Number(value)),
+});

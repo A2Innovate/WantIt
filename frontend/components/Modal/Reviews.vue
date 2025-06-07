@@ -85,7 +85,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  channel.unbind_all();
-  channel.unsubscribe();
+  if (channel) {
+    channel.unbind_all();
+    channel.unsubscribe();
+  }
 });
 </script>

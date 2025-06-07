@@ -582,11 +582,11 @@ app.get(
 
 app.delete(
   "/review/:reviewId",
+  authRequired,
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
     limit: 15,
   }),
-  authRequired,
   zValidator("param", reviewByIdSchema),
   async (c) => {
     const session = c.get("session");

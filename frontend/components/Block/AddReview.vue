@@ -63,7 +63,7 @@ async function handleSubmit() {
     await api.post(`/user/${props.userId}/review`, payload);
 
     content.value = '';
-    rating.value = 5;
+    rating.value = 0;
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
       error.value = e.response.data.message;

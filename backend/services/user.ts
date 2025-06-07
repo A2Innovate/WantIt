@@ -6,6 +6,7 @@ import { zValidator } from "@hono/zod-validator";
 import {
   alertsTable,
   requestsTable,
+  userReviewsTable,
   userSessionsTable,
   usersTable,
 } from "@/db/schema.ts";
@@ -432,6 +433,41 @@ app.get(
     }
 
     return c.json(user);
+  },
+);
+
+app.get(
+  "/:userId/reviews",
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 50,
+  }),
+  authRequired,
+  zValidator("param", getUserByIdSchema),
+  async (c) => {
+    const { userId } = c.req.valid("param");
+
+    const reviews = await db.query.userReviewsTable.findMany({
+      where: eq(userReviewsTable.reviewedUserId, userId),
+      columns: {
+        id: true,
+        content: true,
+        rating: true,
+        createdAt: true,
+        edited: true,
+      },
+      with: {
+        reviewer: {
+          columns: {
+            id: true,
+            username: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return c.json(reviews);
   },
 );
 

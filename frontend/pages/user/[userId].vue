@@ -19,25 +19,26 @@
           <UiSkeleton v-else class="w-20 h-4" />
         </div>
       </div>
-      <UiButton
-        v-if="
-          user &&
-          userStore.current &&
-          Number(route.params.userId) != userStore.current.id
-        "
-        class="px-4 w-full"
-        :as="NuxtLink"
-        :to="`/user/chat/${route.params.userId}`"
-      >
-        <Icon name="material-symbols:chat" />
-        Send message
-      </UiButton>
-      <UiSkeleton
-        v-else-if="
-          !user && Number(route.params.userId) != userStore.current?.id
-        "
-        class="h-8 w-full"
-      />
+      <div class="flex gap-2">
+        <UiButton v-if="user" class="w-full" @click="isReviewsModalOpen = true">
+          <Icon name="material-symbols:star" />
+          Reviews
+        </UiButton>
+        <UiButton
+          v-if="
+            user &&
+            userStore.current &&
+            Number(route.params.userId) != userStore.current.id
+          "
+          class="w-full"
+          :as="NuxtLink"
+          :to="`/user/chat/${route.params.userId}`"
+        >
+          <Icon name="material-symbols:chat" />
+          Send message
+        </UiButton>
+        <UiSkeleton v-else-if="!user" class="h-8 w-full" />
+      </div>
       <h2
         v-if="user?.requests.length"
         class="text-xl font-semibold mt-6 mb-4 mx-4"
@@ -71,6 +72,13 @@
         <span v-else> {{ error.message }}</span>
       </p>
     </UiCard>
+    <Teleport to="body">
+      <ModalReviews
+        :is-open="isReviewsModalOpen"
+        :user-id="route.params.userId as string"
+        @close="isReviewsModalOpen = false"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -79,13 +87,14 @@ import type { User } from '~/types/user';
 import type { Request } from '~/types/request';
 import { NuxtLink } from '#components';
 
+const isReviewsModalOpen = ref(false);
 const userStore = useUserStore();
 const route = useRoute();
 const api = useApi();
 
 const { data: user, error } = useAsyncData<
   User & { requests: Omit<Request, 'user'>[] }
->('user', async () => {
+>(`user-${route.params.userId}`, async () => {
   const response = await api.get(`/user/${route.params.userId}`);
   return response.data;
 });

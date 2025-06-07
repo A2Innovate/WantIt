@@ -6,7 +6,7 @@ export const useUserStore = defineStore('user', () => {
 
   async function fetchUser() {
     const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData<User>(() =>
+    const { data: response } = await useAsyncData<User>('user', () =>
       requestFetch(useRuntimeConfig().public.apiBase + '/api/auth')
     );
 
@@ -21,10 +21,15 @@ export const useUserStore = defineStore('user', () => {
 
   async function fetchSessions() {
     const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData<UserSession[]>(() =>
-      requestFetch(useRuntimeConfig().public.apiBase + '/api/auth/sessions', {
-        credentials: 'include'
-      })
+    const { data: response } = await useAsyncData<UserSession[]>(
+      'user-sessions',
+      () =>
+        requestFetch<UserSession[]>(
+          useRuntimeConfig().public.apiBase + '/api/auth/sessions',
+          {
+            credentials: 'include'
+          }
+        )
     );
 
     sessions.value = response.value;

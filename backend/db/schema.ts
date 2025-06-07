@@ -223,3 +223,24 @@ export const alertsTable = pgTable("alerts", {
   radius: integer(),
   createdAt: timestamp().notNull().defaultNow(),
 });
+
+export const userReviewsTable = pgTable("user_reviews", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  reviewerUserId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  reviewedUserId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  content: text().notNull(),
+  rating: integer().notNull(),
+  edited: boolean().notNull().default(false),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const userReviewsRelations = relations(userReviewsTable, ({ one }) => ({
+  reviewer: one(usersTable, {
+    fields: [userReviewsTable.reviewerUserId],
+    references: [usersTable.id],
+  }),
+}));

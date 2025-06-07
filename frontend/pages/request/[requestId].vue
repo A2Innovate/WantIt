@@ -220,7 +220,7 @@ const {
   data: request,
   error,
   refresh
-} = useAsyncData<Request>('request', async () => {
+} = useAsyncData<Request>(`request-${route.params.requestId}`, async () => {
   const response = await api.get(`/request/${route.params.requestId}`);
   return response.data;
 });

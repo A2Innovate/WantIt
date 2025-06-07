@@ -127,7 +127,7 @@ const mapPoints = computed(() => {
   return [...requests, alert];
 });
 
-const { data } = useAsyncData('alert', async () => {
+const { data } = useAsyncData(`alert-${route.params.alertId}`, async () => {
   const response = await requestFetch<{ alert: Alert; requests: Request[] }>(
     useRuntimeConfig().public.apiBase +
       '/api/user/alert/' +

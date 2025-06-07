@@ -8,7 +8,7 @@ export const useCurrencyStore = defineStore('currency', () => {
 
   async function fetchRates() {
     const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData(() =>
+    const { data: response } = await useAsyncData('currency-rates', () =>
       requestFetch<Rate[]>(useRuntimeConfig().public.apiBase + '/api/currency')
     );
 

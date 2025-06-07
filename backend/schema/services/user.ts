@@ -62,3 +62,15 @@ export const reviewByIdSchema = z.object({
     "reviewId must be a valid number",
   ).transform((value) => Number(value)),
 });
+
+export const addEditReviewSchema = z.object({
+  content: z
+    .string()
+    .min(4, "Content must be at least 4 characters long")
+    .max(512, "Content must be at most 512 characters long")
+    .nullable(),
+  rating: z.number().min(1, "Rating must be at least 1").max(
+    5,
+    "Rating must be at most 5",
+  ),
+});

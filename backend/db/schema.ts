@@ -232,7 +232,7 @@ export const userReviewsTable = pgTable("user_reviews", {
   reviewedUserId: integer()
     .notNull()
     .references(() => usersTable.id, { onDelete: "cascade" }),
-  content: text().notNull(),
+  content: text(),
   rating: integer().notNull(),
   edited: boolean().notNull().default(false),
   createdAt: timestamp().notNull().defaultNow(),

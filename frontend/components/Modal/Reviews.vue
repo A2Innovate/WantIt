@@ -4,7 +4,15 @@
     card-class="sm:max-w-md w-full m-4"
     @close="emit('close')"
   >
-    <div class="flex flex-col items-center gap-4">
+    <UiCard
+      v-if="userStore.current && userStore.current?.id !== Number(props.userId)"
+      class="w-full mb-4"
+    >
+      <BlockAddReview class="w-full" :user-id="Number(props.userId)" />
+    </UiCard>
+    <div
+      class="flex flex-col items-center gap-4 max-h-64 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-500"
+    >
       <CardReview
         v-for="review in data"
         :key="review.id"
@@ -27,6 +35,7 @@ import type { Channel } from 'pusher-js';
 import type { Review } from '~/types/review';
 
 const api = useApi();
+const userStore = useUserStore();
 const pusher = usePusher();
 let channel: Channel;
 
@@ -52,6 +61,12 @@ onMounted(() => {
       data.value = data.value.filter(
         (review) => review.id !== Number(reviewId)
       );
+    }
+  });
+
+  channel.bind('add-review', (review: Review) => {
+    if (data.value) {
+      data.value.push(review);
     }
   });
 });

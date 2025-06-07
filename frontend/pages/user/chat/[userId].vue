@@ -23,7 +23,7 @@
         </div>
         <div
           ref="messagesContainer"
-          class="flex flex-col gap-2 px-0.5 max-h-[calc(90vh-13rem)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-500"
+          class="flex flex-col gap-2 px-0.5 h-[calc(90vh-13rem)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-500"
         >
           <UiMessage
             v-for="message in data?.messages"
@@ -44,10 +44,14 @@
         <UiInput
           v-model="content"
           placeholder="Type your message..."
+          :disabled="isSending"
           class="w-full"
         />
-        <UiButton type="submit">
-          <Icon name="material-symbols:send-rounded" />
+        <UiButton
+          type="submit"
+          :loading="isSending"
+          icon="material-symbols:send-rounded"
+        >
           Send
         </UiButton>
       </form>
@@ -87,6 +91,7 @@ const messageStore = useMessageStore();
 const sendError = ref('');
 const requestFetch = useRequestFetch();
 const content = ref('');
+const isSending = ref(false);
 const messagesContainer = ref<HTMLDivElement>();
 let channel: Channel;
 
@@ -113,6 +118,7 @@ function scrollToBottom() {
 
 async function handleSend() {
   try {
+    isSending.value = true;
     const validation = validate(sendChatMessageSchema, {
       content: content.value
     });
@@ -144,6 +150,8 @@ async function handleSend() {
     if (e instanceof AxiosError) {
       error.value = e.response?.data.message;
     }
+  } finally {
+    isSending.value = false;
   }
   content.value = '';
 }

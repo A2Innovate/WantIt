@@ -20,7 +20,12 @@
       </Transition>
       <Icon name="material-symbols:notifications" />
     </button>
-    <DropdownBasePopup :is-open="isOpen" popup-class="right-0">
+    <DropdownBasePopup
+      :is-open="isOpen"
+      popup-class="right-0"
+      :dropdown-ref="dropdownRef"
+      @update:is-open="isOpen = $event"
+    >
       <div
         v-if="notificationStore.current.length"
         class="p-2 flex justify-between"
@@ -102,7 +107,7 @@ import type { Notification } from '~/types/notification';
 
 const notificationStore = useNotificationStore();
 const isOpen = ref(false);
-const dropdownRef = ref<HTMLElement | null>(null);
+const dropdownRef = ref<HTMLElement | undefined>(undefined);
 
 const unreadCount = computed(() => {
   return notificationStore.current.filter((n) => !n.read).length;
@@ -111,12 +116,6 @@ const unreadCount = computed(() => {
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value;
 };
-
-function closeDropdown(e: MouseEvent) {
-  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
-    isOpen.value = false;
-  }
-}
 
 function getLink(notification: Notification) {
   if (
@@ -133,12 +132,4 @@ function getLink(notification: Notification) {
 
   return '#';
 }
-
-onMounted(() => {
-  document.addEventListener('click', closeDropdown);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', closeDropdown);
-});
 </script>

@@ -52,7 +52,7 @@
         Negotiable
         <UiCheckbox id="negotiation" v-model="negotiation" />
       </UiLabel>
-      <UiButton type="submit" class="mt-2" :disabled="isLoading">Save</UiButton>
+      <UiButton type="submit" class="mt-2" :loading="isLoading">Save</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>

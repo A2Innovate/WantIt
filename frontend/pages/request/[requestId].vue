@@ -4,12 +4,16 @@
       <h1 v-if="request" class="text-xl font-semibold my-4 px-4">Request</h1>
       <UiSkeleton v-else class="h-6 w-20 my-4 mx-4" />
       <UiCard v-if="!error" class="m-4">
-        <div v-if="request && request.location" class="mb-4">
+        <div
+          v-if="request && request.location"
+          class="mb-4 rounded-lg overflow-hidden"
+        >
           <LMap
             style="height: 15rem"
             :zoom="2"
             :center="[request.location.y, request.location.x]"
             :use-global-leaflet="false"
+            :options="{ zoomControl: false }"
           >
             <LTileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

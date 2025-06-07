@@ -3,24 +3,46 @@
     <h2 class="text-2xl font-semibold">New request</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="addRequest">
       <div class="flex items-center gap-2 self-center">
-        <UiLabel for="locationGlobal">Local</UiLabel>
-        <UiToggle id="locationGlobal" v-model="locationGlobal" />
-        <UiLabel for="locationGlobal">Global</UiLabel>
+        <div
+          class="flex items-center gap-1 transition-colors"
+          :class="locationGlobal ? 'text-neutral-400' : 'text-sky-400'"
+        >
+          <Icon name="material-symbols:location-on" />
+          <span class="font-medium text-sm">Local</span>
+        </div>
+        <UiToggle
+          id="locationGlobal"
+          v-model="locationGlobal"
+          :disabled="isLoading"
+        />
+        <div
+          class="flex items-center gap-1 transition-colors"
+          :class="locationGlobal ? 'text-sky-400' : 'text-neutral-400'"
+        >
+          <span class="font-medium text-sm">Global</span>
+          <Icon name="material-symbols:globe" />
+        </div>
       </div>
       <UiMapRadiusPicker v-if="!locationGlobal" v-model="location" />
       <UiLabel for="content">What do you want?</UiLabel>
-      <UiInput id="content" v-model="content" placeholder="An iPhone..." />
+      <UiInput
+        id="content"
+        v-model="content"
+        placeholder="An iPhone..."
+        :disabled="isLoading"
+      />
       <UiLabel for="budget">Budget</UiLabel>
       <div class="flex">
-        <DropdownCurrency v-model="selectedCurrency" />
+        <DropdownCurrency v-model="selectedCurrency" :readonly="isLoading" />
         <UiInput
           id="budget"
           v-model="budget"
+          :disabled="isLoading"
           class="w-full rounded-l-none"
           type="number"
         />
       </div>
-      <UiButton type="submit" class="mt-2">Add</UiButton>
+      <UiButton type="submit" class="mt-2" :loading="isLoading">Add</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>
@@ -47,10 +69,12 @@ const location = ref({
   radius: 3000
 });
 const locationGlobal = ref(false);
+const isLoading = ref(false);
 const error = ref('');
 
 async function addRequest() {
   try {
+    isLoading.value = true;
     const payload = {
       content: content.value,
       budget: Number(budget.value),
@@ -90,6 +114,8 @@ async function addRequest() {
     } else {
       error.value = 'Something went wrong';
     }
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

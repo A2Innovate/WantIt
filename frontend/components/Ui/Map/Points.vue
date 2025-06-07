@@ -1,10 +1,11 @@
 <template>
-  <div>
+  <div class="rounded-lg overflow-hidden">
     <LMap
       style="height: 15rem"
       :zoom="0"
       :center="[0, 0]"
       :use-global-leaflet="false"
+      :options="{ zoomControl: false }"
     >
       <LTileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

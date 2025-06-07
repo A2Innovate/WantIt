@@ -5,6 +5,7 @@
       value=""
       class="sr-only peer"
       :checked="modelValue"
+      :disabled="disabled"
       @change="handleInput"
     />
     <div
@@ -16,6 +17,7 @@
 <script setup lang="ts">
 defineProps<{
   modelValue: boolean;
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits(['update:modelValue']);

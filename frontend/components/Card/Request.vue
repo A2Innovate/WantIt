@@ -12,7 +12,7 @@
         {{ priceFmt(request.budget, request.currency) }}
       </span>
     </div>
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center mt-1">
       <ClientOnly>
         <p class="text-xs text-neutral-400">
           {{ formatTime(new Date(request.createdAt)) }}

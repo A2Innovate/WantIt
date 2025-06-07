@@ -18,5 +18,24 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ isOpen: boolean; popupClass?: string }>();
+const props = defineProps<{
+  isOpen: boolean;
+  popupClass?: string;
+  dropdownRef?: HTMLElement;
+}>();
+const emit = defineEmits(['update:isOpen']);
+
+function closeDropdown(e: MouseEvent) {
+  if (props.dropdownRef && !props.dropdownRef.contains(e.target as Node)) {
+    emit('update:isOpen', false);
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', closeDropdown);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeDropdown);
+});
 </script>

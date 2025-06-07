@@ -1,29 +1,66 @@
 <template>
   <div
     :class="[
-      'p-4 rounded-lg border border-neutral-700 bg-neutral-900 flex flex-col break-all w-full max-w-56 sm:max-w-xs',
-      message.senderId === useUserStore().current?.id
-        ? 'self-end'
-        : 'self-start'
+      'p-4 rounded-lg border border-neutral-700 bg-neutral-900 flex flex-col break-all w-full max-w-56 sm:max-w-xs relative',
+      isSender ? 'self-end' : 'self-start'
     ]"
   >
+    <div v-if="isSender" ref="dropdownRef" class="absolute top-0 right-0">
+      <button
+        class="cursor-pointer text-neutral-300 p-1 flex"
+        @click="isOptionsModalOpen = !isOptionsModalOpen"
+      >
+        <Icon
+          name="material-symbols:keyboard-arrow-down"
+          class="transition-all"
+          :class="{ 'rotate-180': isOptionsModalOpen }"
+        />
+      </button>
+      <DropdownBasePopup
+        :is-open="isOptionsModalOpen"
+        popup-class="right-0"
+        :dropdown-ref="dropdownRef"
+        @update:is-open="isOptionsModalOpen = $event"
+      >
+        <DropdownBaseElement
+          @click="
+            isOptionsModalOpen = false;
+            handleEdit();
+          "
+        >
+          <p class="flex items-center gap-2">
+            <Icon name="material-symbols:edit-rounded" />
+            Edit
+          </p>
+        </DropdownBaseElement>
+      </DropdownBasePopup>
+    </div>
     <p v-if="!editMode">{{ message.content }}</p>
     <UiTextArea v-else v-model="editedContent" class="mb-2 bg-neutral-950" />
+    <div class="flex justify-end">
+      <UiButton
+        v-if="editMode"
+        :loading="isSavingEdit"
+        size="small"
+        variant="outline"
+        icon="material-symbols:done"
+        class="text-xs"
+        @click="handleEdit"
+      >
+        <span v-if="!isSavingEdit">Save</span>
+        <span v-else>Saving</span>
+      </UiButton>
+    </div>
     <span v-if="message.edited && !editMode" class="text-xs text-neutral-500"
       >(edited)
     </span>
 
     <div class="flex justify-between">
-      <button
-        v-if="message.senderId === useUserStore().current?.id"
-        class="p-1 border border-neutral-700 rounded-lg flex"
-        @click="handleEdit"
-      >
-        <Icon v-if="!editMode" name="material-symbols:edit-rounded" />
-        <Icon v-else name="material-symbols:done" />
-      </button>
       <ClientOnly>
-        <span class="text-sm text-neutral-400 ml-auto">
+        <span
+          class="text-sm text-neutral-400 ml-auto"
+          :title="new Date(message.createdAt).toLocaleString()"
+        >
           {{ formatTime(new Date(message.createdAt)) }}
         </span>
       </ClientOnly>
@@ -42,7 +79,13 @@ const editMode = ref(false);
 const editedContent = ref(props.message.content);
 const error = ref('');
 const api = useApi();
+const isOptionsModalOpen = ref(false);
 const isSavingEdit = ref(false);
+const dropdownRef = ref<HTMLElement | undefined>(undefined);
+
+const isSender = computed(() => {
+  return props.message.senderId === useUserStore().current?.id;
+});
 
 async function handleEdit() {
   if (!editMode.value) {

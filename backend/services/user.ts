@@ -442,7 +442,7 @@ app.post(
   "/:userId/review",
   authRequired,
   rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 minute
+    windowMs: 60 * 60 * 1000, // 1 hour
     limit: 5,
   }),
   zValidator("param", getUserByIdSchema),
@@ -458,6 +458,10 @@ app.post(
 
     if (!user) {
       return c.json({ message: "User not found" }, 404);
+    }
+
+    if (session.user.id === userId) {
+      return c.json({ message: "You cannot review yourself" }, 400);
     }
 
     const [review] = await db.insert(userReviewsTable).values({
@@ -490,6 +494,54 @@ app.post(
 
     return c.json({
       message: "Review added successfully",
+    });
+  },
+);
+
+app.put(
+  "/review/:reviewId",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 5,
+  }),
+  zValidator("param", reviewByIdSchema),
+  zValidator("json", addEditReviewSchema),
+  async (c) => {
+    const session = c.get("session");
+    const { reviewId } = c.req.valid("param");
+    const { content, rating } = c.req.valid("json");
+
+    const [review] = await db.update(userReviewsTable).set({
+      content,
+      rating,
+    }).where(
+      and(
+        eq(userReviewsTable.id, reviewId),
+        eq(userReviewsTable.reviewerUserId, session.user.id),
+      ),
+    ).returning({
+      id: userReviewsTable.id,
+      content: userReviewsTable.content,
+      rating: userReviewsTable.rating,
+      reviewedUserId: userReviewsTable.reviewedUserId,
+      createdAt: userReviewsTable.createdAt,
+    });
+
+    if (!review) {
+      return c.json({ message: "Review not found" }, 404);
+    }
+
+    pusher.trigger(
+      `public-user-${review.reviewedUserId}-reviews`,
+      "update-review",
+      review,
+    ).catch((error) => {
+      console.error("Async Pusher trigger error: ", error);
+    });
+
+    return c.json({
+      message: "Review edited successfully",
     });
   },
 );

@@ -8,7 +8,11 @@
         >
       </NuxtLink>
       <div class="flex flex-col justify-end">
-        <UiStars :value="review.rating" readonly />
+        <UiStars
+          :value="editedRating"
+          :readonly="!isEditing"
+          @update:model-value="editedRating = $event"
+        />
         <ClientOnly
           ><span
             class="text-xs text-neutral-500 text-right"
@@ -70,6 +74,7 @@
 <script setup lang="ts">
 import type { Review } from '@/types/review';
 import { AxiosError } from 'axios';
+import { addEditReviewSchema } from '~/schema/services/user';
 
 const props = defineProps<{
   review: Review;
@@ -82,36 +87,44 @@ const isSavingEdit = ref(false);
 const error = ref('');
 const api = useApi();
 const userStore = useUserStore();
-const editedReviewContent = ref(props.review.content);
+const editedReviewContent = ref(props.review.content || '');
+const editedRating = ref(props.review.rating);
 
 async function handleEdit() {
   if (!isEditing.value) {
     isEditing.value = true;
   } else {
-    if (editedReviewContent.value !== props.review.content) {
+    if (
+      editedReviewContent.value !== props.review.content ||
+      editedRating.value !== props.review.rating
+    ) {
       try {
-        error.value = '';
         isSavingEdit.value = true;
+        error.value = '';
+        const payload = {
+          content: editedReviewContent.value,
+          rating: editedRating.value
+        };
+
+        const validation = validate(addEditReviewSchema, payload);
+
+        if (validation) {
+          error.value = validation;
+          isSavingEdit.value = false;
+          return;
+        }
 
         if (
           userStore.current?.isAdmin &&
           userStore.current.id !== props.review.reviewer.id
         ) {
-          await api.put(
-            `/user/review/${props.review.id}`,
-            {
-              content: editedReviewContent.value
-            },
-            {
-              params: {
-                pretendUser: props.review.reviewer.id
-              }
+          await api.put(`/user/review/${props.review.id}`, payload, {
+            params: {
+              pretendUser: props.review.reviewer.id
             }
-          );
-        } else {
-          await api.put(`/user/review/${props.review.id}`, {
-            content: editedReviewContent.value
           });
+        } else {
+          await api.put(`/user/review/${props.review.id}`, payload);
         }
 
         isEditing.value = false;

@@ -3,7 +3,7 @@
     <form class="flex flex-col gap-2 items-end" @submit.prevent="handleSubmit">
       <div class="flex items-center justify-between w-full">
         <p class="font-semibold">Add review</p>
-        <UiStars :value="rating" @update:value="rating = $event" />
+        <UiStars :value="rating" @update:model-value="rating = $event" />
       </div>
 
       <div class="flex flex-col gap-2 items-end w-full">

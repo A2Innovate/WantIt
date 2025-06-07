@@ -24,11 +24,11 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits(['update:value']);
+const emit = defineEmits(['update:modelValue']);
 
 function handleClick(i: number) {
   if (!props.readonly) {
-    emit('update:value', i);
+    emit('update:modelValue', i);
   }
 }
 </script>

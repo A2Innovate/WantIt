@@ -69,6 +69,19 @@ onMounted(() => {
       data.value.push(review);
     }
   });
+
+  channel.bind('update-review', (review: Review) => {
+    if (data.value) {
+      const index = data.value.findIndex((r) => r.id === review.id);
+      if (index !== -1) {
+        data.value[index] = {
+          ...data.value[index],
+          ...review,
+          edited: true
+        };
+      }
+    }
+  });
 });
 
 onUnmounted(() => {

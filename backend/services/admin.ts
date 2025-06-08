@@ -83,7 +83,7 @@ app.get(
       day: "2-digit",
     });
 
-    for (let i = 0; i < days; i++) {
+    for (let i = days - 1; i >= 0; i--) {
       const now = new Date();
       now.setDate(now.getDate() - i);
       const date = dateFormat.format(now);

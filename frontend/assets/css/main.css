@@ -23,6 +23,24 @@
   opacity: 0;
 }
 
+.slide-down-blur-enter-active,
+.slide-down-blur-leave-active,
+.slide-down-blur-move {
+  transition: all 0.3s ease;
+}
+
+.slide-down-blur-enter-from {
+  opacity: 0;
+  filter: blur(2px);
+  transform: translateY(-10px);
+}
+
+.slide-down-blur-leave-to {
+  opacity: 0;
+  filter: blur(0);
+  transform: translateY(10px);
+}
+
 .leaflet-container {
   z-index: 0;
 }

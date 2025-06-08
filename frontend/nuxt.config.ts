@@ -24,7 +24,6 @@ export default defineNuxtConfig({
     }
   },
   echarts: {
-    renderer: 'svg',
     charts: ['LineChart'],
     components: ['GridComponent']
   },

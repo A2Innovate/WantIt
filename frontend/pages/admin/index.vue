@@ -3,10 +3,15 @@
     <div class="m-4 flex flex-col gap-4">
       <h1 class="text-xl font-semibold">Admin</h1>
       <UiCard>
+        <h2 class="text-xl mb-2">
+          Accounts created in the last
+          <span class="font-semibold">30</span> days
+        </h2>
         <VChart
+          v-if="data"
           :option="option"
           autoresize
-          style="width: 100%; height: 15rem"
+          :style="{ width: '100%', height: '15rem' }"
         />
       </UiCard>
     </div>
@@ -18,9 +23,20 @@ definePageMeta({
   middleware: ['auth', 'admin']
 });
 
+const requestFetch = useRequestFetch();
+const { data } = await useAsyncData('users', async () => {
+  const response = await requestFetch<{ day: string[]; count: number[] }>(
+    useRuntimeConfig().public.apiBase + '/api/admin/stats/users',
+    {
+      credentials: 'include'
+    }
+  );
+  return response;
+});
+
 const option = ref<ECOption>({
   xAxis: {
-    data: ['0', '1', '2', '3', '4', '5', '6'],
+    data: data.value?.day,
     axisLabel: { color: 'white' }
   },
   yAxis: {
@@ -28,7 +44,7 @@ const option = ref<ECOption>({
   },
   series: [
     {
-      data: [120, 200, 150, 80, 70, 110, 130],
+      data: data.value?.count,
       type: 'line',
       smooth: true,
       lineStyle: {
@@ -38,6 +54,13 @@ const option = ref<ECOption>({
         color: 'white'
       }
     }
-  ]
+  ],
+  grid: {
+    left: '0',
+    right: '0',
+    top: '3%',
+    bottom: '0',
+    containLabel: true
+  }
 });
 </script>

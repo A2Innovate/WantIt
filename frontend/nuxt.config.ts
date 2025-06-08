@@ -25,7 +25,7 @@ export default defineNuxtConfig({
   },
   echarts: {
     charts: ['LineChart', 'BarChart'],
-    components: ['GridComponent']
+    components: ['GridComponent', 'TooltipComponent']
   },
   vite: {
     plugins: [tailwindcss()]

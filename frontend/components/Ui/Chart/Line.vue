@@ -9,6 +9,12 @@
 <script setup lang="ts" generic="T, K">
 const props = defineProps<{ x: T[]; y: K[] }>();
 const option = ref<ECOption>({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    }
+  },
   xAxis: {
     data: props.x,
     axisLabel: { color: 'white' }

@@ -252,3 +252,11 @@ export const userReviewsRelations = relations(userReviewsTable, ({ one }) => ({
     references: [usersTable.id],
   }),
 }));
+
+export const logsTable = pgTable("logs", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  message: text().notNull(),
+  userId: integer()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp().notNull().defaultNow(),
+});

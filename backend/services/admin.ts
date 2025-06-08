@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { adminRequired } from "@/middleware/auth.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
-import { gt, sql } from "drizzle-orm";
-import { requestsTable, usersTable } from "@/db/schema.ts";
+import { desc, gt, sql } from "drizzle-orm";
+import { logsTable, requestsTable, usersTable } from "@/db/schema.ts";
 import { offersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
@@ -139,5 +139,14 @@ app.get(
     return c.json({ day, count });
   },
 );
+
+app.get("/logs", async (c) => {
+  const logs = await db.query.logsTable.findMany({
+    orderBy: desc(logsTable.id),
+    limit: 50,
+  });
+
+  return c.json(logs);
+});
 
 export default app;

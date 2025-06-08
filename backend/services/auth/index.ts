@@ -150,15 +150,22 @@ app.post(
       channel_parts[3] === "alert" &&
       !isNaN(Number(channel_parts[4]));
 
-    const isValidAdminChannel = channel_parts.length === 3 &&
+    const isValidAdminStatsChannel = channel_parts.length === 3 &&
       channel_parts[0] === "private" &&
       channel_parts[1] === "admin" &&
       channel_parts[2] === "stats" &&
       session.user.isAdmin;
 
+    const isValidAdminLogsChannel = channel_parts.length === 3 &&
+      channel_parts[0] === "private" &&
+      channel_parts[1] === "admin" &&
+      channel_parts[2] === "logs" &&
+      session.user.isAdmin;
+
     if (
       isValidChatChannel || isValidUserChannel || isValidUserAlertsChannel ||
-      isValidUserAlertChannel || isValidAdminChannel
+      isValidUserAlertChannel || isValidAdminStatsChannel ||
+      isValidAdminLogsChannel
     ) {
       const auth = pusher.authorizeChannel(socket_id, channel_name);
       return c.json(auth);

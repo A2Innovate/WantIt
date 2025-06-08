@@ -41,6 +41,7 @@
         <CardAdminStats type="users" />
         <CardAdminStatsRatelimitsHit />
       </div>
+      <CardAdminLogs />
     </div>
   </div>
 </template>

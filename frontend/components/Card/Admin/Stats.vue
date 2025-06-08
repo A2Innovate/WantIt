@@ -15,8 +15,10 @@
         "
       />
     </div>
-    <UiChartLine v-if="data" :x="data.day" :y="data.count" />
-    <UiSkeletonLoader v-else class="h-60" />
+    <Transition name="slide-up-blur" mode="out-in">
+      <UiChartLine v-if="data" :x="data.day" :y="data.count" />
+      <UiSkeletonLoader v-else class="h-60" />
+    </Transition>
   </UiCard>
 </template>
 

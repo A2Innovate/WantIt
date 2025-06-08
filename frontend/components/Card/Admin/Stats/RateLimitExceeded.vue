@@ -15,8 +15,10 @@
         "
       />
     </div>
-    <UiChartBar v-if="data" :x="data.endpoints" :y="data.count" />
-    <UiSkeletonLoader v-else class="h-60" />
+    <Transition name="slide-up-blur" mode="out-in">
+      <UiChartBar v-if="data" :x="data.endpoints" :y="data.count" />
+      <UiSkeletonLoader v-else class="h-60" />
+    </Transition>
   </UiCard>
 </template>
 

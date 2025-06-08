@@ -4,20 +4,30 @@
       <h1 class="text-xl font-semibold">Admin</h1>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <UiCard>
-          <p v-if="stats" class="text-6xl font-semibold">{{ stats?.users }}</p>
-          <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
+          <Transition name="slide-up-blur" mode="out-in">
+            <p v-if="stats" class="text-6xl font-semibold">
+              {{ stats?.users }}
+            </p>
+            <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
+          </Transition>
           <p>Users</p>
         </UiCard>
         <UiCard>
-          <p v-if="stats" class="text-6xl font-semibold">
-            {{ stats?.requests }}
-          </p>
-          <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
+          <Transition name="slide-up-blur" mode="out-in">
+            <p v-if="stats" class="text-6xl font-semibold">
+              {{ stats?.requests }}
+            </p>
+            <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
+          </Transition>
           <p>Requests</p>
         </UiCard>
         <UiCard>
-          <p v-if="stats" class="text-6xl font-semibold">{{ stats?.offers }}</p>
-          <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
+          <Transition name="slide-up-blur" mode="out-in">
+            <p v-if="stats" class="text-6xl font-semibold">
+              {{ stats?.offers }}
+            </p>
+            <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
+          </Transition>
           <p>Offers</p>
         </UiCard>
       </div>

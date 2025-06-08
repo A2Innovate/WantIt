@@ -7,6 +7,7 @@ import { requestsTable, usersTable } from "@/db/schema.ts";
 import { offersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
+import { client } from "@/utils/redis.ts";
 
 const app = new Hono();
 
@@ -43,11 +44,20 @@ app.get(
       ).transform((value) => Number(value)).optional().pipe(
         z.number().min(1).max(365).default(30),
       ),
+      cache: z.string().optional().default("true").transform((value) =>
+        value === "true"
+      ),
     }),
   ),
   async (c) => {
-    const { days } = c.req.valid("query");
+    const { days, cache } = c.req.valid("query");
     const { type } = c.req.valid("param");
+
+    const cached = await client.get(`stats:${type}:${days}`);
+
+    if (cached && cache) {
+      return c.json(JSON.parse(cached));
+    }
 
     let tableSchema;
     let dataFetcher;
@@ -94,6 +104,16 @@ app.get(
           .length,
       );
     }
+
+    client.set(`stats:${type}:${days}`, JSON.stringify({ day, count })).catch(
+      (e) => {
+        console.error("Async Redis set error: ", e);
+      },
+    );
+
+    client.expire(`stats:${type}:${days}`, 60 * 30).catch((e) => {
+      console.error("Async Redis expire error: ", e);
+    });
 
     return c.json({ day, count });
   },

@@ -29,24 +29,45 @@ app.get("/stats", async (c) => {
 });
 
 app.get(
-  "/stats/users",
+  "/stats/:type",
+  zValidator(
+    "param",
+    z.object({ type: z.enum(["users", "offers", "requests"]) }),
+  ),
   zValidator(
     "query",
     z.object({
       days: z.string().refine(
         (value) => !isNaN(Number(value)),
         "days must be a valid number",
-      ).transform((value) => Number(value)).pipe(
+      ).transform((value) => Number(value)).optional().pipe(
         z.number().min(1).max(365).default(30),
       ),
     }),
   ),
   async (c) => {
     const { days } = c.req.valid("query");
+    const { type } = c.req.valid("param");
 
-    const users = await db.query.usersTable.findMany({
+    let tableSchema;
+    let dataFetcher;
+
+    if (type === "users") {
+      tableSchema = usersTable;
+      dataFetcher = db.query.usersTable;
+    } else if (type === "offers") {
+      tableSchema = offersTable;
+      dataFetcher = db.query.offersTable;
+    } else if (type === "requests") {
+      tableSchema = requestsTable;
+      dataFetcher = db.query.requestsTable;
+    } else {
+      return c.json({ error: "Invalid type" }, 400);
+    }
+
+    const data = await dataFetcher.findMany({
       where: gt(
-        usersTable.createdAt,
+        tableSchema.createdAt,
         new Date(Date.now() - days * 24 * 60 * 60 * 1000),
       ),
       columns: {
@@ -69,7 +90,7 @@ app.get(
 
       day.push(date);
       count.push(
-        users.filter((user) => dateFormat.format(user.createdAt) === date)
+        data.filter((item) => dateFormat.format(item.createdAt) === date)
           .length,
       );
     }

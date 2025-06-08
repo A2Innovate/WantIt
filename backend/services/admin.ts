@@ -26,7 +26,11 @@ app.get("/stats", async (c) => {
     count: sql<number>`count(*)`,
   }).from(requestsTable);
 
-  return c.json({ users, offers, requests });
+  return c.json({
+    users: users.count,
+    offers: offers.count,
+    requests: requests.count,
+  });
 });
 
 app.get("/stats/ratelimit/endpoints", async (c) => {

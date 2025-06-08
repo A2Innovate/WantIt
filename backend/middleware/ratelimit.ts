@@ -35,7 +35,7 @@ export const rateLimit = ({
 
         const statsKey =
           `stats:ratelimit:exceeded:${c.req.method}:${c.req.routePath}`;
-        await client.zremrangebyscore(key, 0, now - 60 * 60 * 24 * 1000);
+        await client.zremrangebyscore(statsKey, 0, now - 60 * 60 * 24 * 1000);
         await client.zadd(statsKey, now, requestId);
         await client.expire(statsKey, 60 * 60 * 24);
 

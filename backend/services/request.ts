@@ -264,6 +264,10 @@ app.post(
         });
       }
 
+      pusher.trigger("private-admin-stats", "update-offers", 1).catch((e) => {
+        console.error(`Async Pusher trigger error: ${e}`);
+      });
+
       return c.json(offer);
     } catch (e) {
       console.error("Error creating offer: ", e);
@@ -321,6 +325,10 @@ app.delete(
       offerId,
     ).catch((e) => {
       console.error("Async Pusher trigger error: ", e);
+    });
+
+    pusher.trigger("private-admin-stats", "update-offers", -1).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
     });
 
     return c.json({
@@ -624,18 +632,23 @@ app.post(
       radius,
     }).returning();
 
+    const isGlobal = location === null;
+
     db.select().from(alertsTable)
       .where(
         and(
-          sql`ST_Intersects(
+          isGlobal ? undefined : sql`ST_Intersects(
             ST_Buffer(${alertsTable.location}::geography, ${alertsTable.radius})::geometry,
-            ST_Buffer(ST_SetSRID(ST_MakePoint(${location?.x}, ${location?.y})::geography, 4326), ${radius})::geometry
+            ST_Buffer(ST_SetSRID(ST_MakePoint(${location.x}, ${location.y})::geography, 4326), ${radius})::geometry
           )`,
           ilike(alertsTable.content, `%${content}%`),
         ),
       ).then(async (alerts) => {
         for (const alert of alerts) {
-          if (!await isRequestMatchingAlertBudget(request, alert)) {
+          if (
+            (isGlobal && alert.location) ||
+            !await isRequestMatchingAlertBudget(request, alert)
+          ) {
             continue;
           }
 
@@ -673,6 +686,10 @@ app.post(
           });
         }
       });
+
+    pusher.trigger("private-admin-stats", "update-requests", 1).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
 
     return c.json(request);
   },
@@ -767,6 +784,10 @@ app.delete(
       requestId,
     ).catch((e) => {
       console.error("Async Pusher trigger error: ", e);
+    });
+
+    pusher.trigger("private-admin-stats", "update-requests", -1).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
     });
 
     return c.json({

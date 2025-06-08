@@ -150,9 +150,15 @@ app.post(
       channel_parts[3] === "alert" &&
       !isNaN(Number(channel_parts[4]));
 
+    const isValidAdminChannel = channel_parts.length === 3 &&
+      channel_parts[0] === "private" &&
+      channel_parts[1] === "admin" &&
+      channel_parts[2] === "stats" &&
+      session.user.isAdmin;
+
     if (
       isValidChatChannel || isValidUserChannel || isValidUserAlertsChannel ||
-      isValidUserAlertChannel
+      isValidUserAlertChannel || isValidAdminChannel
     ) {
       const auth = pusher.authorizeChannel(socket_id, channel_name);
       return c.json(auth);
@@ -216,6 +222,12 @@ app.post(
       password: hashedPassword,
       emailVerificationToken,
     });
+
+    pusher.trigger("private-admin-stats", "update-users", 1).catch(
+      (error) => {
+        console.error("Async Pusher trigger error: ", error);
+      },
+    );
 
     return c.json({ message: "Registered successfully" }, 201);
   },

@@ -5,7 +5,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <UiCard>
           <Transition name="slide-up-blur" mode="out-in">
-            <p v-if="stats" class="text-6xl font-semibold">
+            <p v-if="stats" :key="stats.users" class="text-6xl font-semibold">
               {{ stats?.users }}
             </p>
             <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
@@ -14,7 +14,11 @@
         </UiCard>
         <UiCard>
           <Transition name="slide-up-blur" mode="out-in">
-            <p v-if="stats" class="text-6xl font-semibold">
+            <p
+              v-if="stats"
+              :key="stats.requests"
+              class="text-6xl font-semibold"
+            >
               {{ stats?.requests }}
             </p>
             <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
@@ -23,7 +27,7 @@
         </UiCard>
         <UiCard>
           <Transition name="slide-up-blur" mode="out-in">
-            <p v-if="stats" class="text-6xl font-semibold">
+            <p v-if="stats" :key="stats.offers" class="text-6xl font-semibold">
               {{ stats?.offers }}
             </p>
             <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
@@ -42,19 +46,57 @@
 </template>
 
 <script setup lang="ts">
+import type { Channel } from 'pusher-js';
+
 definePageMeta({
   middleware: ['auth', 'admin']
 });
 
+const pusher = usePusher();
 const requestFetch = useRequestFetch();
+let channel: Channel;
+
 const { data: stats } = useAsyncData('admin-stats', async () => {
   const response = await requestFetch<{
-    users: number;
-    offers: number;
-    requests: number;
+    users: string;
+    offers: string;
+    requests: string;
   }>(useRuntimeConfig().public.apiBase + '/api/admin/stats', {
     credentials: 'include'
   });
-  return response;
+  return {
+    users: Number(response.users),
+    offers: Number(response.offers),
+    requests: Number(response.requests)
+  };
+});
+
+onMounted(() => {
+  channel = pusher.subscribe('private-admin-stats');
+
+  channel.bind('update-users', (data: number) => {
+    if (stats.value) {
+      stats.value.users += data;
+    }
+  });
+
+  channel.bind('update-requests', (data: number) => {
+    if (stats.value) {
+      stats.value.requests += data;
+    }
+  });
+
+  channel.bind('update-offers', (data: number) => {
+    if (stats.value) {
+      stats.value.offers += data;
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (channel) {
+    channel.unbind_all();
+    channel.unsubscribe();
+  }
 });
 </script>

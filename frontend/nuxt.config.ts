@@ -24,7 +24,7 @@ export default defineNuxtConfig({
     }
   },
   echarts: {
-    charts: ['LineChart'],
+    charts: ['LineChart', 'BarChart'],
     components: ['GridComponent']
   },
   vite: {

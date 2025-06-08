@@ -29,6 +29,23 @@ app.get("/stats", async (c) => {
   return c.json({ users, offers, requests });
 });
 
+app.get("/stats/ratelimit/endpoints", async (c) => {
+  const data = await client.keys("stats:ratelimit:exceeded:*");
+
+  const endpoints = [];
+  const count = [];
+
+  for (const key of data) {
+    const [, , , method, ...routeParts] = key.split(":");
+    const timestamps = await client.zrangebyscore(key, 0, Date.now());
+
+    endpoints.push(method + ":" + routeParts.join(":"));
+    count.push(timestamps.length);
+  }
+
+  return c.json({ endpoints, count });
+});
+
 app.get(
   "/stats/:type",
   zValidator(

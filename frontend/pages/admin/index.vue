@@ -6,6 +6,7 @@
         <CardAdminStats type="requests" />
         <CardAdminStats type="offers" />
         <CardAdminStats type="users" />
+        <CardAdminStatsRateLimitExceeded />
       </div>
     </div>
   </div>

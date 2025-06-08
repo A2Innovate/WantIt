@@ -28,8 +28,17 @@ export const rateLimit = ({
 
       const currentCount = typeof countResult === "number" ? countResult : 0;
 
+      const requestId = `${now}-${Math.random()}`;
+
       if (currentCount >= limit) {
         await client.expire(key, Math.ceil(windowMs / 1000));
+
+        const statsKey =
+          `stats:ratelimit:exceeded:${c.req.method}:${c.req.routePath}`;
+        await client.zremrangebyscore(key, 0, now - 60 * 60 * 24 * 1000);
+        await client.zadd(statsKey, now, requestId);
+        await client.expire(statsKey, 60 * 60 * 24);
+
         return c.json(
           {
             message: `Rate limit exceeded. Try again in ${
@@ -42,7 +51,6 @@ export const rateLimit = ({
         );
       }
 
-      const requestId = `${now}-${Math.random()}`;
       await client.zadd(key, now, requestId);
 
       await client.expire(key, Math.ceil(windowMs / 1000) + 1);

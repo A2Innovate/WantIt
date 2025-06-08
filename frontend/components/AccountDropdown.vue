@@ -15,6 +15,7 @@
       <div
         v-if="isOpen"
         class="absolute right-0 mt-2 w-40 rounded-md bg-neutral-900 border border-neutral-700 shadow-lg z-20"
+        @click="isOpen = false"
       >
         <ul class="py-1 text-sm text-white">
           <li>

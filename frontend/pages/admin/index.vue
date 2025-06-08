@@ -39,7 +39,7 @@
         <CardAdminStats type="requests" />
         <CardAdminStats type="offers" />
         <CardAdminStats type="users" />
-        <CardAdminStatsRateLimitExceeded />
+        <CardAdminStatsRatelimitsHit />
       </div>
     </div>
   </div>

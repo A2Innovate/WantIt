@@ -2,7 +2,7 @@
   <UiCard>
     <div class="flex items-center justify-between mb-2">
       <h2 class="sm:text-xl">
-        Ratelimit exceeded in the last
+        Ratelimits hit in the last
         <span class="font-semibold">24</span> hours
       </h2>
       <UiButton

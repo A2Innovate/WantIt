@@ -1,7 +1,10 @@
 <template>
   <div class="max-w-6xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
-      <h1 class="text-xl font-semibold">Admin</h1>
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl font-semibold">Admin</h1>
+        <UiButton :as="NuxtLink" to="/admin/options">Options</UiButton>
+      </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <UiCard>
           <Transition name="slide-up-blur" mode="out-in">
@@ -48,6 +51,7 @@
 
 <script setup lang="ts">
 import type { Channel } from 'pusher-js';
+import { NuxtLink } from '#components';
 
 definePageMeta({
   middleware: ['auth', 'admin']

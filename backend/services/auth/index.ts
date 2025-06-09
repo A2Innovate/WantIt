@@ -163,10 +163,16 @@ app.post(
       channel_parts[2] === "logs" &&
       session.user.isAdmin;
 
+    const isValidAdminOptionsChannel = channel_parts.length === 3 &&
+      channel_parts[0] === "private" &&
+      channel_parts[1] === "admin" &&
+      channel_parts[2] === "options" &&
+      session.user.isAdmin;
+
     if (
       isValidChatChannel || isValidUserChannel || isValidUserAlertsChannel ||
       isValidUserAlertChannel || isValidAdminStatsChannel ||
-      isValidAdminLogsChannel
+      isValidAdminLogsChannel || isValidAdminOptionsChannel
     ) {
       const auth = pusher.authorizeChannel(socket_id, channel_name);
       return c.json(auth);

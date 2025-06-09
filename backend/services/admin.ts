@@ -9,6 +9,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { client } from "@/utils/redis.ts";
 import { listFiles } from "@/utils/s3.ts";
+import { pusher } from "../utils/pusher.ts";
 
 const app = new Hono();
 
@@ -182,8 +183,20 @@ app.get(
   },
 );
 
-app.post("/integrity-check", async (c) => {
+app.post("/integrity/s3-db", async (c) => {
+  await pusher.trigger("private-admin-options", "integrity-check-log", {
+    message: "Listing S3 files...",
+  });
+
   const files = await listFiles("request/");
+
+  await pusher.trigger("private-admin-options", "integrity-check-log", {
+    message: `Found ${files.length} files`,
+  });
+
+  await pusher.trigger("private-admin-options", "integrity-check-log", {
+    message: "Listing database offers...",
+  });
 
   const offers = await db.query.offersTable.findMany({
     columns: {
@@ -199,8 +212,16 @@ app.post("/integrity-check", async (c) => {
     },
   });
 
+  await pusher.trigger("private-admin-options", "integrity-check-log", {
+    message: `Found ${offers.length} offers`,
+  });
+
   const notInDb = [];
   const notInFiles = [];
+
+  await pusher.trigger("private-admin-options", "integrity-check-log", {
+    message: "Checking files...",
+  });
 
   for (const file of files) {
     const offerId = Number(file.split("/")[3]);
@@ -210,13 +231,23 @@ app.post("/integrity-check", async (c) => {
 
     if (!offer) {
       notInDb.push(file);
+      await pusher.trigger("private-admin-options", "integrity-check-log", {
+        message: `Unknown file ${file} found in S3`,
+      });
       continue;
     }
 
     if (!offer.images.some((image) => image.name === imageName)) {
       notInDb.push(file);
+      await pusher.trigger("private-admin-options", "integrity-check-log", {
+        message: `Unknown file ${file} found in S3`,
+      });
     }
   }
+
+  await pusher.trigger("private-admin-options", "integrity-check-log", {
+    message: "Checking database...",
+  });
 
   for (const offer of offers) {
     if (offer.images.length) {
@@ -231,14 +262,21 @@ app.post("/integrity-check", async (c) => {
           notInFiles.push(
             `request/${offer.requestId}/offer/${offer.id}/images/${image.name}`,
           );
+          await pusher.trigger("private-admin-options", "integrity-check-log", {
+            message:
+              `File request/${offer.requestId}/offer/${offer.id}/images/${image.name} missing from S3`,
+          });
         }
       }
     }
   }
 
+  await pusher.trigger("private-admin-options", "integrity-check-log", {
+    message: "Integrity check completed",
+  });
+
   return c.json({
-    notInDb,
-    notInFiles,
+    message: "Integrity check completed",
   });
 });
 

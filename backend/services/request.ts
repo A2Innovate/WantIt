@@ -26,6 +26,7 @@ import { pusher } from "@/utils/pusher.ts";
 import sharp from "sharp";
 import { pipeline } from "@huggingface/transformers";
 import { isRequestMatchingAlertBudget } from "../utils/filter.ts";
+import { createLog } from "@/utils/log.ts";
 
 const app = new Hono();
 
@@ -268,6 +269,11 @@ app.post(
         console.error(`Async Pusher trigger error: ${e}`);
       });
 
+      createLog({
+        type: "OFFER_CREATE",
+        userId: session.user.id,
+      });
+
       return c.json(offer);
     } catch (e) {
       console.error("Error creating offer: ", e);
@@ -329,6 +335,11 @@ app.delete(
 
     pusher.trigger("private-admin-stats", "update-offers", -1).catch((e) => {
       console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    createLog({
+      type: "OFFER_DELETE",
+      userId: session.user.id,
     });
 
     return c.json({
@@ -604,6 +615,11 @@ app.put(
       console.error("Async Pusher trigger error: ", e);
     });
 
+    createLog({
+      type: "OFFER_UPDATE",
+      userId: session.user.id,
+    });
+
     return c.json(offer[0]);
   },
 );
@@ -691,6 +707,11 @@ app.post(
       console.error(`Async Pusher trigger error: ${e}`);
     });
 
+    createLog({
+      type: "REQUEST_CREATE",
+      userId: session.user.id,
+    });
+
     return c.json(request);
   },
 );
@@ -738,6 +759,11 @@ app.put(
       request[0],
     ).catch((e) => {
       console.error("Async Pusher trigger error: ", e);
+    });
+
+    createLog({
+      type: "REQUEST_UPDATE",
+      userId: session.user.id,
     });
 
     return c.json(request[0]);
@@ -788,6 +814,11 @@ app.delete(
 
     pusher.trigger("private-admin-stats", "update-requests", -1).catch((e) => {
       console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    createLog({
+      type: "REQUEST_DELETE",
+      userId: session.user.id,
     });
 
     return c.json({

@@ -260,6 +260,7 @@ export const logsTable = pgTable("logs", {
   type: logTypes().notNull(),
   userId: integer()
     .references(() => usersTable.id, { onDelete: "cascade" }),
+  ip: text(),
   createdAt: timestamp().notNull().defaultNow(),
 });
 

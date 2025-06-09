@@ -26,13 +26,22 @@
                     <div
                       class="w-full h-full flex items-center justify-center font-medium text-xs"
                     >
-                      {{ log.user?.name.charAt(0).toUpperCase() || 'S' }}
+                      {{ getAvatar(log) }}
                     </div>
                   </div>
-                  <p>{{ log.user?.name || 'System' }}</p>
+                  <p
+                    :class="
+                      log.ip ? 'blur-xs hover:blur-none transition-all' : ''
+                    "
+                  >
+                    {{ log.user?.name || log.ip || 'System' }}
+                  </p>
                 </NuxtLink>
                 <div class="w-4/6">
                   <p v-if="log.type === 'USER_LOGIN'">Logged in</p>
+                  <p v-else-if="log.type === 'USER_LOGIN_FAILURE'">
+                    Failed to log in
+                  </p>
                   <p v-else-if="log.type === 'USER_LOGOUT'">Logged out</p>
                   <p v-else-if="log.type === 'USER_REGISTRATION'">Registered</p>
                   <p v-else-if="log.type === 'REQUEST_CREATE'">
@@ -80,6 +89,18 @@ const logs = ref<Log[]>([]);
 const isFetching = ref(false);
 const containerRef = ref<HTMLDivElement | null>(null);
 let channel: Channel;
+
+function getAvatar(log: Log) {
+  if (log.user) {
+    return log.user.name.charAt(0).toUpperCase();
+  }
+
+  if (log.ip) {
+    return 'IP';
+  }
+
+  return 'S';
+}
 
 async function fetchLogs() {
   isFetching.value = true;

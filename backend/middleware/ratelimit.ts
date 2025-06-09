@@ -1,6 +1,7 @@
 import { createMiddleware } from "hono/factory";
 import { client } from "@/utils/redis.ts";
 import { getIp } from "@/utils/ip.ts";
+import { createLog } from "@/utils/log.ts";
 
 export const rateLimit = ({
   windowMs,
@@ -38,6 +39,11 @@ export const rateLimit = ({
         await client.zremrangebyscore(statsKey, 0, now - 60 * 60 * 24 * 1000);
         await client.zadd(statsKey, now, requestId);
         await client.expire(statsKey, 60 * 60 * 24);
+
+        createLog({
+          type: "RATELIMIT_HIT",
+          ip,
+        });
 
         return c.json(
           {

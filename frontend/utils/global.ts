@@ -66,6 +66,7 @@ export const COMPARISON_MODES = [
 
 export const LOG_TYPES = [
   'USER_LOGIN',
+  'USER_LOGIN_FAILURE',
   'USER_LOGOUT',
   'USER_REGISTRATION',
   'REQUEST_CREATE',

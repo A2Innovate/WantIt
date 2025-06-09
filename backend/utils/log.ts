@@ -6,17 +6,21 @@ import { eq, InferInsertModel, InferSelectModel } from "drizzle-orm";
 export async function createLog({
   type,
   userId,
+  ip,
 }: {
   type: InferInsertModel<typeof logsTable>["type"];
   userId?: number;
+  ip?: string;
 }) {
   const [log] = await db.insert(logsTable).values({
     type,
     userId,
+    ip,
   }).returning({
     id: logsTable.id,
     type: logsTable.type,
     createdAt: logsTable.createdAt,
+    ip: logsTable.ip,
   });
 
   const payload: typeof log & {

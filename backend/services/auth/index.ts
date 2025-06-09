@@ -25,6 +25,7 @@ import { COOKIE_DOMAIN, COOKIE_SECURE, FRONTEND_URL } from "@/utils/global.ts";
 import { pusher } from "@/utils/pusher.ts";
 import { z } from "zod";
 import { getIp } from "@/utils/ip.ts";
+import { createLog } from "@/utils/log.ts";
 
 const app = new Hono();
 
@@ -222,12 +223,14 @@ app.post(
       }, 500);
     }
 
-    await db.insert(usersTable).values({
+    const [user] = await db.insert(usersTable).values({
       name,
       username,
       email,
       password: hashedPassword,
       emailVerificationToken,
+    }).returning({
+      id: usersTable.id,
     });
 
     pusher.trigger("private-admin-stats", "update-users", 1).catch(
@@ -235,6 +238,11 @@ app.post(
         console.error("Async Pusher trigger error: ", error);
       },
     );
+
+    createLog({
+      type: "USER_REGISTRATION",
+      userId: user.id,
+    });
 
     return c.json({ message: "Registered successfully" }, 201);
   },
@@ -270,6 +278,11 @@ app.post(
     }
 
     if (!(await argon2.verify(user.password, password))) {
+      createLog({
+        type: "USER_LOGIN_FAILURE",
+        ip: getIp(c),
+      });
+
       return c.json({ message: "Incorrect email or password" }, 401);
     }
 
@@ -294,6 +307,11 @@ app.post(
       sameSite: "lax",
       domain: COOKIE_DOMAIN,
       maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
+    createLog({
+      type: "USER_LOGIN",
+      userId: user.id,
     });
 
     return c.json({
@@ -342,6 +360,11 @@ app.post("/logout", authRequired, async (c) => {
   );
 
   deleteCookie(c, "wantit_session");
+
+  createLog({
+    type: "USER_LOGOUT",
+    userId: session.user.id,
+  });
 
   return c.json({ message: "Logged out successfully" }, 200);
 });

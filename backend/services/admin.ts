@@ -140,13 +140,36 @@ app.get(
   },
 );
 
-app.get("/logs", async (c) => {
-  const logs = await db.query.logsTable.findMany({
-    orderBy: desc(logsTable.id),
-    limit: 50,
-  });
+app.get(
+  "/logs",
+  zValidator(
+    "query",
+    z.object({
+      limit: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "limit must be a valid number",
+      ).transform((value) => Number(value)).optional().pipe(
+        z.number().min(1).max(100).default(50),
+      ),
+      offset: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "offset must be a valid number",
+      ).transform((value) => Number(value)).optional().pipe(
+        z.number().min(0).default(0),
+      ),
+    }),
+  ),
+  async (c) => {
+    const { limit, offset } = c.req.valid("query");
 
-  return c.json(logs);
-});
+    const logs = await db.query.logsTable.findMany({
+      orderBy: desc(logsTable.id),
+      limit,
+      offset,
+    });
+
+    return c.json(logs);
+  },
+);
 
 export default app;

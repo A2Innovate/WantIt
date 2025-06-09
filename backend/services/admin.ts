@@ -8,6 +8,7 @@ import { offersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { client } from "@/utils/redis.ts";
+import { listFiles } from "@/utils/s3.ts";
 
 const app = new Hono();
 
@@ -180,5 +181,65 @@ app.get(
     return c.json(logs);
   },
 );
+
+app.post("/integrity-check", async (c) => {
+  const files = await listFiles("request/");
+
+  const offers = await db.query.offersTable.findMany({
+    columns: {
+      id: true,
+      requestId: true,
+    },
+    with: {
+      images: {
+        columns: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const notInDb = [];
+  const notInFiles = [];
+
+  for (const file of files) {
+    const offerId = Number(file.split("/")[3]);
+    const imageName = file.split("/")[5];
+
+    const offer = offers.find((offer) => offer.id === offerId);
+
+    if (!offer) {
+      notInDb.push(file);
+      continue;
+    }
+
+    if (!offer.images.some((image) => image.name === imageName)) {
+      notInDb.push(file);
+    }
+  }
+
+  for (const offer of offers) {
+    if (offer.images.length) {
+      for (const image of offer.images) {
+        if (
+          !files.some((file) =>
+            file.includes(
+              `request/${offer.requestId}/offer/${offer.id}/images/${image.name}`,
+            )
+          )
+        ) {
+          notInFiles.push(
+            `request/${offer.requestId}/offer/${offer.id}/images/${image.name}`,
+          );
+        }
+      }
+    }
+  }
+
+  return c.json({
+    notInDb,
+    notInFiles,
+  });
+});
 
 export default app;

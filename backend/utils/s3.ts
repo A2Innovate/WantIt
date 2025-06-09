@@ -57,24 +57,22 @@ export async function deleteFile(key: string) {
   );
 }
 
-export async function deleteRecursive(
-  key: string,
-) {
-  const objectsToDelete: string[] = [];
+export async function listFiles(prefix: string) {
+  const objects: string[] = [];
   let continuationToken: string | undefined = undefined;
 
   do {
     const listResponse: ListObjectsV2CommandOutput = await s3.send(
       new ListObjectsV2Command({
         Bucket: S3_BUCKET,
-        Prefix: key,
+        Prefix: prefix,
         ContinuationToken: continuationToken,
       }),
     );
 
     for (const object of listResponse.Contents ?? []) {
       if (object.Key) {
-        objectsToDelete.push(object.Key);
+        objects.push(object.Key);
       }
     }
 
@@ -84,6 +82,14 @@ export async function deleteRecursive(
       continuationToken = undefined;
     }
   } while (continuationToken);
+
+  return objects;
+}
+
+export async function deleteRecursive(
+  key: string,
+) {
+  const objectsToDelete = await listFiles(key);
 
   while (objectsToDelete.length > 0) {
     const batch = objectsToDelete.splice(0, 1000);

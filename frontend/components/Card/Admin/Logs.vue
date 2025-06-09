@@ -40,23 +40,34 @@
                 <div class="w-full md:w-4/6">
                   <p v-if="log.type === 'USER_LOGIN'">Logged in</p>
                   <p v-else-if="log.type === 'USER_LOGIN_FAILURE'">
-                    Failed to log in
+                    Failed login attempt to
+                    <span class="blur-xs hover:blur-none transition-all">{{
+                      log.content
+                    }}</span>
                   </p>
                   <p v-else-if="log.type === 'USER_LOGOUT'">Logged out</p>
                   <p v-else-if="log.type === 'USER_REGISTRATION'">Registered</p>
                   <p v-else-if="log.type === 'REQUEST_CREATE'">
-                    Created request
+                    Created request {{ log.content }}
                   </p>
                   <p v-else-if="log.type === 'REQUEST_UPDATE'">
-                    Updated request
+                    Updated request {{ log.content }}
                   </p>
                   <p v-else-if="log.type === 'REQUEST_DELETE'">
-                    Deleted request
+                    Deleted request {{ log.content }}
                   </p>
-                  <p v-else-if="log.type === 'OFFER_CREATE'">Created offer</p>
-                  <p v-else-if="log.type === 'OFFER_UPDATE'">Updated offer</p>
-                  <p v-else-if="log.type === 'OFFER_DELETE'">Deleted offer</p>
-                  <p v-else-if="log.type === 'RATELIMIT_HIT'">Hit rate limit</p>
+                  <p v-else-if="log.type === 'OFFER_CREATE'">
+                    Created offer {{ log.content }}
+                  </p>
+                  <p v-else-if="log.type === 'OFFER_UPDATE'">
+                    Updated offer {{ log.content }}
+                  </p>
+                  <p v-else-if="log.type === 'OFFER_DELETE'">
+                    Deleted offer {{ log.content }}
+                  </p>
+                  <p v-else-if="log.type === 'RATELIMIT_HIT'">
+                    Hit rate limit on {{ log.content }}
+                  </p>
                 </div>
                 <ClientOnly>
                   <p

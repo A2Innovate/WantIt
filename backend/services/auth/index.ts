@@ -287,6 +287,7 @@ app.post(
       createLog({
         type: "USER_LOGIN_FAILURE",
         ip: getIp(c),
+        content: email,
       });
 
       return c.json({ message: "Incorrect email or password" }, 401);

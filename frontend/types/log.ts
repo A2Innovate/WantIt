@@ -5,5 +5,6 @@ export interface Log {
   type: string;
   user?: Pick<User, 'id' | 'name' | 'username'>;
   ip?: string;
+  content?: string;
   createdAt: string;
 }

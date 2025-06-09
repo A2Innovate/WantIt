@@ -7,20 +7,24 @@ export async function createLog({
   type,
   userId,
   ip,
+  content,
 }: {
   type: InferInsertModel<typeof logsTable>["type"];
   userId?: number;
   ip?: string;
+  content?: string;
 }) {
   const [log] = await db.insert(logsTable).values({
     type,
     userId,
     ip,
+    content,
   }).returning({
     id: logsTable.id,
     type: logsTable.type,
     createdAt: logsTable.createdAt,
     ip: logsTable.ip,
+    content: logsTable.content,
   });
 
   const payload: typeof log & {

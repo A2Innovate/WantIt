@@ -34,8 +34,8 @@ export const rateLimit = ({
       if (currentCount >= limit) {
         await client.expire(key, Math.ceil(windowMs / 1000));
 
-        const statsKey =
-          `stats:ratelimit:exceeded:${c.req.method}:${c.req.routePath}`;
+        const methodRoute = `${c.req.method}:${c.req.routePath}`;
+        const statsKey = `stats:ratelimit:exceeded:${methodRoute}`;
         await client.zremrangebyscore(statsKey, 0, now - 60 * 60 * 24 * 1000);
         await client.zadd(statsKey, now, requestId);
         await client.expire(statsKey, 60 * 60 * 24);
@@ -43,6 +43,7 @@ export const rateLimit = ({
         createLog({
           type: "RATELIMIT_HIT",
           ip,
+          content: methodRoute,
         });
 
         return c.json(

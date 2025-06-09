@@ -272,6 +272,7 @@ app.post(
       createLog({
         type: "OFFER_CREATE",
         userId: session.user.id,
+        content: request.content,
       });
 
       return c.json(offer);
@@ -340,6 +341,7 @@ app.delete(
     createLog({
       type: "OFFER_DELETE",
       userId: session.user.id,
+      content: offer.content,
     });
 
     return c.json({
@@ -618,6 +620,7 @@ app.put(
     createLog({
       type: "OFFER_UPDATE",
       userId: session.user.id,
+      content: offer[0].content,
     });
 
     return c.json(offer[0]);
@@ -710,6 +713,7 @@ app.post(
     createLog({
       type: "REQUEST_CREATE",
       userId: session.user.id,
+      content: request.content,
     });
 
     return c.json(request);
@@ -764,6 +768,7 @@ app.put(
     createLog({
       type: "REQUEST_UPDATE",
       userId: session.user.id,
+      content: request[0].content,
     });
 
     return c.json(request[0]);
@@ -819,6 +824,7 @@ app.delete(
     createLog({
       type: "REQUEST_DELETE",
       userId: session.user.id,
+      content: request.content,
     });
 
     return c.json({

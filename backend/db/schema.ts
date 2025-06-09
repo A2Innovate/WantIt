@@ -261,6 +261,7 @@ export const logsTable = pgTable("logs", {
   userId: integer()
     .references(() => usersTable.id, { onDelete: "cascade" }),
   ip: text(),
+  content: text(),
   createdAt: timestamp().notNull().defaultNow(),
 });
 

@@ -13,10 +13,10 @@
           <TransitionGroup name="slide-down-blur" tag="div">
             <div v-for="log in logs" :key="log.id">
               <div
-                class="hover:bg-neutral-800 flex justify-between items-center transition-colors duration-75 px-4 py-2"
+                class="hover:bg-neutral-800 flex md:flex-row gap-1 md:gap-0 flex-col justify-between items-center transition-colors duration-75 px-4 py-2"
               >
                 <NuxtLink
-                  class="w-1/6 flex items-center gap-2"
+                  class="md:w-1/6 flex w-full justify-start items-center gap-2"
                   :class="
                     log.user ? 'hover:text-neutral-300 transition-colors' : ''
                   "
@@ -37,7 +37,7 @@
                     {{ log.user?.name || log.ip || 'System' }}
                   </p>
                 </NuxtLink>
-                <div class="w-4/6">
+                <div class="w-full md:w-4/6">
                   <p v-if="log.type === 'USER_LOGIN'">Logged in</p>
                   <p v-else-if="log.type === 'USER_LOGIN_FAILURE'">
                     Failed to log in
@@ -59,7 +59,9 @@
                   <p v-else-if="log.type === 'RATELIMIT_HIT'">Hit rate limit</p>
                 </div>
                 <ClientOnly>
-                  <p class="text-xs text-neutral-400 w-1/6 text-right">
+                  <p
+                    class="text-xs text-neutral-400 w-full md:w-1/6 text-right"
+                  >
                     {{ formatTime(new Date(log.createdAt)) }}
                   </p>
                 </ClientOnly>

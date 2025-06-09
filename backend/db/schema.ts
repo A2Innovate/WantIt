@@ -12,6 +12,7 @@ import { relations } from "drizzle-orm";
 import {
   COMPARISON_MODES,
   CURRENCIES,
+  LOG_TYPES,
   NOTIFICATION_TYPES,
 } from "../utils/global.ts";
 
@@ -20,6 +21,7 @@ export const notificationTypes = pgEnum(
   "notification_types",
   NOTIFICATION_TYPES,
 );
+export const logTypes = pgEnum("log_types", LOG_TYPES);
 
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -255,8 +257,15 @@ export const userReviewsRelations = relations(userReviewsTable, ({ one }) => ({
 
 export const logsTable = pgTable("logs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  message: text().notNull(),
+  type: logTypes().notNull(),
   userId: integer()
     .references(() => usersTable.id, { onDelete: "cascade" }),
   createdAt: timestamp().notNull().defaultNow(),
 });
+
+export const logsRelations = relations(logsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [logsTable.userId],
+    references: [usersTable.id],
+  }),
+}));

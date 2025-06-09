@@ -1,6 +1,8 @@
+import type { User } from './user';
+
 export interface Log {
   id: number;
-  message: string;
-  userId: number;
+  type: string;
+  user?: Pick<User, 'id' | 'name' | 'username'>;
   createdAt: string;
 }

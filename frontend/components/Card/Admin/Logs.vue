@@ -15,17 +15,40 @@
               <div
                 class="hover:bg-neutral-800 flex justify-between items-center transition-colors duration-75 px-4 py-2"
               >
-                <div class="w-1/6 flex items-center gap-2">
+                <NuxtLink
+                  class="w-1/6 flex items-center gap-2"
+                  :class="
+                    log.user ? 'hover:text-neutral-300 transition-colors' : ''
+                  "
+                  :to="log.user ? `/user/${log.user?.id}` : ''"
+                >
                   <div class="w-5 h-5 rounded-full bg-neutral-700">
                     <div
                       class="w-full h-full flex items-center justify-center font-medium text-xs"
                     >
-                      S
+                      {{ log.user?.name.charAt(0).toUpperCase() || 'S' }}
                     </div>
                   </div>
-                  <p>System</p>
+                  <p>{{ log.user?.name || 'System' }}</p>
+                </NuxtLink>
+                <div class="w-4/6">
+                  <p v-if="log.type === 'USER_LOGIN'">Logged in</p>
+                  <p v-else-if="log.type === 'USER_LOGOUT'">Logged out</p>
+                  <p v-else-if="log.type === 'USER_REGISTRATION'">Registered</p>
+                  <p v-else-if="log.type === 'REQUEST_CREATE'">
+                    Created request
+                  </p>
+                  <p v-else-if="log.type === 'REQUEST_UPDATE'">
+                    Updated request
+                  </p>
+                  <p v-else-if="log.type === 'REQUEST_DELETE'">
+                    Deleted request
+                  </p>
+                  <p v-else-if="log.type === 'OFFER_CREATE'">Created offer</p>
+                  <p v-else-if="log.type === 'OFFER_UPDATE'">Updated offer</p>
+                  <p v-else-if="log.type === 'OFFER_DELETE'">Deleted offer</p>
+                  <p v-else-if="log.type === 'RATELIMIT_HIT'">Hit rate limit</p>
                 </div>
-                <p class="w-4/6">{{ log.message }}</p>
                 <ClientOnly>
                   <p class="text-xs text-neutral-400 w-1/6 text-right">
                     {{ formatTime(new Date(log.createdAt)) }}

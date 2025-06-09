@@ -163,6 +163,15 @@ app.get(
     const { limit, offset } = c.req.valid("query");
 
     const logs = await db.query.logsTable.findMany({
+      with: {
+        user: {
+          columns: {
+            id: true,
+            username: true,
+            name: true,
+          },
+        },
+      },
       orderBy: desc(logsTable.id),
       limit,
       offset,

@@ -6,6 +6,7 @@ export interface User {
   preferredCurrency: string;
   sessionId: number;
   isAdmin: boolean;
+  isBlocked: boolean;
 }
 
 export interface UserSession {

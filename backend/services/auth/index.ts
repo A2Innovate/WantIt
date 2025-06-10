@@ -151,28 +151,15 @@ app.post(
       channel_parts[3] === "alert" &&
       !isNaN(Number(channel_parts[4]));
 
-    const isValidAdminStatsChannel = channel_parts.length === 3 &&
+    const isValidAdminChannel = channel_parts.length === 3 &&
       channel_parts[0] === "private" &&
       channel_parts[1] === "admin" &&
-      channel_parts[2] === "stats" &&
-      session.user.isAdmin;
-
-    const isValidAdminLogsChannel = channel_parts.length === 3 &&
-      channel_parts[0] === "private" &&
-      channel_parts[1] === "admin" &&
-      channel_parts[2] === "logs" &&
-      session.user.isAdmin;
-
-    const isValidAdminOptionsChannel = channel_parts.length === 3 &&
-      channel_parts[0] === "private" &&
-      channel_parts[1] === "admin" &&
-      channel_parts[2] === "options" &&
+      ["options", "users", "logs", "stats"].includes(channel_parts[2]) &&
       session.user.isAdmin;
 
     if (
       isValidChatChannel || isValidUserChannel || isValidUserAlertsChannel ||
-      isValidUserAlertChannel || isValidAdminStatsChannel ||
-      isValidAdminLogsChannel || isValidAdminOptionsChannel
+      isValidUserAlertChannel || isValidAdminChannel
     ) {
       const auth = pusher.authorizeChannel(socket_id, channel_name);
       return c.json(auth);
@@ -295,6 +282,10 @@ app.post(
 
     if (!user.isEmailVerified) {
       return c.json({ message: "Email is not verified" }, 401);
+    }
+
+    if (user.isBlocked) {
+      return c.json({ message: "You are blocked" }, 401);
     }
 
     const sessionToken = await generateSessionToken();

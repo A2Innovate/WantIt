@@ -35,6 +35,7 @@ export const usersTable = pgTable("users", {
   password: text(),
   passwordResetToken: text().unique(),
   isAdmin: boolean().notNull().default(false),
+  isBlocked: boolean().notNull().default(false),
   preferredCurrency: currencies().notNull().default("USD"),
   createdAt: timestamp().notNull().defaultNow(),
 });

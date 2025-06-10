@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { adminRequired } from "@/middleware/auth.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
-import { desc, gt, ilike, or, sql } from "drizzle-orm";
+import { asc, desc, eq, gt, ilike, or, sql } from "drizzle-orm";
 import { logsTable, requestsTable, usersTable } from "@/db/schema.ts";
 import { offersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
@@ -10,6 +10,7 @@ import { z } from "zod";
 import { client } from "@/utils/redis.ts";
 import { listFiles } from "@/utils/s3.ts";
 import { pusher } from "../utils/pusher.ts";
+import { getUserByIdSchema } from "../schema/services/user.ts";
 
 const app = new Hono();
 
@@ -309,6 +310,8 @@ app.get(
         email: true,
         username: true,
         name: true,
+        isAdmin: true,
+        isBlocked: true,
       },
       where: or(
         ilike(usersTable.username, `%${query}%`),
@@ -317,9 +320,46 @@ app.get(
       ),
       limit,
       offset,
+      orderBy: asc(usersTable.id),
     });
 
     return c.json(users);
+  },
+);
+
+app.post(
+  "/users/:userId/switch-block",
+  zValidator(
+    "param",
+    getUserByIdSchema,
+  ),
+  async (c) => {
+    const { userId } = c.req.valid("param");
+
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+    });
+
+    if (!user) {
+      return c.json({ message: "User not found" }, 404);
+    }
+
+    if (user.isAdmin) {
+      return c.json({ message: "You cannot block an admin" }, 400);
+    }
+
+    await db.update(usersTable).set({
+      isBlocked: !user.isBlocked,
+    }).where(eq(usersTable.id, userId));
+
+    await pusher.trigger("private-admin-users", "update-user-block", {
+      userId,
+      isBlocked: !user.isBlocked,
+    });
+
+    return c.json({
+      message: "User blocked",
+    });
   },
 );
 

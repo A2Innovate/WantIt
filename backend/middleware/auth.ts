@@ -35,6 +35,12 @@ export const authRequired = createMiddleware<{
     }, 401);
   }
 
+  if (session.user.isBlocked) {
+    return c.json({
+      message: "You are blocked.",
+    }, 401);
+  }
+
   if (session.user.isAdmin && c.req.query("pretendUser")) {
     let pretendUserId;
 

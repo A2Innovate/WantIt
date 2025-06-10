@@ -136,6 +136,13 @@ app.get(
       });
 
       if (existingUser) {
+        if (existingUser.isBlocked) {
+          return c.redirect(
+            FRONTEND_URL +
+              "/auth/oauth/error?message=Your account is blocked",
+          );
+        }
+
         const sessionToken = await generateSessionToken();
 
         await db.insert(userSessionsTable).values({

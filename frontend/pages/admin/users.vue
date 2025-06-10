@@ -10,28 +10,12 @@
         />
       </UiCard>
       <UiCard>
-        <div v-for="user in users" :key="user.id">
-          <div class="flex py-2">
-            <NuxtLink
-              class="flex w-full justify-start items-center gap-2 hover:text-neutral-300 transition-colors"
-              :to="`/user/${user.id}`"
-            >
-              <div class="w-5 h-5 rounded-full bg-neutral-700">
-                <div
-                  class="w-full h-full flex items-center justify-center font-medium text-xs"
-                >
-                  {{ user.name.charAt(0).toUpperCase() }}
-                </div>
-              </div>
-              <p>{{ user.name }}</p>
-            </NuxtLink>
-            <p>{{ user.email }}</p>
-          </div>
-          <hr
-            v-if="user !== users?.[users.length - 1]"
-            class="border-neutral-700"
-          />
-        </div>
+        <CardAdminUsersRecord
+          v-for="user in users"
+          :key="user.id"
+          :user="user"
+          :is-last="user === users?.[users.length - 1]"
+        />
       </UiCard>
     </div>
   </div>
@@ -39,10 +23,13 @@
 
 <script setup lang="ts">
 import type { User } from '~/types/user';
+import type { Channel } from 'pusher-js';
 
 const query = ref('');
-
 const requestFetch = useRequestFetch();
+const pusher = usePusher();
+let channel: Channel;
+
 definePageMeta({
   middleware: ['auth', 'admin']
 });
@@ -58,5 +45,27 @@ const { data: users, refresh } = useAsyncData('admin-users', async () => {
     }
   );
   return response;
+});
+
+onMounted(() => {
+  channel = pusher.subscribe('private-admin-users');
+
+  channel.bind(
+    'update-user-block',
+    (data: { userId: number; isBlocked: boolean }) => {
+      const user = users.value?.find((user) => user.id === data.userId);
+
+      if (user) {
+        user.isBlocked = data.isBlocked;
+      }
+    }
+  );
+});
+
+onUnmounted(() => {
+  if (channel) {
+    channel.unbind_all();
+    channel.unsubscribe();
+  }
 });
 </script>

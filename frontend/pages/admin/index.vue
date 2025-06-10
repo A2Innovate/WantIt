@@ -3,7 +3,10 @@
     <div class="m-4 flex flex-col gap-4">
       <div class="flex justify-between items-center">
         <h1 class="text-xl font-semibold">Admin</h1>
-        <UiButton :as="NuxtLink" to="/admin/options">Options</UiButton>
+        <div class="flex gap-2">
+          <UiButton :as="NuxtLink" to="/admin/users">Users</UiButton>
+          <UiButton :as="NuxtLink" to="/admin/options">Options</UiButton>
+        </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <UiCard>

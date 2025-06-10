@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { adminRequired } from "@/middleware/auth.ts";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
-import { desc, gt, sql } from "drizzle-orm";
+import { desc, gt, ilike, or, sql } from "drizzle-orm";
 import { logsTable, requestsTable, usersTable } from "@/db/schema.ts";
 import { offersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
@@ -279,5 +279,48 @@ app.post("/integrity/s3-db", async (c) => {
     message: "Integrity check completed",
   });
 });
+
+app.get(
+  "/users",
+  zValidator(
+    "query",
+    z.object({
+      limit: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "limit must be a valid number",
+      ).transform((value) => Number(value)).optional().pipe(
+        z.number().min(1).max(100).default(50),
+      ),
+      offset: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "offset must be a valid number",
+      ).transform((value) => Number(value)).optional().pipe(
+        z.number().min(0).default(0),
+      ),
+      query: z.string().optional().default(""),
+    }),
+  ),
+  async (c) => {
+    const { limit, offset, query } = c.req.valid("query");
+
+    const users = await db.query.usersTable.findMany({
+      columns: {
+        id: true,
+        email: true,
+        username: true,
+        name: true,
+      },
+      where: or(
+        ilike(usersTable.username, `%${query}%`),
+        ilike(usersTable.name, `%${query}%`),
+        ilike(usersTable.email, `%${query}%`),
+      ),
+      limit,
+      offset,
+    });
+
+    return c.json(users);
+  },
+);
 
 export default app;

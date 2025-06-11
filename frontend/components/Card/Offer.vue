@@ -1,5 +1,5 @@
 <template>
-  <UiCard>
+  <UiCard :variant="isAccepted ? 'success' : 'default'">
     <div class="space-y-4">
       <div class="flex items-center justify-between">
         <NuxtLink :to="`/user/${offer.user.id}`">
@@ -24,15 +24,25 @@
             </div>
           </div>
         </NuxtLink>
-        <span
-          class="px-2 py-1 rounded-full text-xs font-medium tracking-wide"
-          :class="{
-            'bg-emerald-500/20 text-emerald-400': offer.negotiation,
-            'bg-neutral-800 text-gray-400': !offer.negotiation
-          }"
-        >
-          {{ offer.negotiation ? 'NEGOTIABLE' : 'FIXED' }}
-        </span>
+        <div class="flex items-center gap-2">
+          <Transition name="slide-down-blur">
+            <span
+              v-if="isAccepted"
+              class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full text-xs font-medium tracking-wide"
+              >ACCEPTED</span
+            >
+          </Transition>
+
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium tracking-wide"
+            :class="{
+              'bg-emerald-500/20 text-emerald-400': offer.negotiation,
+              'bg-neutral-800 text-gray-400': !offer.negotiation
+            }"
+          >
+            {{ offer.negotiation ? 'NEGOTIABLE' : 'FIXED' }}
+          </span>
+        </div>
       </div>
 
       <UiImageCarousel
@@ -48,18 +58,33 @@
         {{ offer.content }}
       </p>
 
-      <div
-        v-if="
-          userStore.current?.id === offer.user.id || userStore.current?.isAdmin
-        "
-        class="flex justify-end gap-2"
-      >
-        <UiButton @click="isEditModalOpen = true">
-          <Icon name="material-symbols:edit-rounded" />
+      <div class="flex justify-end gap-2">
+        <UiButton
+          v-if="canAccept"
+          :loading="isAccepting"
+          :icon="
+            isAccepted
+              ? 'material-symbols:cancel'
+              : 'material-symbols:verified-outline-rounded'
+          "
+          @click="changeAcceptation(!isAccepted)"
+        >
+          <span class="hidden sm:block">{{
+            isAccepted ? 'Revert acceptance' : 'Accept'
+          }}</span>
+        </UiButton>
+        <UiButton
+          v-if="isOfferCreatorOrAdmin"
+          icon="material-symbols:edit-rounded"
+          @click="isEditModalOpen = true"
+        >
           <span class="hidden sm:block">Edit</span>
         </UiButton>
-        <UiButton @click="isDeleteModalOpen = true">
-          <Icon name="material-symbols:delete-rounded" />
+        <UiButton
+          v-if="isOfferCreatorOrAdmin"
+          icon="material-symbols:delete-rounded"
+          @click="isDeleteModalOpen = true"
+        >
           <span class="hidden sm:block">Delete</span>
         </UiButton>
       </div>
@@ -115,12 +140,23 @@
 import type { Offer } from '@/types/offer';
 
 const userStore = useUserStore();
-const props = defineProps<{ offer: Offer; currency: string }>();
+const props = defineProps<{
+  offer: Offer;
+  currency: string;
+  isAccepted: boolean;
+  canAccept: boolean;
+}>();
 
 const api = useApi();
 const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
+const isAccepting = ref(false);
 const isEditModalOpen = ref(false);
+const isOfferCreatorOrAdmin = computed(() => {
+  return (
+    userStore.current?.id === props.offer.user.id || userStore.current?.isAdmin
+  );
+});
 
 async function deleteOffer() {
   try {
@@ -144,6 +180,20 @@ async function deleteOffer() {
     }
   } finally {
     isDeleting.value = false;
+  }
+}
+
+async function changeAcceptation(accepted: boolean) {
+  try {
+    isAccepting.value = true;
+    await api.post(
+      `/request/${props.offer.requestId}/offer/${props.offer.id}/accept`,
+      {
+        accepted
+      }
+    );
+  } finally {
+    isAccepting.value = false;
   }
 }
 </script>

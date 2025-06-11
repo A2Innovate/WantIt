@@ -108,6 +108,7 @@ export const requestsRelations = relations(requestsTable, ({ one, many }) => ({
     references: [usersTable.id],
   }),
   offers: many(offersTable),
+  acceptedOffer: one(acceptedOffersTable),
 }));
 
 export const offersTable = pgTable("offers", {
@@ -123,6 +124,26 @@ export const offersTable = pgTable("offers", {
   negotiation: boolean().notNull().default(false),
   createdAt: timestamp().notNull().defaultNow(),
 });
+
+export const acceptedOffersTable = pgTable("accepted_offers", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  requestId: integer()
+    .notNull()
+    .references(() => requestsTable.id, { onDelete: "cascade" }).unique(),
+  offerId: integer()
+    .notNull()
+    .references(() => offersTable.id, { onDelete: "cascade" }).unique(),
+});
+
+export const acceptedOffersRelations = relations(
+  acceptedOffersTable,
+  ({ one }) => ({
+    request: one(requestsTable, {
+      fields: [acceptedOffersTable.requestId],
+      references: [requestsTable.id],
+    }),
+  }),
+);
 
 export const offerImagesTable = pgTable("offer_images", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

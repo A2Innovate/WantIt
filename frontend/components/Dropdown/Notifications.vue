@@ -85,6 +85,19 @@
             }}</span>
             matched with your alert
           </p>
+          <p v-else-if="notification.type === NotificationType.OFFER_ACCEPTED">
+            <span class="font-semibold">{{
+              notification.relatedUser?.name
+            }}</span>
+            accepted your offer
+            <span class="font-semibold">{{
+              notification.relatedOffer?.content
+            }}</span>
+            on
+            <span class="font-semibold">{{
+              notification.relatedRequest?.content
+            }}</span>
+          </p>
           <small class="text-neutral-400 text-xs">{{
             formatTime(new Date(notification.createdAt))
           }}</small>
@@ -128,6 +141,10 @@ function getLink(notification: Notification) {
 
   if (notification.type === NotificationType.NEW_MESSAGE) {
     return `/user/chat/${notification.relatedUserId}`;
+  }
+
+  if (notification.type === NotificationType.OFFER_ACCEPTED) {
+    return `/request/${notification.relatedRequestId}#offer-${notification.relatedOfferId}`;
   }
 
   return '#';

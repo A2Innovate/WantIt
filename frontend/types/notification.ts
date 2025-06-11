@@ -6,7 +6,8 @@ export enum NotificationType {
   NEW_OFFER = 'NEW_OFFER',
   NEW_MESSAGE = 'NEW_MESSAGE',
   NEW_OFFER_COMMENT = 'NEW_OFFER_COMMENT',
-  NEW_ALERT_MATCH = 'NEW_ALERT_MATCH'
+  NEW_ALERT_MATCH = 'NEW_ALERT_MATCH',
+  OFFER_ACCEPTED = 'OFFER_ACCEPTED'
 }
 
 export interface Notification {

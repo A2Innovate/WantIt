@@ -111,7 +111,10 @@
       <div v-if="request?.offers.length" class="flex flex-col gap-2 m-4">
         <CardOffer
           v-for="offer in sortedOffers"
+          :id="`offer-${offer.id}`"
           :key="offer.id"
+          :can-accept="canAccept(offer.id)"
+          :is-accepted="offer.id === request.acceptedOffer?.offerId"
           :offer="offer"
           :currency="request.currency"
         />
@@ -246,6 +249,20 @@ async function deleteRequest() {
   } finally {
     isDeletingRequest.value = false;
   }
+}
+
+function canAccept(offerId: number) {
+  if (userStore.current?.id !== request.value?.user.id) {
+    return false;
+  }
+
+  if (request.value?.acceptedOffer) {
+    if (request.value.acceptedOffer.offerId === offerId) {
+      return true;
+    }
+    return false;
+  }
+  return true;
 }
 
 onMounted(() => {

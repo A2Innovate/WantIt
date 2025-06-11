@@ -13,5 +13,6 @@ export interface Request {
   } | null;
   radius: number | null;
   offers: Offer[];
+  acceptedOffer: { offerId: number } | null;
   createdAt: string;
 }

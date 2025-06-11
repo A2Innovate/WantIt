@@ -4,6 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import {
+  acceptedOffersTable,
   alertsTable,
   notificationsTable,
   offerImagesTable,
@@ -116,6 +117,11 @@ app.get(
           columns: {
             id: true,
             username: true,
+          },
+        },
+        acceptedOffer: {
+          columns: {
+            offerId: true,
           },
         },
         offers: {
@@ -624,6 +630,137 @@ app.put(
     });
 
     return c.json(offer[0]);
+  },
+);
+
+app.post(
+  "/:requestId/offer/:offerId/accept",
+  authRequired,
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 30,
+  }),
+  zValidator(
+    "param",
+    z.object({
+      ...requestByIdSchema.shape,
+      ...offerByIdSchema.shape,
+    }),
+  ),
+  zValidator(
+    "json",
+    z.object({
+      accepted: z.boolean(),
+    }),
+  ),
+  async (c) => {
+    const { requestId, offerId } = c.req.valid("param");
+    const { accepted } = c.req.valid("json");
+    const session = c.get("session");
+
+    const request = await db.query.requestsTable.findFirst({
+      where: and(
+        eq(requestsTable.id, requestId),
+      ),
+    });
+
+    const offer = await db.query.offersTable.findFirst({
+      where: and(
+        eq(offersTable.id, offerId),
+      ),
+    });
+
+    if (!request) {
+      return c.json({ message: "Request not found" }, 404);
+    }
+
+    if (!offer) {
+      return c.json({ message: "Offer not found" }, 404);
+    }
+
+    if (request.userId !== session.user.id) {
+      return c.json({ message: "You are not the owner of this request" }, 403);
+    }
+
+    const offerAcceptation = await db.query.acceptedOffersTable.findFirst({
+      where: and(
+        eq(acceptedOffersTable.requestId, requestId),
+        eq(acceptedOffersTable.offerId, offerId),
+      ),
+    });
+
+    if (offerAcceptation && accepted) {
+      return c.json({ message: "Offer already accepted" }, 400);
+    }
+
+    if (accepted) {
+      await db.insert(acceptedOffersTable).values({
+        requestId,
+        offerId,
+      });
+
+      pusher.trigger(
+        `public-request-${requestId}`,
+        "update-request",
+        {
+          acceptedOffer: {
+            offerId,
+          },
+        },
+      ).catch((e) => {
+        console.error("Async Pusher trigger error: ", e);
+      });
+
+      const notification = await db.insert(notificationsTable).values({
+        type: "OFFER_ACCEPTED",
+        relatedOfferId: offer.id,
+        relatedRequestId: request.id,
+        userId: offer.userId,
+      }).returning();
+
+      pusher.trigger(
+        `private-user-${offer.userId}`,
+        "new-notification",
+        {
+          ...notification[0],
+          relatedUser: {
+            name: session.user.name,
+          },
+          relatedOffer: {
+            content: offer.content,
+          },
+          relatedRequest: {
+            content: request.content,
+          },
+        },
+      ).catch((e) => {
+        console.error(`Async Pusher trigger error: ${e}`);
+      });
+
+      return c.json({
+        message: "Offer accepted successfully",
+      });
+    } else if (!accepted) {
+      await db.delete(acceptedOffersTable)
+        .where(and(
+          eq(acceptedOffersTable.requestId, requestId),
+          eq(acceptedOffersTable.offerId, offerId),
+        ));
+
+      pusher.trigger(
+        `public-request-${requestId}`,
+        "update-request",
+        {
+          acceptedOffer: null,
+        },
+      ).catch((e) => {
+        console.error("Async Pusher trigger error: ", e);
+      });
+
+      return c.json({
+        message: "Cancelled offer acceptance successfully",
+      });
+    }
   },
 );
 

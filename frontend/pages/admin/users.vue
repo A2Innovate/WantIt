@@ -42,6 +42,7 @@ const users = ref<User[]>([]);
 const isFetching = ref(false);
 const PAGE_SIZE = 50;
 const pusher = usePusher();
+const currentAbortController = ref<AbortController | null>(null);
 let channel: Channel;
 
 definePageMeta({
@@ -49,6 +50,9 @@ definePageMeta({
 });
 
 async function fetchUsers() {
+  currentAbortController.value?.abort();
+  currentAbortController.value = new AbortController();
+
   isFetching.value = true;
   try {
     const isSameQuery = query.value === lastQuery.value;
@@ -67,7 +71,8 @@ async function fetchUsers() {
           limit: PAGE_SIZE,
           offset: users.value?.length ?? 0
         },
-        credentials: 'include'
+        credentials: 'include',
+        signal: currentAbortController.value?.signal
       }
     );
 

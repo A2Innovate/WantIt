@@ -120,6 +120,7 @@ export const NOTIFICATION_TYPES = [
   "NEW_MESSAGE",
   "NEW_OFFER_COMMENT",
   "NEW_ALERT_MATCH",
+  "OFFER_ACCEPTED",
 ] as const;
 
 export const COMPARISON_MODES = [

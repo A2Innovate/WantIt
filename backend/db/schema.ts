@@ -129,16 +129,11 @@ export const acceptedOffersTable = pgTable("accepted_offers", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   requestId: integer()
     .notNull()
-    .references(() => requestsTable.id, { onDelete: "cascade" }),
+    .references(() => requestsTable.id, { onDelete: "cascade" }).unique(),
   offerId: integer()
     .notNull()
-    .references(() => offersTable.id, { onDelete: "cascade" }),
-}, (t) => [
-  uniqueIndex().on(
-    t.requestId,
-    t.offerId,
-  ),
-]);
+    .references(() => offersTable.id, { onDelete: "cascade" }).unique(),
+});
 
 export const acceptedOffersRelations = relations(
   acceptedOffersTable,

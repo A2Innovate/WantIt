@@ -664,8 +664,18 @@ app.post(
       ),
     });
 
+    const offer = await db.query.offersTable.findFirst({
+      where: and(
+        eq(offersTable.id, offerId),
+      ),
+    });
+
     if (!request) {
       return c.json({ message: "Request not found" }, 404);
+    }
+
+    if (!offer) {
+      return c.json({ message: "Offer not found" }, 404);
     }
 
     if (request.userId !== session.user.id) {
@@ -699,6 +709,32 @@ app.post(
         },
       ).catch((e) => {
         console.error("Async Pusher trigger error: ", e);
+      });
+
+      const notification = await db.insert(notificationsTable).values({
+        type: "OFFER_ACCEPTED",
+        relatedOfferId: offer.id,
+        relatedRequestId: request.id,
+        userId: offer.userId,
+      }).returning();
+
+      pusher.trigger(
+        `private-user-${offer.userId}`,
+        "new-notification",
+        {
+          ...notification[0],
+          relatedUser: {
+            name: session.user.name,
+          },
+          relatedOffer: {
+            content: offer.content,
+          },
+          relatedRequest: {
+            content: request.content,
+          },
+        },
+      ).catch((e) => {
+        console.error(`Async Pusher trigger error: ${e}`);
       });
 
       return c.json({

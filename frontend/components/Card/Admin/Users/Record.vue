@@ -2,16 +2,10 @@
   <div>
     <div class="flex py-2">
       <div class="flex w-full justify-start items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-neutral-700">
-          <div
-            class="w-full h-full flex items-center justify-center font-medium text-xs"
-          >
-            {{ user.name.charAt(0).toUpperCase() }}
-          </div>
-        </div>
+        <UiAvatarText :text="user.name.charAt(0)" size="large" />
         <div>
           <p class="flex items-center gap-1">
-            {{ user.name }}
+            {{ user.name }} (@{{ user.username }})
             <span
               v-if="user.isAdmin"
               class="text-xs text-green-600 bg-green-200 px-1 rounded"

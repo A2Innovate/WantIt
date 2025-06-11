@@ -11,77 +11,12 @@
           class="h-96 overflow-y-auto [&::-webkit-scrollbar]:w-0 relative"
         >
           <TransitionGroup name="slide-down-blur" tag="div">
-            <div v-for="log in logs" :key="log.id">
-              <div
-                class="hover:bg-neutral-800 flex md:flex-row gap-1 md:gap-0 flex-col justify-between items-center transition-colors duration-75 px-4 py-2"
-              >
-                <NuxtLink
-                  class="md:w-1/6 flex w-full justify-start items-center gap-2"
-                  :class="
-                    log.user ? 'hover:text-neutral-300 transition-colors' : ''
-                  "
-                  :to="log.user ? `/user/${log.user?.id}` : ''"
-                >
-                  <div class="w-5 h-5 rounded-full bg-neutral-700">
-                    <div
-                      class="w-full h-full flex items-center justify-center font-medium text-xs"
-                    >
-                      {{ getAvatar(log) }}
-                    </div>
-                  </div>
-                  <p
-                    :class="
-                      log.ip ? 'blur-xs hover:blur-none transition-all' : ''
-                    "
-                  >
-                    {{ log.user?.name || log.ip || 'System' }}
-                  </p>
-                </NuxtLink>
-                <div class="w-full md:w-4/6">
-                  <p v-if="log.type === 'USER_LOGIN'">Logged in</p>
-                  <p v-else-if="log.type === 'USER_LOGIN_FAILURE'">
-                    Failed login attempt to
-                    <span class="blur-xs hover:blur-none transition-all">{{
-                      log.content
-                    }}</span>
-                  </p>
-                  <p v-else-if="log.type === 'USER_LOGOUT'">Logged out</p>
-                  <p v-else-if="log.type === 'USER_REGISTRATION'">Registered</p>
-                  <p v-else-if="log.type === 'REQUEST_CREATE'">
-                    Created request {{ log.content }}
-                  </p>
-                  <p v-else-if="log.type === 'REQUEST_UPDATE'">
-                    Updated request {{ log.content }}
-                  </p>
-                  <p v-else-if="log.type === 'REQUEST_DELETE'">
-                    Deleted request {{ log.content }}
-                  </p>
-                  <p v-else-if="log.type === 'OFFER_CREATE'">
-                    Created offer {{ log.content }}
-                  </p>
-                  <p v-else-if="log.type === 'OFFER_UPDATE'">
-                    Updated offer {{ log.content }}
-                  </p>
-                  <p v-else-if="log.type === 'OFFER_DELETE'">
-                    Deleted offer {{ log.content }}
-                  </p>
-                  <p v-else-if="log.type === 'RATELIMIT_HIT'">
-                    Hit rate limit on {{ log.content }}
-                  </p>
-                </div>
-                <ClientOnly>
-                  <p
-                    class="text-xs text-neutral-400 w-full md:w-1/6 text-right"
-                  >
-                    {{ formatTime(new Date(log.createdAt)) }}
-                  </p>
-                </ClientOnly>
-              </div>
-              <hr
-                v-if="log !== logs?.[logs.length - 1]"
-                class="border-neutral-800"
-              />
-            </div>
+            <CardAdminLogsRecord
+              v-for="log in logs"
+              :key="log.id"
+              :log="log"
+              :is-last="log === logs?.[logs.length - 1]"
+            />
           </TransitionGroup>
         </div>
       </div>
@@ -102,18 +37,6 @@ const logs = ref<Log[]>([]);
 const isFetching = ref(false);
 const containerRef = ref<HTMLDivElement | null>(null);
 let channel: Channel;
-
-function getAvatar(log: Log) {
-  if (log.user) {
-    return log.user.name.charAt(0).toUpperCase();
-  }
-
-  if (log.ip) {
-    return 'IP';
-  }
-
-  return 'S';
-}
 
 async function fetchLogs() {
   isFetching.value = true;
@@ -157,7 +80,9 @@ function handleScroll() {
   }
 }
 
-fetchLogs();
+if (!logs.value?.length) {
+  fetchLogs();
+}
 
 onMounted(() => {
   containerRef.value?.addEventListener('scroll', handleScroll);

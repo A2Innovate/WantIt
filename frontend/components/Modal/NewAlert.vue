@@ -125,4 +125,11 @@ async function addAlert() {
     isLoading.value = false;
   }
 }
+
+onMounted(async () => {
+  location.value = {
+    ...(await getLocation()),
+    radius: 3000
+  };
+});
 </script>

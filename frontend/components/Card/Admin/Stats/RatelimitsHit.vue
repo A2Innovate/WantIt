@@ -16,7 +16,17 @@
       />
     </div>
     <Transition name="slide-up-blur" mode="out-in">
-      <UiChartBar v-if="data" :x="data.endpoints" :y="data.count" />
+      <UiChartBar
+        v-if="data && data.endpoints.length"
+        :x="data.endpoints"
+        :y="data.count"
+      />
+      <div
+        v-else-if="status !== 'pending'"
+        class="h-60 text-neutral-400 flex items-center justify-center"
+      >
+        <p>No ratelimits hit in the last 24 hours</p>
+      </div>
       <UiSkeletonLoader v-else class="h-60" />
     </Transition>
   </UiCard>
@@ -27,7 +37,7 @@ const cache = ref(true);
 const isLoading = ref(false);
 
 const requestFetch = useRequestFetch();
-const { data, refresh } = useAsyncData(
+const { data, refresh, status } = useAsyncData(
   `admin-stats-ratelimit-exceeded`,
   async () => {
     isLoading.value = true;

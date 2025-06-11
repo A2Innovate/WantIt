@@ -112,6 +112,8 @@
         <CardOffer
           v-for="offer in sortedOffers"
           :key="offer.id"
+          :can-accept="userStore.current?.id === request.user.id"
+          :is-accepted="offer.id === request.acceptedOffer?.offerId"
           :offer="offer"
           :currency="request.currency"
         />

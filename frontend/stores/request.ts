@@ -7,10 +7,14 @@ export const useRequestStore = defineStore('request', () => {
   const lastQuery = ref('');
   const query = ref('');
   const api = useApi();
+  const currentAbortController = ref<AbortController | null>(null);
 
   const { data, refresh, status } = useAsyncData<Request[]>(
     'requests',
     async (): Promise<Request[]> => {
+      currentAbortController.value?.abort();
+      currentAbortController.value = new AbortController();
+
       const isSameQuery = query.value === lastQuery.value;
       lastQuery.value = query.value;
 
@@ -23,7 +27,8 @@ export const useRequestStore = defineStore('request', () => {
         params: {
           content: query.value,
           offset: data.value?.length ?? 0
-        }
+        },
+        signal: currentAbortController.value?.signal
       });
 
       if (response.data.length < PAGE_SIZE) {

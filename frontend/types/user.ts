@@ -5,8 +5,8 @@ export interface User {
   email: string;
   preferredCurrency: string;
   sessionId: number;
-  isAdmin: boolean;
-  isBlocked: boolean;
+  isAdmin?: boolean;
+  isBlocked?: boolean;
 }
 
 export interface UserSession {

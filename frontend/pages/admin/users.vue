@@ -33,6 +33,7 @@
 <script setup lang="ts">
 import type { User } from '~/types/user';
 import type { Channel } from 'pusher-js';
+import { FetchError } from 'ofetch';
 
 const query = ref('');
 const requestFetch = useRequestFetch();
@@ -81,6 +82,16 @@ async function fetchUsers() {
     }
 
     users.value = [...users.value, ...response];
+  } catch (error) {
+    if (
+      error instanceof FetchError &&
+      error.cause instanceof Error &&
+      error.cause.name === 'AbortError'
+    ) {
+      return;
+    }
+
+    console.error(error);
   } finally {
     isFetching.value = false;
   }
@@ -97,7 +108,9 @@ function handleScroll() {
   }
 }
 
-callOnce(fetchUsers);
+if (!users.value?.length) {
+  fetchUsers();
+}
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);

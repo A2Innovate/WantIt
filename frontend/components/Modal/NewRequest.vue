@@ -52,7 +52,7 @@
 import { createRequestSchema } from '@/schema/services/request';
 import { AxiosError } from 'axios';
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
 }>();
 
@@ -119,10 +119,15 @@ async function addRequest() {
   }
 }
 
-onMounted(async () => {
-  location.value = {
-    ...(await getLocation()),
-    radius: 3000
-  };
-});
+watch(
+  () => props.isOpen,
+  async () => {
+    if (props.isOpen) {
+      location.value = {
+        ...(await getLocation()),
+        radius: 3000
+      };
+    }
+  }
+);
 </script>

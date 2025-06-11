@@ -58,7 +58,7 @@
 import { AxiosError } from 'axios';
 import { createEditAlertSchema } from '@/schema/services/user';
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
 }>();
 
@@ -126,10 +126,15 @@ async function addAlert() {
   }
 }
 
-onMounted(async () => {
-  location.value = {
-    ...(await getLocation()),
-    radius: 3000
-  };
-});
+watch(
+  () => props.isOpen,
+  async () => {
+    if (props.isOpen) {
+      location.value = {
+        ...(await getLocation()),
+        radius: 3000
+      };
+    }
+  }
+);
 </script>

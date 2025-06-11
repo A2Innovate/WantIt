@@ -117,4 +117,18 @@ async function editRequest() {
     isLoading.value = false;
   }
 }
+
+if (!props.request.location) {
+  watch(
+    () => props.isOpen,
+    async () => {
+      if (props.isOpen) {
+        location.value = {
+          ...(await getLocation()),
+          radius: 3000
+        };
+      }
+    }
+  );
+}
 </script>

@@ -23,13 +23,7 @@
       </LMap>
     </div>
     <div class="flex items-center gap-2 mt-2">
-      <UiSlider
-        v-model="radius"
-        :min="3000"
-        :max="1000000"
-        class="w-4/5"
-        @input="updateValue"
-      />
+      <UiSlider v-model="radius" :min="3000" :max="1000000" class="w-4/5" />
       <p class="text-sm w-1/5 text-center">
         {{ Math.round(radius / 1000) }} km
       </p>
@@ -49,22 +43,22 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['update:modelValue']);
-const lat = ref(props.modelValue?.lat ?? 37.78);
-const lng = ref(props.modelValue?.lng ?? -122.419);
-const radius = ref(props.modelValue?.radius ?? 3000);
+const lat = computed({
+  get: () => props.modelValue?.lat ?? 37.78,
+  set: (val) => emit('update:modelValue', { ...props.modelValue, lat: val })
+});
+const lng = computed({
+  get: () => props.modelValue?.lng ?? -122.419,
+  set: (val) => emit('update:modelValue', { ...props.modelValue, lng: val })
+});
+const radius = computed({
+  get: () => props.modelValue?.radius ?? 3000,
+  set: (val) => emit('update:modelValue', { ...props.modelValue, radius: val })
+});
 
 function handleMarkerDragEnd(e: DragEndEvent) {
   const position = e.target.getLatLng();
   lat.value = position.lat;
   lng.value = position.lng;
-  updateValue();
-}
-
-function updateValue() {
-  emit('update:modelValue', {
-    lat: lat.value,
-    lng: lng.value,
-    radius: radius.value
-  });
 }
 </script>

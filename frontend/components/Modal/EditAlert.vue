@@ -117,4 +117,18 @@ async function updateAlert() {
     isLoading.value = false;
   }
 }
+
+if (!props.alert.location) {
+  watch(
+    () => props.isOpen,
+    async () => {
+      if (props.isOpen) {
+        location.value = {
+          ...(await getLocation()),
+          radius: 3000
+        };
+      }
+    }
+  );
+}
 </script>

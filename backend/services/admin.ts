@@ -9,8 +9,8 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { client } from "@/utils/redis.ts";
 import { listFiles } from "@/utils/s3.ts";
-import { pusher } from "../utils/pusher.ts";
-import { getUserByIdSchema } from "../schema/services/user.ts";
+import { pusher } from "@/utils/pusher.ts";
+import { getUserByIdSchema } from "@/schema/services/user.ts";
 
 const app = new Hono();
 

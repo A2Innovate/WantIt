@@ -4,18 +4,18 @@ interface Rate {
 }
 
 export const useCurrencyStore = defineStore('currency', () => {
-  const rates = ref<Rate[]>([]);
-
-  async function fetchRates() {
-    const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData('currency-rates', () =>
+  const requestFetch = useRequestFetch();
+  const { data: rates, refresh: fetchRates } = useAsyncData(
+    'currency-rates',
+    () =>
       requestFetch<Rate[]>(useRuntimeConfig().public.apiBase + '/api/currency')
-    );
-
-    rates.value = response.value ?? [];
-  }
+  );
 
   function convert(from: string, to: string, amount: number): number {
+    if (!rates.value) {
+      throw new Error('Rates not found');
+    }
+
     let amountInEUR: number;
 
     if (from === 'EUR') {

@@ -162,7 +162,7 @@ app.get(
 
         return c.redirect(FRONTEND_URL + "/", 302);
       }
-      const user = await db.insert(usersTable).values({
+      const [user] = await db.insert(usersTable).values({
         name: userInfo.given_name || userInfo.name || "Google User",
         username: await generateUniqueUsername(),
         email: userInfo.email!,
@@ -174,7 +174,7 @@ app.get(
       const sessionToken = await generateSessionToken();
 
       await db.insert(userSessionsTable).values({
-        userId: user[0].id,
+        userId: user.id,
         sessionToken,
         ip: getIp(c),
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days

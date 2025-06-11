@@ -6,7 +6,6 @@ import { and, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import {
   acceptedOffersTable,
   alertsTable,
-  notificationsTable,
   offerImagesTable,
   offersTable,
   requestsTable,
@@ -26,8 +25,9 @@ import { ImagePipelineInputs } from "@huggingface/transformers";
 import { pusher } from "@/utils/pusher.ts";
 import sharp from "sharp";
 import { pipeline } from "@huggingface/transformers";
-import { isRequestMatchingAlertBudget } from "../utils/filter.ts";
+import { isRequestMatchingAlertBudget } from "@/utils/filter.ts";
 import { createLog } from "@/utils/log.ts";
+import { createNotification } from "@/utils/notification.ts";
 
 const app = new Hono();
 
@@ -64,10 +64,16 @@ app.get(
         (value) => !isNaN(Number(value)),
         "offset must be a valid number",
       ).transform((value) => Number(value)).optional(),
+      limit: z.string().refine(
+        (value) => !isNaN(Number(value)),
+        "limit must be a valid number",
+      ).transform((value) => Number(value)).optional().pipe(
+        z.number().min(1).max(100).default(10),
+      ),
     }),
   ),
   async (c) => {
-    const { content, offset } = c.req.valid("query");
+    const { content, offset, limit } = c.req.valid("query");
 
     const requests = await db.query.requestsTable.findMany({
       where: content ? ilike(requestsTable.content, `%${content}%`) : undefined,
@@ -88,7 +94,7 @@ app.get(
         radius: true,
         createdAt: true,
       },
-      limit: 10,
+      limit: limit,
       offset,
       orderBy: desc(requestsTable.id),
     });
@@ -246,28 +252,18 @@ app.post(
       });
 
       if (request.userId !== session.user.id) {
-        const notification = await db.insert(notificationsTable).values({
+        createNotification({
           type: "NEW_OFFER",
           relatedRequestId: requestId,
           relatedOfferId: offer.id,
           relatedUserId: session.user.id,
           userId: request.userId,
-        }).returning();
-
-        pusher.trigger(
-          `private-user-${request.userId}`,
-          "new-notification",
-          {
-            ...notification[0],
-            relatedUser: {
-              name: session.user.name,
-            },
-            relatedRequest: {
-              content: request.content,
-            },
+          relatedUser: {
+            name: session.user.name,
           },
-        ).catch((e) => {
-          console.error("Async Pusher trigger error: ", e);
+          relatedRequest: {
+            content: request.content,
+          },
         });
       }
 
@@ -315,12 +311,18 @@ app.delete(
       where: and(
         eq(offersTable.id, offerId),
         eq(offersTable.requestId, requestId),
-        eq(offersTable.userId, session.user.id),
       ),
     });
 
     if (!offer) {
       return c.json({ message: "Offer not found" }, 404);
+    }
+
+    if (offer.userId !== session.user.id) {
+      return c.json(
+        { message: "You are not authorized to delete this offer" },
+        403,
+      );
     }
 
     await deleteRecursive(`request/${requestId}/offer/${offerId}`);
@@ -524,7 +526,6 @@ app.delete(
       where: and(
         eq(offersTable.id, offerId),
         eq(offersTable.requestId, requestId),
-        eq(offersTable.userId, session.user.id),
       ),
       with: {
         images: true,
@@ -533,6 +534,13 @@ app.delete(
 
     if (!offer) {
       return c.json({ message: "Offer not found" }, 404);
+    }
+
+    if (offer.userId !== session.user.id) {
+      return c.json(
+        { message: "You are not authorized to delete this offer" },
+        403,
+      );
     }
 
     if (
@@ -598,7 +606,7 @@ app.put(
     const { content, price, negotiation } = c.req.valid("json");
     const session = c.get("session");
 
-    const offer = await db.update(offersTable)
+    const [offer] = await db.update(offersTable)
       .set({
         content,
         price,
@@ -611,14 +619,14 @@ app.put(
       ))
       .returning();
 
-    if (!offer[0]) {
+    if (!offer) {
       return c.json({ message: "Offer not found" }, 404);
     }
 
     pusher.trigger(
       `public-request-${requestId}`,
       "update-offer",
-      offer[0],
+      offer,
     ).catch((e) => {
       console.error("Async Pusher trigger error: ", e);
     });
@@ -626,10 +634,10 @@ app.put(
     createLog({
       type: "OFFER_UPDATE",
       userId: session.user.id,
-      content: offer[0].content,
+      content: offer.content,
     });
 
-    return c.json(offer[0]);
+    return c.json(offer);
   },
 );
 
@@ -679,7 +687,10 @@ app.post(
     }
 
     if (request.userId !== session.user.id) {
-      return c.json({ message: "You are not the owner of this request" }, 403);
+      return c.json(
+        { message: "You are not authorized to accept this offer" },
+        403,
+      );
     }
 
     const offerAcceptation = await db.query.acceptedOffersTable.findFirst({
@@ -711,31 +722,21 @@ app.post(
         console.error("Async Pusher trigger error: ", e);
       });
 
-      const notification = await db.insert(notificationsTable).values({
+      createNotification({
         type: "OFFER_ACCEPTED",
         relatedOfferId: offer.id,
         relatedRequestId: request.id,
         relatedUserId: request.userId,
         userId: offer.userId,
-      }).returning();
-
-      pusher.trigger(
-        `private-user-${offer.userId}`,
-        "new-notification",
-        {
-          ...notification[0],
-          relatedUser: {
-            name: session.user.name,
-          },
-          relatedOffer: {
-            content: offer.content,
-          },
-          relatedRequest: {
-            content: request.content,
-          },
+        relatedUser: {
+          name: session.user.name,
         },
-      ).catch((e) => {
-        console.error(`Async Pusher trigger error: ${e}`);
+        relatedOffer: {
+          content: offer.content,
+        },
+        relatedRequest: {
+          content: request.content,
+        },
       });
 
       return c.json({
@@ -809,23 +810,13 @@ app.post(
             continue;
           }
 
-          const notification = await db.insert(notificationsTable).values({
+          createNotification({
             type: "NEW_ALERT_MATCH",
             relatedRequestId: request.id,
             userId: alert.userId,
-          }).returning();
-
-          pusher.trigger(
-            `private-user-${alert.userId}`,
-            "new-notification",
-            {
-              ...notification[0],
-              relatedRequest: {
-                content: request.content,
-              },
+            relatedRequest: {
+              content: request.content,
             },
-          ).catch((e) => {
-            console.error(`Async Pusher trigger error: ${e}`);
           });
 
           pusher.trigger(
@@ -878,7 +869,7 @@ app.put(
     const { content, budget, location, radius } = c.req.valid("json");
     const session = c.get("session");
 
-    const request = await db.update(requestsTable)
+    const [request] = await db.update(requestsTable)
       .set({
         content,
         budget,
@@ -891,14 +882,14 @@ app.put(
       ))
       .returning();
 
-    if (!request[0]) {
+    if (!request) {
       return c.json({ message: "Request not found" }, 404);
     }
 
     pusher.trigger(
       `public-request-${requestId}`,
       "update-request",
-      request[0],
+      request,
     ).catch((e) => {
       console.error("Async Pusher trigger error: ", e);
     });
@@ -906,10 +897,10 @@ app.put(
     createLog({
       type: "REQUEST_UPDATE",
       userId: session.user.id,
-      content: request[0].content,
+      content: request.content,
     });
 
-    return c.json(request[0]);
+    return c.json(request);
   },
 );
 
@@ -931,12 +922,17 @@ app.delete(
     const request = await db.query.requestsTable.findFirst({
       where: and(
         eq(requestsTable.id, requestId),
-        eq(requestsTable.userId, session.user.id),
       ),
     });
 
     if (!request) {
       return c.json({ message: "Request not found" }, 404);
+    }
+
+    if (request.userId !== session.user.id) {
+      return c.json({
+        message: "You are not authorized to delete this request",
+      }, 403);
     }
 
     await deleteRecursive(`request/${requestId}`);

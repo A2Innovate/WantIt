@@ -28,8 +28,8 @@ import { FRONTEND_URL } from "@/utils/global.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
 import { z } from "zod";
 import { isRequestMatchingAlertBudget } from "@/utils/filter.ts";
-import { pusher } from "../utils/pusher.ts";
-import { deleteRecursive } from "../utils/s3.ts";
+import { pusher } from "@/utils/pusher.ts";
+import { deleteRecursive } from "@/utils/s3.ts";
 
 const app = new Hono();
 

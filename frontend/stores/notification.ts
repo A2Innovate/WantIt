@@ -1,23 +1,17 @@
 import type { Notification } from '~/types/notification';
 
 export const useNotificationStore = defineStore('notification', () => {
-  const current = ref<Notification[]>([]);
-
-  async function fetchNotifications() {
-    const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData<Notification[]>(
-      'notifications',
-      () =>
-        requestFetch<Notification[]>(
-          useRuntimeConfig().public.apiBase + '/api/notification',
-          {
-            credentials: 'include'
-          }
-        )
-    );
-
-    current.value = response.value ?? [];
-  }
+  const requestFetch = useRequestFetch();
+  const { data: current, refresh: fetchNotifications } = useAsyncData<
+    Notification[]
+  >('notifications', () =>
+    requestFetch<Notification[]>(
+      useRuntimeConfig().public.apiBase + '/api/notification',
+      {
+        credentials: 'include'
+      }
+    )
+  );
 
   async function markAsRead(notification: Notification) {
     try {
@@ -30,6 +24,10 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   async function deleteNotification(notification: Notification) {
+    if (!current.value) {
+      return;
+    }
+
     try {
       current.value = current.value.filter((n) => n.id !== notification.id);
       await useApi().delete(`/notification/${notification.id}`);
@@ -40,6 +38,10 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   async function clearNotifications() {
+    if (!current.value) {
+      return;
+    }
+
     const oldNotifications = [...current.value];
 
     try {

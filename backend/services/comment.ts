@@ -5,13 +5,14 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/index.ts";
-import { commentsTable, notificationsTable } from "@/db/schema.ts";
+import { commentsTable } from "@/db/schema.ts";
 import { pusher } from "@/utils/pusher.ts";
 import {
   addCommentSchema,
   editCommentSchema,
 } from "@/schema/services/comment.ts";
 import { offersTable } from "@/db/schema.ts";
+import { createNotification } from "@/utils/notification.ts";
 
 const app = new Hono();
 
@@ -67,28 +68,12 @@ app.post(
       });
 
       if (offer.userId !== session.user.id) {
-        const notification = await db.insert(notificationsTable).values({
+        createNotification({
           type: "NEW_OFFER_COMMENT",
           relatedRequestId: offer.requestId,
           relatedOfferId: offer.id,
           relatedUserId: session.user.id,
           userId: offer.userId,
-        }).returning();
-
-        pusher.trigger(
-          `private-user-${offer.userId}`,
-          "new-notification",
-          {
-            ...notification[0],
-            relatedUser: {
-              name: session.user.name,
-            },
-            relatedOffer: {
-              content: offer.content,
-            },
-          },
-        ).catch((e) => {
-          console.error("Async Pusher trigger error: ", e);
         });
       }
 
@@ -137,7 +122,6 @@ app.put(
     const comment = await db.query.commentsTable.findFirst({
       where: and(
         eq(commentsTable.id, commentId),
-        eq(commentsTable.userId, session.user.id),
       ),
       with: {
         offer: {
@@ -151,6 +135,12 @@ app.put(
 
     if (!comment) {
       return c.json({ message: "Comment not found" }, 404);
+    }
+
+    if (comment.userId !== session.user.id) {
+      return c.json({
+        message: "You are not authorized to modify this comment",
+      }, 403);
     }
 
     await db.update(commentsTable)
@@ -209,7 +199,6 @@ app.delete(
     const comment = await db.query.commentsTable.findFirst({
       where: and(
         eq(commentsTable.id, commentId),
-        eq(commentsTable.userId, session.user.id),
       ),
       with: {
         offer: {
@@ -223,6 +212,12 @@ app.delete(
 
     if (!comment) {
       return c.json({ message: "Comment not found" }, 404);
+    }
+
+    if (comment.userId !== session.user.id) {
+      return c.json({
+        message: "You are not authorized to delete this comment",
+      }, 403);
     }
 
     await db.delete(commentsTable)

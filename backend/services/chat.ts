@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { authRequired } from "@/middleware/auth.ts";
 import { db } from "@/db/index.ts";
 import { and, asc, desc, eq, notInArray, or } from "drizzle-orm";
-import { messagesTable, notificationsTable, usersTable } from "@/db/schema.ts";
+import { messagesTable, usersTable } from "@/db/schema.ts";
 import { zValidator } from "@hono/zod-validator";
 import {
   paramPersonIdSchema,
@@ -10,6 +10,7 @@ import {
 } from "@/schema/services/chat.ts";
 import { pusher } from "@/utils/pusher.ts";
 import z from "zod";
+import { createNotification } from "@/utils/notification.ts";
 
 const app = new Hono();
 
@@ -138,7 +139,7 @@ app.post(
       return c.json({ message: "Person not found" }, 404);
     }
 
-    const message = await db.insert(messagesTable).values({
+    const [message] = await db.insert(messagesTable).values({
       senderId: session.user.id,
       receiverId: personId,
       content,
@@ -147,32 +148,18 @@ app.post(
     pusher.trigger(
       `private-user-${personId}-chat-${session.user.id}`,
       "new-message",
-      message[0],
+      message,
     ).catch((e) => {
       console.error(`Async Pusher trigger error: ${e}`);
     });
 
-    const notification = await db.insert(notificationsTable).values({
-      userId: personId,
-      relatedUserId: session.user.id,
+    createNotification({
       type: "NEW_MESSAGE",
-    }).returning();
-
-    pusher.trigger(
-      `private-user-${personId}`,
-      "new-notification",
-      {
-        ...notification[0],
-        relatedUser: {
-          id: session.user.id,
-          name: session.user.name,
-        },
-      },
-    ).catch((e) => {
-      console.error(`Async Pusher trigger error: ${e}`);
+      relatedUserId: personId,
+      userId: session.user.id,
     });
 
-    return c.json(message[0], 200);
+    return c.json(message, 200);
   },
 );
 

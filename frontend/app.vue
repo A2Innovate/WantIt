@@ -36,7 +36,7 @@ onMounted(() => {
     userChannel.bind(
       'notification-read',
       (data: { notificationId: number }) => {
-        const notification = notificationStore.current.find(
+        const notification = notificationStore.current?.find(
           (n) => n.id === data.notificationId
         );
 
@@ -64,18 +64,16 @@ onMounted(() => {
       }
 
       if (data.type === NotificationType.NEW_MESSAGE) {
-        messageStore.refreshLastMessages();
+        messageStore.fetchLastMessages();
       }
 
-      notificationStore.current.push(data);
+      notificationStore.current?.push(data);
     });
 
     userChannel.bind(
       'notification-delete',
       (data: { notificationId: number }) => {
-        notificationStore.current = notificationStore.current.filter(
-          (n) => n.id !== data.notificationId
-        );
+        notificationStore.current?.filter((n) => n.id !== data.notificationId);
       }
     );
 

@@ -22,7 +22,7 @@
       />
       <UiLabel for="negotiation">
         Negotiable
-        <UiCheckbox id="negotiation" v-model="negotiation" />
+        <UiToggle id="negotiation" v-model="negotiation" />
       </UiLabel>
       <UiButton type="submit" class="mt-2" :loading="isLoading">Add</UiButton>
     </form>

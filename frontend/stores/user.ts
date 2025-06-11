@@ -1,17 +1,10 @@
 import type { User, UserSession } from '@/types/user';
 
 export const useUserStore = defineStore('user', () => {
-  const current = ref<User | null>(null);
-  const sessions = ref<UserSession[] | null>(null);
-
-  async function fetchUser() {
-    const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData<User>('user', () =>
-      requestFetch(useRuntimeConfig().public.apiBase + '/api/auth')
-    );
-
-    current.value = response.value;
-  }
+  const requestFetch = useRequestFetch();
+  const { data: current, refresh: fetchUser } = useAsyncData<User>('user', () =>
+    requestFetch(useRuntimeConfig().public.apiBase + '/api/auth')
+  );
 
   async function logout() {
     await useApi().post('/auth/logout');
@@ -19,21 +12,16 @@ export const useUserStore = defineStore('user', () => {
     sessions.value = null;
   }
 
-  async function fetchSessions() {
-    const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData<UserSession[]>(
-      'user-sessions',
-      () =>
-        requestFetch<UserSession[]>(
-          useRuntimeConfig().public.apiBase + '/api/auth/sessions',
-          {
-            credentials: 'include'
-          }
-        )
-    );
-
-    sessions.value = response.value;
-  }
+  const { data: sessions, refresh: fetchSessions } = useAsyncData<
+    UserSession[]
+  >('user-sessions', () =>
+    requestFetch<UserSession[]>(
+      useRuntimeConfig().public.apiBase + '/api/auth/sessions',
+      {
+        credentials: 'include'
+      }
+    )
+  );
 
   return {
     current,

@@ -9,28 +9,17 @@ interface LastMessage {
 }
 
 export const useMessageStore = defineStore('message', () => {
-  const lastMessages = ref<LastMessage[]>([]);
-
-  async function fetchLastMessages() {
-    const requestFetch = useRequestFetch();
-    const { data: response } = await useAsyncData<LastMessage[]>(
-      'last-messages',
-      () =>
-        requestFetch<LastMessage[]>(
-          useRuntimeConfig().public.apiBase + '/api/chat',
-          {
-            credentials: 'include'
-          }
-        )
-    );
-
-    lastMessages.value = response.value ?? [];
-  }
-
-  async function refreshLastMessages() {
-    const response = await useApi().get<LastMessage[]>('/chat');
-    lastMessages.value = response.data;
-  }
+  const requestFetch = useRequestFetch();
+  const { data: lastMessages, refresh: fetchLastMessages } = useAsyncData<
+    LastMessage[]
+  >('last-messages', () =>
+    requestFetch<LastMessage[]>(
+      useRuntimeConfig().public.apiBase + '/api/chat',
+      {
+        credentials: 'include'
+      }
+    )
+  );
 
   function upsertLastMessage({
     personId,
@@ -45,6 +34,10 @@ export const useMessageStore = defineStore('message', () => {
     createdAt: string;
     content: string;
   }) {
+    if (!lastMessages.value) {
+      return;
+    }
+
     const index = lastMessages.value.findIndex(
       (msg) => msg.person.id === personId
     );
@@ -71,7 +64,6 @@ export const useMessageStore = defineStore('message', () => {
   return {
     lastMessages,
     fetchLastMessages,
-    refreshLastMessages,
     upsertLastMessage
   };
 });

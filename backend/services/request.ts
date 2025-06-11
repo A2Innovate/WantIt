@@ -715,6 +715,7 @@ app.post(
         type: "OFFER_ACCEPTED",
         relatedOfferId: offer.id,
         relatedRequestId: request.id,
+        relatedUserId: request.userId,
         userId: offer.userId,
       }).returning();
 

@@ -733,6 +733,10 @@ app.post(
       eq(usersTable.id, user.id),
     );
 
+    pusher.trigger("private-admin-stats", "update-users", -1).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
+
     return c.json({ message: "Account deleted successfully" }, 200);
   },
 );

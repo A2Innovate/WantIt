@@ -35,6 +35,12 @@ export const authRequired = createMiddleware<{
     }, 401);
   }
 
+  if (session.user.isBlocked) {
+    return c.json({
+      message: "You are blocked.",
+    }, 401);
+  }
+
   if (session.user.isAdmin && c.req.query("pretendUser")) {
     let pretendUserId;
 
@@ -74,6 +80,18 @@ export const authRequired = createMiddleware<{
   }
 
   c.set("session", session);
+
+  await next();
+});
+
+export const adminRequired = createMiddleware(async (c, next) => {
+  const session = c.get("session");
+
+  if (!session.user.isAdmin) {
+    return c.json({
+      message: "You do not have permission to perform this action.",
+    }, 403);
+  }
 
   await next();
 });

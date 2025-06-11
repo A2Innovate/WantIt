@@ -26,6 +26,7 @@ import { pusher } from "@/utils/pusher.ts";
 import sharp from "sharp";
 import { pipeline } from "@huggingface/transformers";
 import { isRequestMatchingAlertBudget } from "../utils/filter.ts";
+import { createLog } from "@/utils/log.ts";
 
 const app = new Hono();
 
@@ -264,6 +265,16 @@ app.post(
         });
       }
 
+      pusher.trigger("private-admin-stats", "update-offers", 1).catch((e) => {
+        console.error(`Async Pusher trigger error: ${e}`);
+      });
+
+      createLog({
+        type: "OFFER_CREATE",
+        userId: session.user.id,
+        content: request.content,
+      });
+
       return c.json(offer);
     } catch (e) {
       console.error("Error creating offer: ", e);
@@ -321,6 +332,16 @@ app.delete(
       offerId,
     ).catch((e) => {
       console.error("Async Pusher trigger error: ", e);
+    });
+
+    pusher.trigger("private-admin-stats", "update-offers", -1).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    createLog({
+      type: "OFFER_DELETE",
+      userId: session.user.id,
+      content: offer.content,
     });
 
     return c.json({
@@ -596,6 +617,12 @@ app.put(
       console.error("Async Pusher trigger error: ", e);
     });
 
+    createLog({
+      type: "OFFER_UPDATE",
+      userId: session.user.id,
+      content: offer[0].content,
+    });
+
     return c.json(offer[0]);
   },
 );
@@ -624,18 +651,23 @@ app.post(
       radius,
     }).returning();
 
+    const isGlobal = location === null;
+
     db.select().from(alertsTable)
       .where(
         and(
-          sql`ST_Intersects(
+          isGlobal ? undefined : sql`ST_Intersects(
             ST_Buffer(${alertsTable.location}::geography, ${alertsTable.radius})::geometry,
-            ST_Buffer(ST_SetSRID(ST_MakePoint(${location?.x}, ${location?.y})::geography, 4326), ${radius})::geometry
+            ST_Buffer(ST_SetSRID(ST_MakePoint(${location.x}, ${location.y})::geography, 4326), ${radius})::geometry
           )`,
           ilike(alertsTable.content, `%${content}%`),
         ),
       ).then(async (alerts) => {
         for (const alert of alerts) {
-          if (!await isRequestMatchingAlertBudget(request, alert)) {
+          if (
+            (isGlobal && alert.location) ||
+            !await isRequestMatchingAlertBudget(request, alert)
+          ) {
             continue;
           }
 
@@ -673,6 +705,16 @@ app.post(
           });
         }
       });
+
+    pusher.trigger("private-admin-stats", "update-requests", 1).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    createLog({
+      type: "REQUEST_CREATE",
+      userId: session.user.id,
+      content: request.content,
+    });
 
     return c.json(request);
   },
@@ -723,6 +765,12 @@ app.put(
       console.error("Async Pusher trigger error: ", e);
     });
 
+    createLog({
+      type: "REQUEST_UPDATE",
+      userId: session.user.id,
+      content: request[0].content,
+    });
+
     return c.json(request[0]);
   },
 );
@@ -767,6 +815,16 @@ app.delete(
       requestId,
     ).catch((e) => {
       console.error("Async Pusher trigger error: ", e);
+    });
+
+    pusher.trigger("private-admin-stats", "update-requests", -1).catch((e) => {
+      console.error(`Async Pusher trigger error: ${e}`);
+    });
+
+    createLog({
+      type: "REQUEST_DELETE",
+      userId: session.user.id,
+      content: request.content,
     });
 
     return c.json({

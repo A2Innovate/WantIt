@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxt/eslint',
     '@pinia/nuxt',
-    '@nuxtjs/leaflet'
+    '@nuxtjs/leaflet',
+    'nuxt-echarts'
   ],
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
@@ -21,6 +22,10 @@ export default defineNuxtConfig({
       pusherCluster: '',
       pusherWsHost: ''
     }
+  },
+  echarts: {
+    charts: ['LineChart', 'BarChart'],
+    components: ['GridComponent', 'TooltipComponent']
   },
   vite: {
     plugins: [tailwindcss()]

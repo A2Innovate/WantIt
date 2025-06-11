@@ -6,12 +6,13 @@ import {
   pgTable,
   text,
   timestamp,
-  unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import {
   COMPARISON_MODES,
   CURRENCIES,
+  LOG_TYPES,
   NOTIFICATION_TYPES,
 } from "../utils/global.ts";
 
@@ -20,6 +21,7 @@ export const notificationTypes = pgEnum(
   "notification_types",
   NOTIFICATION_TYPES,
 );
+export const logTypes = pgEnum("log_types", LOG_TYPES);
 
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -33,6 +35,7 @@ export const usersTable = pgTable("users", {
   password: text(),
   passwordResetToken: text().unique(),
   isAdmin: boolean().notNull().default(false),
+  isBlocked: boolean().notNull().default(false),
   preferredCurrency: currencies().notNull().default("USD"),
   createdAt: timestamp().notNull().defaultNow(),
 });
@@ -239,16 +242,33 @@ export const userReviewsTable = pgTable("user_reviews", {
   rating: integer().notNull(),
   edited: boolean().notNull().default(false),
   createdAt: timestamp().notNull().defaultNow(),
-}, (reviews) => ({
-  uniqueReviewerReviewed: unique().on(
-    reviews.reviewerUserId,
-    reviews.reviewedUserId,
+}, (t) => [
+  uniqueIndex().on(
+    t.reviewerUserId,
+    t.reviewedUserId,
   ),
-}));
+]);
 
 export const userReviewsRelations = relations(userReviewsTable, ({ one }) => ({
   reviewer: one(usersTable, {
     fields: [userReviewsTable.reviewerUserId],
+    references: [usersTable.id],
+  }),
+}));
+
+export const logsTable = pgTable("logs", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  type: logTypes().notNull(),
+  userId: integer()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  ip: text(),
+  content: text(),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const logsRelations = relations(logsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [logsTable.userId],
     references: [usersTable.id],
   }),
 }));

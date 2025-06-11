@@ -63,3 +63,17 @@ export const COMPARISON_MODES = [
     label: `Greater than or equal to`
   }
 ];
+
+export const LOG_TYPES = [
+  'USER_LOGIN',
+  'USER_LOGIN_FAILURE',
+  'USER_LOGOUT',
+  'USER_REGISTRATION',
+  'REQUEST_CREATE',
+  'REQUEST_UPDATE',
+  'REQUEST_DELETE',
+  'OFFER_CREATE',
+  'OFFER_UPDATE',
+  'OFFER_DELETE',
+  'RATELIMIT_HIT'
+];

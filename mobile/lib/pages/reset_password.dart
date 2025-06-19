@@ -4,7 +4,7 @@ import 'package:mobile/api/client.dart';
 import 'package:mobile/schemas/auth.dart'; // where your schema is
 
 class ResetPasswordPage extends StatefulWidget {
-  const ResetPasswordPage({Key? key}) : super(key: key);
+  const ResetPasswordPage({super.key});
 
   @override
   _ResetPasswordPageState createState() => _ResetPasswordPageState();

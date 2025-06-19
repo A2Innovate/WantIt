@@ -57,6 +57,8 @@ class _SignInPageState extends State<SignInPage> {
     if (result.success) {
       try {
         final response = await dio.post('/auth/login', data: formData);
+        final cookies = response.headers['set-cookie'];
+        print(cookies);
         if (response.statusCode == 200) {
           await saveUserData(response.data);
           if (mounted) {
@@ -72,6 +74,7 @@ class _SignInPageState extends State<SignInPage> {
         }
       } on DioException catch (e) {
         setState(() {
+          print(e);
           fieldErrors['login'] = e.response?.data['message'] ?? 'Network error';
         });
       }

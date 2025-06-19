@@ -4,8 +4,10 @@ import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../pages/settings.dart';
+
 class UserMenuButton extends StatefulWidget {
-  const UserMenuButton({Key? key}) : super(key: key);
+  const UserMenuButton({super.key});
 
   @override
   State<UserMenuButton> createState() => _UserMenuButtonState();
@@ -97,14 +99,15 @@ class _UserMenuButtonState extends State<UserMenuButton> {
             context,
             MaterialPageRoute(builder: (_) => ProfilePage()),
           );
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Go to Profile')));
         } else if (value == 1) {
           // TODO: Navigate to Settings page
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Go to Settings')));
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsPage()),
+          );
         } else if (value == 2) {
           // Logout
           await _logout();

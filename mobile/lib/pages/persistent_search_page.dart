@@ -1,10 +1,8 @@
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/api/client.dart';
-import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
-import 'package:http/http.dart' as http;
 
 class PersistentSearchPage extends StatefulWidget {
   const PersistentSearchPage({super.key});
@@ -35,16 +33,20 @@ class Request {
   });
 
   factory Request.fromJson(Map<String, dynamic> json) {
-    return Request(
-      id: json['id'],
-      content: json['content'],
-      user: json['user']['username'],
-      budget: json['budget'],
-      currency: json['currency'],
-      location: json['location']?.toString() ?? 'N/A',
-      radius: json['radius'] ?? 0,
-      createdAt: json['createdAt'],
-    );
+    try {
+      return Request(
+        id: json['id'],
+        content: json['content'],
+        user: json['user']['username'],
+        budget: json['budget'],
+        currency: json['currency'],
+        location: json['location']?.toString() ?? 'N/A',
+        radius: json['radius'] ?? 0,
+        createdAt: json['createdAt'],
+      );
+    } catch (e) {
+      throw Exception('Failed to parse request data');
+    }
   }
 }
 
@@ -61,18 +63,43 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   }
 
   Future<List<Request>> fetchItems(String query) async {
-    final dio = useApi();
-    final response = await dio.get(
-      '/request',
-      queryParameters: {'content': query},
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> data = response.data;
-      return data.map((item) => Request.fromJson(item)).toList();
-    } else {
-      throw Exception('Failed to fetch items');
+    try {
+      final dio = useApi();
+      final response = await dio.get(
+        '/request',
+        queryParameters: query.isNotEmpty ? {'content': query} : null,
+        options: Options(
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      if (response.statusCode == 200) {
+        if (response.data is List) {
+          List<dynamic> data = response.data;
+          return data
+              .map((item) => Request.fromJson(item as Map<String, dynamic>))
+              .toList();
+        } else {
+          throw Exception('Invalid response format');
+        }
+      } else {
+        throw Exception('Failed to fetch items');
+      }
+    } on DioException {
+      throw Exception('Network error. Please check your connection.');
     }
+    // final dio = useApi();
+    // final response = await dio.get(
+    //   '/request',
+    //   queryParameters: {'content': query},
+    // );
+    //
+    // if (response.statusCode == 200) {
+    //   List<dynamic> data = response.data;
+    //   return data.map((item) => Request.fromJson(item)).toList();
+    // } else {
+    //   throw Exception('Failed to fetch items');
+    // }
   }
 
   void _search(String input) {
@@ -87,6 +114,18 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
       _selectedIndex = index;
       // You can add navigation or page switching logic here
     });
+  }
+
+  String _formatCurrency(int budget, String currency) {
+    try {
+      final format = NumberFormat.simpleCurrency(
+        locale: 'en_US',
+        name: currency,
+      );
+      return '${format.currencySymbol}$budget';
+    } catch (e) {
+      return '$currency $budget';
+    }
   }
 
   @override
@@ -122,7 +161,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(child: Text('${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text('No results found.'));
                 }
@@ -148,7 +187,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${NumberFormat.simpleCurrency(locale: 'en_US', name: item.currency).currencySymbol}${item.budget}',
+                              _formatCurrency(item.budget, item.currency),
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             Row(

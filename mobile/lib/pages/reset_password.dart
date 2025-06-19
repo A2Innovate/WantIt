@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/api/client.dart';
 import 'package:mobile/schemas/auth.dart'; // where your schema is
-import 'package:acanthis/acanthis.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({Key? key}) : super(key: key);
@@ -28,9 +27,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       _emailError = null;
     });
 
-    final formData = {'email': _emailCtrl.text};
+    final formData = {'email': _emailCtrl.text.trim()};
 
-    final result = await resetPasswordSchema.tryParseAsync(formData);
+    final result = await requestPasswordResetSchema.tryParseAsync(formData);
 
     if (result.success) {
       // Proceed with password reset API
@@ -38,16 +37,33 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         final response = await useApi().post(
           '/auth/request-password-reset',
           data: formData,
+          options: Options(
+            sendTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
+          ),
         );
         if (response.statusCode == 200) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Reset link sent!')));
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Reset link sent!')));
+          }
+        } else {
+          setState(() {
+            _emailError = 'Password reset failed. Please try again.';
+          });
         }
       } on DioException catch (e) {
-        if (e.response != null) {
+        if (e.response != null && e.response!.data != null) {
           setState(() {
-            _emailError = e.response!.data['message'] ?? 'Reset failed';
+            _emailError = e.response!.data is Map
+                ? e.response!.data['message'] ??
+                      'Password reset failed. Please try again'
+                : 'Password reset failed. Please try again';
+          });
+        } else {
+          setState(() {
+            _emailError = 'Network error. Please check your connection.';
           });
         }
       }

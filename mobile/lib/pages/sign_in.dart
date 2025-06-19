@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/api/client.dart';
@@ -49,8 +48,8 @@ class _SignInPageState extends State<SignInPage> {
     });
 
     final formData = {
-      'email': _emailCtrl.text,
-      'password': _passCtrl.text,
+      'email': _emailCtrl.text.trim(),
+      'password': _passCtrl.text.trim(),
     };
 
     final result = await loginSchema.tryParseAsync(formData);
@@ -60,22 +59,20 @@ class _SignInPageState extends State<SignInPage> {
         final response = await dio.post('/auth/login', data: formData);
         if (response.statusCode == 200) {
           await saveUserData(response.data);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const PersistentSearchPage(),
-            ),
-          );
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const PersistentSearchPage()),
+            );
+          }
         } else {
           setState(() {
-            fieldErrors['login'] =
-                response.data['message'] ?? 'Login failed';
+            fieldErrors['login'] = response.data['message'] ?? 'Login failed';
           });
         }
       } on DioException catch (e) {
         setState(() {
-          fieldErrors['login'] =
-              e.response?.data['message'] ?? 'Network error';
+          fieldErrors['login'] = e.response?.data['message'] ?? 'Network error';
         });
       }
     } else {
@@ -162,13 +159,13 @@ class _SignInPageState extends State<SignInPage> {
                     onPressed: _loading ? null : _onLogin,
                     child: _loading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text('Login'),
                   ),
                 ),
@@ -180,9 +177,7 @@ class _SignInPageState extends State<SignInPage> {
                       onPressed: () async {
                         await Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const SignUpPage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => const SignUpPage()),
                         );
                       },
                       child: const Text("Don't have an account?"),

@@ -19,6 +19,6 @@ final loginSchema = object({
       .min(8, message: 'Password must be at least 8 characters')
       .max(256, message: 'Password must be at most 256 characters long'),
 });
-final resetPasswordSchema = object({
+final requestPasswordResetSchema = object({
   'email': string().email(message: 'Invalid email'),
 });

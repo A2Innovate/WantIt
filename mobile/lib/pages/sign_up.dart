@@ -21,12 +21,10 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _loading = false;
   bool _obscurePassword = true;
   Map<String, String?> fieldErrors = {};
-  late final Dio dio;
 
   @override
   void initState() {
     super.initState();
-    dio = useApi();
   }
 
   Future<void> _onSignUp() async {
@@ -36,19 +34,28 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     final formData = {
-      'name': _nameCtrl.text,
-      'username': _usernameCtrl.text,
-      'email': _emailCtrl.text,
-      'password': _passCtrl.text,
+      'name': _nameCtrl.text.trim(),
+      'username': _usernameCtrl.text.trim(),
+      'email': _emailCtrl.text.trim(),
+      'password': _passCtrl.text.trim(),
     };
 
     final result = await signUpSchema.tryParseAsync(formData);
 
     if (result.success) {
       try {
-        final response = await dio.post('/auth/register', data: formData);
+        final response = await useApi().post(
+          '/auth/register',
+          data: formData,
+          options: Options(
+            sendTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
+          ),
+        );
         if (response.statusCode == 200) {
-          Navigator.of(context).pop();
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
         } else {
           setState(() {
             fieldErrors['login'] = response.data['message'] ?? 'Sign up failed';
@@ -56,7 +63,9 @@ class _SignUpPageState extends State<SignUpPage> {
         }
       } on DioException catch (e) {
         setState(() {
-          fieldErrors['login'] = e.response?.data['message'] ?? 'Network error';
+          fieldErrors['login'] = e.response?.data is Map
+              ? e.response?.data['message'] ?? 'Sign up failed'
+              : 'Network error. Please check your connection.';
         });
       }
     } else {
@@ -72,6 +81,15 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() {
       _loading = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _usernameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -93,6 +111,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _nameCtrl,
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: 'Name',
                     prefixIcon: const Icon(Icons.account_box),
@@ -128,7 +147,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -161,13 +182,13 @@ class _SignUpPageState extends State<SignUpPage> {
                     onPressed: _loading ? null : _onSignUp,
                     child: _loading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text('Sign Up'),
                   ),
                 ),

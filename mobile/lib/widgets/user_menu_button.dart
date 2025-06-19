@@ -34,7 +34,13 @@ class _UserMenuButtonState extends State<UserMenuButton> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove('sessionId');
+    await prefs.remove('userId');
+    await prefs.remove('username');
+    await prefs.remove('name');
+    await prefs.remove('email');
+    await prefs.remove('currency');
+    await prefs.remove('isAdmin');
     setState(() {
       _loggedIn = false;
       _username = '';

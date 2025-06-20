@@ -1,10 +1,14 @@
+import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:mobile/pages/persistent_search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../utils/global.dart';
+import '../api/client.dart';
 import '../api/currencies.dart';
+import '../utils/global.dart';
+import '../pages/persistent_search_page.dart';
+import '../widgets/converted_budget.dart';
 
 class RequestDetailPage extends StatefulWidget {
   final Request request;
@@ -15,143 +19,240 @@ class RequestDetailPage extends StatefulWidget {
 }
 
 class _RequestDetailPageState extends State<RequestDetailPage> {
+  late Future<(Currency, double)?> _conversionFuture;
+  final MapController _mapController = MapController();
+  late final StreamSubscription<MapEvent> _mapSub;
+  String? _currentUsername;
 
-  late final convertedAmount;
-  late final preferredCurrency;
+  String? _selectedSort = 'newest_first';
+
+  double _zoom = 13;
+
+  Future<void> _OnDelete() async {
+    try {
+      print('${widget.request.id}');
+
+      final response = await useApi().delete('/request/${widget.request.id}');
+      if (response.statusCode == 200) {
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      } else {
+        print(response.data);
+      }
+    } on DioException catch (e) {
+      {
+        print(e.message);
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadCurrencyAndConvert();
+    _conversionFuture = _loadCurrencyAndConvert();
+    _loadCurrentUserId();
 
-
+    _mapSub = _mapController.mapEventStream.listen((event) {
+      final newZoom = event.camera.zoom;
+      if (newZoom != _zoom) {
+        setState(() {
+          _zoom = newZoom;
+        });
+      }
+    });
   }
 
-  Future<void> _loadCurrencyAndConvert() async {
+  @override
+  void dispose() {
+    _mapSub.cancel();
+    super.dispose();
+  }
+
+  Future<(Currency, double)?> _loadCurrencyAndConvert() async {
     final prefs = await SharedPreferences.getInstance();
     final currencyStr = prefs.getString('preferredCurrency');
-    if (currencyStr == null) return;
+    if (currencyStr == null) return null;
 
     final currency = Currency.values.byName(currencyStr);
-    final result = await convert_currency(
+    final result = await convertCurrency(
       widget.request.currency,
       currency,
       widget.request.budget,
     );
 
+    return (currency, result);
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      preferredCurrency = currency;
-      convertedAmount = result;
+      _currentUsername = prefs.getString('username');
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Request Detail')),
+      appBar: AppBar(
+        title: const Text('Request Detail'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
-            // crossAxisAlignment: CrossAxisAlignment.start,
-            // mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Request',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(
-                height: 200,
-                child: FlutterMap(
-                  options: MapOptions(
-                    initialCenter: widget.request.location!,
-                    initialZoom: 13,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.example.yourapp',
-                      errorTileCallback: (title, error, stackTrace) {
-                        setState(() {
-                          // isGlobal = true;
-                          // fieldErrors['errorLocation'] = 'Unable to load map';
-                        });
-                      },
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          key: ValueKey(widget.request.location),
-                          point: widget.request.location!,
-                          width: 40,
-                          height: 40,
-                          child: const Icon(
-                            Icons.location_pin,
-                            color: Colors.red,
-                            size: 40,
-                          ),
-                        ),
-                      ],
-                    ),
-                    CircleLayer(
-                      circles: [
-                        CircleMarker(
-                          key: ValueKey(widget.request.location),
-                          point: widget.request.location!,
-                          color: Colors.blue.withValues(alpha: (0.2)),
-                          borderStrokeWidth: 2,
-                          borderColor: Colors.blue,
-                          radius: metersToPixels(
-                            widget.request.radius!,
-                            widget.request.location!.latitude,
-                            13,
-                            // mapZoom,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              ),
-              Align(
-                alignment: Alignment.centerLeft, // align left inside full width
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment
-                      .start, // left align texts inside column
-                  children: [
-                    Text(
-                      widget.request.content,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    RichText(
-                      text: TextSpan(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 200,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: FlutterMap(
+                            mapController: _mapController,
+                            options: MapOptions(
+                              initialCenter: widget.request.location!,
+                              initialZoom: _zoom,
+                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate:
+                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.example.yourapp',
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    key: ValueKey(widget.request.location),
+                                    point: widget.request.location!,
+                                    width: 40,
+                                    height: 40,
+                                    child: const Icon(
+                                      Icons.location_pin,
+                                      color: Colors.red,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              CircleLayer(
+                                circles: [
+                                  CircleMarker(
+                                    key: ValueKey(widget.request.location),
+                                    point: widget.request.location!,
+                                    color: Colors.blue.withOpacity(0.2),
+                                    borderStrokeWidth: 2,
+                                    borderColor: Colors.blue,
+                                    radius: metersToPixels(
+                                      widget.request.radius!,
+                                      widget.request.location!.latitude,
+                                      _zoom,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        widget.request.content,
                         style: const TextStyle(
                           fontSize: 16,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      ConvertedBudgetText(
+                        budget: widget.request.budget,
+                        baseCurrency: widget.request.currency,
+                        future: _conversionFuture,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
                         children: [
-                          TextSpan(
-                            text: formatCurrency(widget.request.budget, widget.request.currency),
-                          ),
-                          TextSpan(
-                            text: ' (≈ ${formatCurrency(
-                              double.parse(convertedAmount!.toStringAsFixed(2)),
-                              preferredCurrency!,
-                            )})',
-                            style: const TextStyle(
-                              fontSize: 12, // smaller text for the converted value
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black,
+                          if (_currentUsername ==
+                              widget.request.user.username.toString()) ...[
+                            ElevatedButton.icon(
+                              onPressed: () {},
+                              icon: const Icon(Icons.edit),
+                              label: const Text('Edit'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[200],
+                                foregroundColor: Colors.black,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            ElevatedButton.icon(
+                              onPressed: _OnDelete,
+                              icon: const Icon(Icons.delete),
+                              label: const Text('Delete'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red[100],
+                                foregroundColor: Colors.red[800],
+                              ),
+                            ),
+                          ],
+                          const Spacer(),
+                          const Icon(Icons.visibility),
+                          const SizedBox(width: 4),
+                          Text(widget.request.user.username.toString()),
                         ],
                       ),
-                    ),
-
-                  ],
+                    ],
+                  ),
                 ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  DropdownButton<String>(
+                    value: _selectedSort,
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'newest_first',
+                        child: Text('Newest first'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'oldest_first',
+                        child: Text('Oldest first'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'cheapest_first',
+                        child: Text('Cheapest first'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'expensive_first',
+                        child: Text('Expensive first'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      // val ??= 'newest_first';
+                      setState(() {
+                        _selectedSort = val;
+                      });
+                    },
+                  ),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.add),
+                    label: const Text('New offer'),
+                  ),
+                ],
               ),
             ],
           ),

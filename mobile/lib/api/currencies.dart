@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:mobile/api/client.dart';
 import 'package:mobile/utils/global.dart';
 
-final List<Rate> rates = [];
+List<Rate> _cachedRates = [];
 
 class Rate {
   final Currency currency;
@@ -20,35 +20,44 @@ class Rate {
 }
 
 Future<List<Rate>> getRates() async {
-  if (rates.isNotEmpty) {
-    return rates;
+  if (_cachedRates.isNotEmpty) {
+    return _cachedRates;
   }
 
   final response = await useApi().get('/currency');
 
-  rates.addAll((response.data as List)
-      .map((e) => Rate.fromJson(e as Map<String, dynamic>)));
-  for (var i = 0; i < rates.length; i++) {
-    print(rates[i].currency);
-  }
+  _cachedRates.addAll(
+    (response.data as List).map(
+      (e) => Rate.fromJson(e as Map<String, dynamic>),
+    ),
+  );
 
-  return rates;
+  return _cachedRates;
 }
 
-Future<double> convert_currency(Currency from, Currency to, amount) async {
+Future<double> convertCurrency(
+  Currency from,
+  Currency to,
+  double amount,
+) async {
   final rates = await getRates();
-  var amountInEUR;
+  double amountInEUR;
   if (from == Currency.EUR) {
     amountInEUR = amount;
   } else {
-    final fromRate = rates.firstWhere((r) => r.currency == from);
+    final fromRate = rates.firstWhere(
+      (r) => r.currency == from,
+      orElse: () => throw Exception('Currency rate not found for $from'),
+    );
     amountInEUR = amount / fromRate.rate;
   }
   if (to == Currency.EUR) {
     return amountInEUR;
   } else {
-    print(to);
-    final toRate = rates.firstWhere((r) => r.currency == to);
+    final toRate = rates.firstWhere(
+      (r) => r.currency == to,
+      orElse: () => throw Exception('Currency rate not found for $to'),
+    );
     return amountInEUR * toRate.rate;
   }
 }

@@ -16,10 +16,16 @@ class PersistentSearchPage extends StatefulWidget {
   _PersistentSearchPageState createState() => _PersistentSearchPageState();
 }
 
+class UserAndId {
+  final String username;
+  final int id;
+  UserAndId(this.username, this.id);
+}
+
 class Request {
   final int id;
   final String content;
-  final String user;
+  final UserAndId user;
   final double budget;
   final Currency currency;
   final LatLng? location;
@@ -46,7 +52,7 @@ class Request {
       return Request(
         id: json['id'],
         content: json['content'],
-        user: json['user']['username'],
+        user: UserAndId(json['user']['username'], json['user']['id']),
         budget: (json['budget'] as num).toDouble(),
         currency: Currency.values.byName(json['currency']),
         location: location,
@@ -72,11 +78,16 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
     futureItems = fetchItems(query);
   }
 
-  void _openRequestDetails(Request item) {
-    Navigator.push(
+  Future<void> _openRequestDetails(Request item) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => RequestDetailPage(request: item)),
     );
+    if (result) {
+      setState(() {
+        futureItems = fetchItems(query);
+      });
+    }
   }
 
   Future<List<Request>> fetchItems(String query) async {
@@ -166,52 +177,81 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                 } else if (snapshot.hasError) {
                   return Center(child: Text('${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No results found.'));
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        futureItems = fetchItems(query);
+                      });
+                    },
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(
+                          height: 300,
+                          child: Center(child: Text('No results found.')),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 final items = snapshot.data!;
-                return ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (_, index) {
-                    final item = items[index];
-                    return InkWell(
-                      onTap: () {
-                        // print(item.content);
-                        _openRequestDetails(item);
-                      },
-                      child: Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.content,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(formatCurrency((item.budget as num).toDouble(), item.currency)),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    item.user,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      futureItems = fetchItems(query);
+                    });
+                  },
+                  child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (_, index) {
+                      final item = items[index];
+                      return InkWell(
+                        onTap: () {
+                          // print(item.content);
+                          _openRequestDetails(item);
+                        },
+                        child: Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.content,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  formatCurrency(
+                                    (item.budget as num).toDouble(),
+                                    item.currency,
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      item.user.username,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               },
             ),

@@ -95,7 +95,13 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+        title: const Text('Sign Up'),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -105,8 +111,12 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 const SizedBox(height: 32),
                 const Text(
-                  'Sign Up',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  'Create Account',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
@@ -114,27 +124,25 @@ class _SignUpPageState extends State<SignUpPage> {
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: 'Name',
-                    prefixIcon: const Icon(Icons.account_box),
+                    prefixIcon: const Icon(Icons.account_box_outlined),
                     errorText: fieldErrors['name'],
                   ),
-                  keyboardType: TextInputType.name,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _usernameCtrl,
                   decoration: InputDecoration(
                     labelText: 'Username',
-                    prefixIcon: const Icon(Icons.account_circle),
+                    prefixIcon: const Icon(Icons.account_circle_outlined),
                     errorText: fieldErrors['username'],
                   ),
-                  keyboardType: TextInputType.text,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
+                    prefixIcon: const Icon(Icons.email_outlined),
                     errorText: fieldErrors['email'],
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -142,9 +150,10 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passCtrl,
+                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock),
+                    prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -159,7 +168,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     errorText: fieldErrors['password'],
                   ),
-                  obscureText: _obscurePassword,
                 ),
                 if (fieldErrors['login'] != null)
                   Padding(
@@ -169,11 +177,13 @@ class _SignUpPageState extends State<SignUpPage> {
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
-                const SizedBox(height: 45),
+                const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      // backgroundColor: const Color(0xFFFFC107),
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -186,7 +196,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: Colors.black,
                             ),
                           )
                         : const Text('Sign Up'),

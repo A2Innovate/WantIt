@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/api/client.dart';
-import 'package:mobile/schemas/auth.dart'; // where your schema is
+import 'package:mobile/schemas/auth.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -13,7 +13,7 @@ class ResetPasswordPage extends StatefulWidget {
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
-
+  bool _loading = false;
   String? _emailError;
 
   @override
@@ -22,17 +22,16 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     super.dispose();
   }
 
-  void _validateAndSubmit() async {
+  Future<void> _validateAndSubmit() async {
     setState(() {
       _emailError = null;
+      _loading = true;
     });
 
     final formData = {'email': _emailCtrl.text.trim()};
-
     final result = await requestPasswordResetSchema.tryParseAsync(formData);
 
     if (result.success) {
-      // Proceed with password reset API
       try {
         final response = await useApi().post(
           '/auth/request-password-reset',
@@ -42,30 +41,26 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             receiveTimeout: const Duration(seconds: 30),
           ),
         );
-        if (response.statusCode == 200) {
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Reset link sent!')));
-          }
+
+        if (response.statusCode == 200 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Reset link sent! Please check your email.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pop();
         } else {
           setState(() {
-            _emailError = 'Password reset failed. Please try again.';
+            _emailError = 'Something went wrong. Please try again.';
           });
         }
       } on DioException catch (e) {
-        if (e.response != null && e.response!.data != null) {
-          setState(() {
-            _emailError = e.response!.data is Map
-                ? e.response!.data['message'] ??
-                      'Password reset failed. Please try again'
-                : 'Password reset failed. Please try again';
-          });
-        } else {
-          setState(() {
-            _emailError = 'Network error. Please check your connection.';
-          });
-        }
+        setState(() {
+          _emailError = e.response?.data is Map
+              ? e.response?.data['message'] ?? 'Password reset failed'
+              : 'Network error. Please check your connection.';
+        });
       }
     } else {
       setState(() {
@@ -74,42 +69,74 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         ).values.firstOrNull;
       });
     }
+
+    setState(() {
+      _loading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Password')),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Reset Password'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+      ),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Reset Password',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                const Text(
+                  'Forgot your password?',
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Enter your email to receive a password reset link.',
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+                const SizedBox(height: 32),
+                TextFormField(
+                  controller: _emailCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    errorText: _emailError,
                   ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _emailCtrl,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: const OutlineInputBorder(),
-                      errorText: _emailError,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFC107),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
-                    keyboardType: TextInputType.emailAddress,
+                    onPressed: _loading ? null : _validateAndSubmit,
+                    child: _loading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
+                          )
+                        : const Text('Send Reset Link'),
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _validateAndSubmit,
-                    child: const Text('Reset Password'),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

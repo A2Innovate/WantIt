@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math'; // for cos, pi, pow
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -21,12 +22,14 @@ class CreateRequestModal extends StatefulWidget {
 class _CreateRequestModalState extends State<CreateRequestModal> {
   final TextEditingController contentController = TextEditingController();
   final TextEditingController budgetController = TextEditingController();
+  final MapController mapController = MapController();
+  late final StreamSubscription<MapEvent> _mapSub;
 
   Map<String, String?> fieldErrors = {};
 
   LatLng pickedLocation = const LatLng(37.78, -122.419);
   double sliderValue = 3000;
-  final double mapZoom = 13.0;
+  double mapZoom = 13.0;
 
   bool isGlobal = false;
   Currency selectedCurrency = Currency.USD;
@@ -87,9 +90,23 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
   }
 
   @override
+  void initState() {
+    _mapSub = mapController.mapEventStream.listen((event) {
+      final newZoom = event.camera.zoom;
+      if (newZoom != mapZoom) {
+        setState(() {
+          mapZoom = newZoom;
+        });
+      }
+    });
+    super.initState();
+  }
+
+  @override
   void dispose() {
     contentController.dispose();
     budgetController.dispose();
+    _mapSub.cancel();
 
     super.dispose();
   }
@@ -154,6 +171,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                 SizedBox(
                   height: 200,
                   child: FlutterMap(
+                    mapController: mapController,
                     options: MapOptions(
                       initialCenter: pickedLocation,
                       initialZoom: mapZoom,

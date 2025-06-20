@@ -3,7 +3,6 @@ import 'package:mobile/utils/global.dart';
 
 final updateProfileSchema = object({
   'name': string()
-      .min(2)
       .min(2, message: 'Name must be at least 2 characters')
       .max(256, message: 'Name must be at most 256 characters long'),
   'username': string()
@@ -14,5 +13,4 @@ final updateProfileSchema = object({
       ),
   'email': string().email(message: 'Invalid email'),
   'preferredCurrency': string().enumerated(Currency.values),
-  // 'username': string(
 });

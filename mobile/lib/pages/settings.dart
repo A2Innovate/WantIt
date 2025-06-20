@@ -9,7 +9,6 @@ import 'package:mobile/api/client.dart';
 import 'package:mobile/widgets/password_field.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 
-
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -60,7 +59,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _emailCtrl.text = prefs.getString('email') ?? '';
     final savedCurrency = prefs.getString('preferredCurrency');
     _selectedCurrency = Currency.values.firstWhere(
-          (c) => c.symbol == savedCurrency,
+      (c) => c.symbol == savedCurrency,
       orElse: () => Currency.USD,
     );
     setState(() {});
@@ -99,7 +98,10 @@ class _SettingsPageState extends State<SettingsPage> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('name', formData['name']!);
         await prefs.setString('username', formData['username']!);
-        await prefs.setString('preferredCurrency', formData['preferredCurrency']!);
+        await prefs.setString(
+          'preferredCurrency',
+          formData['preferredCurrency']!,
+        );
 
         setState(() {
           _profileErrors = {};
@@ -107,9 +109,10 @@ class _SettingsPageState extends State<SettingsPage> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile updated!')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Profile updated!')));
+          Navigator.of(context).pop(true);
         }
 
         // If email changed, log out user
@@ -122,18 +125,22 @@ class _SettingsPageState extends State<SettingsPage> {
           await prefs.remove('currency');
           await prefs.remove('isAdmin');
           if (mounted) {
-            Navigator.of(context).pushNamedAndRemoveUntil('/sign-in', (route) => false);
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/sign-in', (route) => false);
           }
         }
       } else {
         setState(() {
-          _profileErrors['error'] = response.data['message'] ?? 'Profile update failed';
+          _profileErrors['error'] =
+              response.data['message'] ?? 'Profile update failed';
           _isSavingProfile = false;
         });
       }
     } on DioException catch (e) {
       setState(() {
-        _profileErrors['error'] = e.response?.data['message'] ?? 'Network error';
+        _profileErrors['error'] =
+            e.response?.data['message'] ?? 'Network error';
         _isSavingProfile = false;
       });
     }
@@ -173,7 +180,10 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     try {
-      final response = await useApi().post('/auth/change-password', data: formData);
+      final response = await useApi().post(
+        '/auth/change-password',
+        data: formData,
+      );
       if (response.statusCode == 200) {
         setState(() {
           _passwordErrors = {};
@@ -184,19 +194,21 @@ class _SettingsPageState extends State<SettingsPage> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password changed!')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Password changed!')));
         }
       } else {
         setState(() {
-          _passwordErrors['error'] = response.data['message'] ?? 'Password change failed';
+          _passwordErrors['error'] =
+              response.data['message'] ?? 'Password change failed';
           _isChangingPassword = false;
         });
       }
     } on DioException catch (e) {
       setState(() {
-        _passwordErrors['error'] = e.response?.data['message'] ?? 'Network error';
+        _passwordErrors['error'] =
+            e.response?.data['message'] ?? 'Network error';
         _isChangingPassword = false;
       });
     }
@@ -210,7 +222,12 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(title: const Text('Settings')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: bottomInset + 16),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: bottomInset + 16,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -236,7 +253,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _usernameCtrl,
-                      decoration: InputDecoration(errorText: _profileErrors['username']),
+                      decoration: InputDecoration(
+                        errorText: _profileErrors['username'],
+                      ),
                       keyboardType: TextInputType.name,
                     ),
                   ),
@@ -263,7 +282,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
 
-
               if (_profileErrors['error'] != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
@@ -279,10 +297,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: _isSavingProfile ? null : _onSaveProfile,
                 child: _isSavingProfile
                     ? const SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Save'),
               ),
 
@@ -299,7 +317,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 label: 'Old password',
                 errorText: _passwordErrors['oldPassword'],
                 obscureText: _obscurePassword,
-                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+                onToggleObscure: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
               const SizedBox(height: 12),
 
@@ -308,7 +327,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 label: 'New password',
                 errorText: _passwordErrors['newPassword'],
                 obscureText: _obscurePassword,
-                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+                onToggleObscure: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
               const SizedBox(height: 12),
 
@@ -317,7 +337,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 label: 'Repeat new password',
                 errorText: _passwordErrors['repeatPassword'],
                 obscureText: _obscurePassword,
-                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+                onToggleObscure: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
 
               if (_passwordErrors['error'] != null)
@@ -335,10 +356,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: _isChangingPassword ? null : _onChangePassword,
                 child: _isChangingPassword
                     ? const SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Change password'),
               ),
             ],

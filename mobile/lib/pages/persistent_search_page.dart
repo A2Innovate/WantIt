@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:mobile/api/client.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
 
+import '../widgets/create_request_modal.dart';
+
 class PersistentSearchPage extends StatefulWidget {
   const PersistentSearchPage({super.key});
 
@@ -133,9 +135,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('WantIt'),
-        actions: const [
-          UserMenuButton(), // Shows login/logout or profile avatar dropdown
-        ],
+        actions: const [UserMenuButton()],
       ),
       body: Column(
         children: [
@@ -217,6 +217,21 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
         ],
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            isScrollControlled: true,
+            builder: (context) => const CreateRequestModal(),
+          );
+        },
+        tooltip: 'Create Request',
+        child: const Icon(Icons.add),
       ),
     );
   }

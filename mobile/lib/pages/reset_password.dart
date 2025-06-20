@@ -67,10 +67,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           });
         }
       }
-
-      // _emailError = response.data['message'] ?? 'Login failed';
     } else {
-      // Show error from schema
       setState(() {
         _emailError = Map<String, String>.from(
           result.errors['email'] ?? {},

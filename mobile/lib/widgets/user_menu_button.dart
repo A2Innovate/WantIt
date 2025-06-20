@@ -104,10 +104,13 @@ class _UserMenuButtonState extends State<UserMenuButton> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Go to Settings')));
-          await Navigator.push(
+          final settings = await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SettingsPage()),
           );
+          if (settings == true) {
+            _loadUserData(); // Refresh username after return
+          }
         } else if (value == 2) {
           // Logout
           await _logout();

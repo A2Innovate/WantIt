@@ -43,6 +43,8 @@ dependencies:
   cookie_jar: ^4.0.8
   flutter_secure_storage: ^9.2.4
   app_links: ^6.4.0
+  flutter_map: ^8.1.1
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:

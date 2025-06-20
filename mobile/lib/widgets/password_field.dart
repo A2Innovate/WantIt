@@ -25,9 +25,7 @@ class PasswordField extends StatelessWidget {
         labelText: label,
         prefixIcon: const Icon(Icons.lock),
         suffixIcon: IconButton(
-          icon: Icon(
-            obscureText ? Icons.visibility : Icons.visibility_off,
-          ),
+          icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
           onPressed: onToggleObscure,
         ),
         errorText: errorText,

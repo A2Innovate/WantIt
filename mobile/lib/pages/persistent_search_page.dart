@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:mobile/api/client.dart';
+import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
 
+import '../utils/global.dart';
 import '../widgets/create_request_modal.dart';
 
 class PersistentSearchPage extends StatefulWidget {
@@ -17,10 +20,10 @@ class Request {
   final int id;
   final String content;
   final String user;
-  final int budget;
-  final String currency;
-  final String? location;
-  final int? radius;
+  final double budget;
+  final Currency currency;
+  final LatLng? location;
+  final double? radius;
   final String createdAt;
 
   Request({
@@ -29,24 +32,29 @@ class Request {
     required this.user,
     required this.budget,
     required this.currency,
-    required this.location,
+    this.location,
     required this.radius,
     required this.createdAt,
   });
 
   factory Request.fromJson(Map<String, dynamic> json) {
     try {
+      final location = new LatLng(
+        (json['location']['y'] as num).toDouble(),
+        (json['location']['x'] as num).toDouble(),
+      );
       return Request(
         id: json['id'],
         content: json['content'],
         user: json['user']['username'],
-        budget: json['budget'],
-        currency: json['currency'],
-        location: json['location']?.toString() ?? 'N/A',
-        radius: json['radius'] ?? 0,
+        budget: (json['budget'] as num).toDouble(),
+        currency: Currency.values.byName(json['currency']),
+        location: location,
+        radius: (json['radius'] as num?)?.toDouble(),
         createdAt: json['createdAt'],
       );
     } catch (e) {
+      print(e);
       throw Exception('Failed to parse request data');
     }
   }
@@ -62,6 +70,13 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   void initState() {
     super.initState();
     futureItems = fetchItems(query);
+  }
+
+  void _openRequestDetails(Request item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => RequestDetailPage(request: item)),
+    );
   }
 
   Future<List<Request>> fetchItems(String query) async {
@@ -118,18 +133,6 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
     });
   }
 
-  String _formatCurrency(int budget, String currency) {
-    try {
-      final format = NumberFormat.simpleCurrency(
-        locale: 'en_US',
-        name: currency,
-      );
-      return '${format.currencySymbol}$budget';
-    } catch (e) {
-      return '$currency $budget';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -171,35 +174,40 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                   itemCount: items.length,
                   itemBuilder: (_, index) {
                     final item = items[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.content,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatCurrency(item.budget, item.currency),
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  item.user,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ],
+                    return InkWell(
+                      onTap: () {
+                        // print(item.content);
+                        _openRequestDetails(item);
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.content,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(formatCurrency((item.budget as num).toDouble(), item.currency)),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    item.user,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -220,8 +228,8 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
+        onPressed: () async {
+          final result = await showModalBottomSheet(
             context: context,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -229,6 +237,11 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
             isScrollControlled: true,
             builder: (context) => const CreateRequestModal(),
           );
+          if (result == true) {
+            setState(() {
+              futureItems = fetchItems(query);
+            });
+          }
         },
         tooltip: 'Create Request',
         child: const Icon(Icons.add),

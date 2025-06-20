@@ -1,3 +1,7 @@
+import 'dart:math';
+
+import 'package:intl/intl.dart';
+
 enum Currency {
   USD,
   PLN,
@@ -101,4 +105,25 @@ extension CurrencyExtension on Currency {
   }
 
   String get symbol => toString().split('.').last;
+}
+
+String formatCurrency(double budget, Currency currency) {
+  try {
+    final format = NumberFormat.simpleCurrency(
+      locale: 'en_US',
+      name: currency.symbol,
+      decimalDigits: budget == budget.roundToDouble() ? 0 : 2,
+    );
+    return format.format(budget);
+  } catch (e) {
+    return '$currency $budget';
+  }
+}
+
+double metersToPixels(double meters, double latitude, double zoom) {
+  final earthCircumference = 40075017.0; // in meters
+  final latitudeRadians = latitude * (pi / 180);
+  final metersPerPixel =
+      earthCircumference * cos(latitudeRadians) / (256 * pow(2, zoom));
+  return meters / metersPerPixel;
 }

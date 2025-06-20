@@ -1,10 +1,14 @@
 import 'dart:math'; // for cos, pi, pow
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/api/currencies.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 
+import '../api/client.dart';
+import '../schemas/request.dart';
 import '../utils/global.dart';
 
 class CreateRequestModal extends StatefulWidget {
@@ -18,17 +22,75 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
   final TextEditingController contentController = TextEditingController();
   final TextEditingController budgetController = TextEditingController();
 
-  LatLng pickedLocation = LatLng(51.5074, -0.1278);
+  Map<String, String?> fieldErrors = {};
+
+  LatLng pickedLocation = const LatLng(37.78, -122.419);
   double sliderValue = 3000;
   final double mapZoom = 13.0;
 
-  bool isGlobal = true;
+  bool isGlobal = false;
   Currency selectedCurrency = Currency.USD;
+
+  Future<void> _createRequest() async {
+    setState(() {
+      fieldErrors = {};
+    });
+    final budget = int.tryParse(budgetController.text);
+    final formData = {
+      'content': contentController.text.trim(),
+      if (budget != null) 'budget': budget,
+      if (!isGlobal)
+        'location': {
+          'x': pickedLocation.longitude,
+          'y': pickedLocation.latitude,
+        },
+      if (!isGlobal) 'radius': sliderValue,
+      'currency': selectedCurrency.symbol.toString(),
+    };
+    final result = await createRequestSchema.tryParseAsync(formData);
+    if (!result.success) {
+      final errors = <String, String?>{};
+      for (final err in result.errors.entries) {
+        print(err.key);
+        errors[err.key] = Map<String, String>.from(err.value).values.first;
+      }
+      setState(() {
+        fieldErrors = errors;
+      });
+    } else {
+      try {
+        final response = await useApi().post(
+          '/request',
+          data: formData,
+          options: Options(
+            sendTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
+          ),
+        );
+        if (response.statusCode == 200) {
+          if (mounted) {
+            Navigator.of(context).pop(true);
+          }
+          print(response.data["id"]);
+        } else {
+          setState(() {
+            fieldErrors['error'] = response.data['message'];
+          });
+        }
+      } on DioException catch (e) {
+        setState(() {
+          print(e.response?.data);
+          fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
     contentController.dispose();
     budgetController.dispose();
+
     super.dispose();
   }
 
@@ -41,13 +103,6 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
   }
 
   /// Converts meters to pixels at the given latitude and zoom level.
-  double metersToPixels(double meters, double latitude, double zoom) {
-    final earthCircumference = 40075017.0; // in meters
-    final latitudeRadians = latitude * (pi / 180);
-    final metersPerPixel =
-        earthCircumference * cos(latitudeRadians) / (256 * pow(2, zoom));
-    return meters / metersPerPixel;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +145,11 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
               const SizedBox(height: 8),
 
+              if (fieldErrors.containsKey('errorLocation'))
+                Text(
+                  'errorLocation',
+                  style: const TextStyle(color: Colors.red),
+                ),
               if (!isGlobal)
                 SizedBox(
                   height: 200,
@@ -108,6 +168,12 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName: 'com.example.yourapp',
+                        errorTileCallback: (title, error, stackTrace) {
+                          setState(() {
+                            isGlobal = true;
+                            fieldErrors['errorLocation'] = 'Unable to load map';
+                          });
+                        },
                       ),
                       MarkerLayer(
                         markers: [
@@ -176,9 +242,10 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
               TextField(
                 controller: contentController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'What do you want?',
                   border: OutlineInputBorder(),
+                  errorText: fieldErrors['content'],
                 ),
               ),
 
@@ -186,9 +253,10 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
               TextField(
                 controller: budgetController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Budget',
                   border: OutlineInputBorder(),
+                  errorText: fieldErrors['budget'],
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -197,7 +265,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
               CurrencyDropdown(
                 selectedCurrency: selectedCurrency,
-                errorText: 'Please select a currency',
+                errorText: fieldErrors['currency'],
                 onChanged: (currency) {
                   setState(() {
                     selectedCurrency = currency!;
@@ -210,34 +278,15 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    final content = contentController.text;
-                    final budget = int.tryParse(budgetController.text) ?? 0;
-                    final location = pickedLocation;
-
-                    if (content.isEmpty || budget <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Please fill all fields and pick a location',
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-
-                    print('Content: $content');
-                    print('Budget: $budget');
-                    print(
-                      'Location: ${location.latitude}, ${location.longitude}',
-                    );
-                    print('Radius (meters): $sliderValue');
-
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Add'),
+                  onPressed: _createRequest,
+                  child: const Text('Create Request'),
                 ),
               ),
+              if (fieldErrors.containsKey('error'))
+                Text(
+                  fieldErrors['error']!,
+                  style: const TextStyle(color: Colors.red),
+                ),
             ],
           ),
         ),

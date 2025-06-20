@@ -1,8 +1,7 @@
 import 'package:acanthis/acanthis.dart';
 
 final signUpSchema = object({
-  'name': string()
-      .min(2, message: 'Name must be at least 2 characters'),
+  'name': string().min(2, message: 'Name must be at least 2 characters'),
   'username': string()
       .min(2, message: 'Username must be at least 2 characters')
       .pattern(

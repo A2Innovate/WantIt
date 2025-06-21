@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // <--- import Riverpod
 import 'package:mobile/pages/persistent_search_page.dart';
 
 void main() {

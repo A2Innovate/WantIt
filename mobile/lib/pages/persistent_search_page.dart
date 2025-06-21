@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/api/client.dart';
 import 'package:mobile/pages/request_detail_page.dart';
@@ -26,11 +25,11 @@ class Request {
   final int id;
   final String content;
   final UserAndId user;
-  final double budget;
+  final int budget;
   final Currency currency;
   final LatLng? location;
   final double? radius;
-  final String createdAt;
+  final String? createdAt;
 
   Request({
     required this.id,
@@ -40,12 +39,12 @@ class Request {
     required this.currency,
     this.location,
     required this.radius,
-    required this.createdAt,
+    this.createdAt,
   });
 
   factory Request.fromJson(Map<String, dynamic> json) {
     try {
-      final location = new LatLng(
+      final location = LatLng(
         (json['location']['y'] as num).toDouble(),
         (json['location']['x'] as num).toDouble(),
       );
@@ -53,14 +52,14 @@ class Request {
         id: json['id'],
         content: json['content'],
         user: UserAndId(json['user']['username'], json['user']['id']),
-        budget: (json['budget'] as num).toDouble(),
+        budget: (json['budget'] as num).toInt(),
         currency: Currency.values.byName(json['currency']),
         location: location,
         radius: (json['radius'] as num?)?.toDouble(),
         createdAt: json['createdAt'],
       );
-    } catch (e) {
-      print(e);
+    } on FormatException catch (e) {
+      print(e.toString());
       throw Exception('Failed to parse request data');
     }
   }
@@ -81,9 +80,18 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   Future<void> _openRequestDetails(Request item) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => RequestDetailPage(request: item)),
+      MaterialPageRoute(
+        builder: (_) => RequestDetailPage(
+          request: item,
+          onChanged: () {
+            setState(() {
+              futureItems = fetchItems(query);
+            });
+          },
+        ),
+      ),
     );
-    if (result) {
+    if (result != null && result) {
       setState(() {
         futureItems = fetchItems(query);
       });

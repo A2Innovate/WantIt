@@ -9,10 +9,12 @@ import '../api/currencies.dart';
 import '../utils/global.dart';
 import '../pages/persistent_search_page.dart';
 import '../widgets/converted_budget.dart';
+import '../widgets/edit_request_modal.dart';
 
 class RequestDetailPage extends StatefulWidget {
-  final Request request;
-  const RequestDetailPage({super.key, required this.request});
+  Request request;
+  final VoidCallback? onChanged;
+  RequestDetailPage({super.key, required this.request, this.onChanged});
 
   @override
   _RequestDetailPageState createState() => _RequestDetailPageState();
@@ -28,22 +30,67 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
   double _zoom = 13;
 
-  Future<void> _OnDelete() async {
-    try {
-      print('${widget.request.id}');
+  Future<void> _onDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text(
+            'Are you sure you want to delete this request? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirm != true) return;
 
+    try {
       final response = await useApi().delete('/request/${widget.request.id}');
       if (response.statusCode == 200) {
         if (mounted) {
+          widget.onChanged?.call();
           Navigator.of(context).pop(true);
         }
       } else {
         print(response.data);
       }
     } on DioException catch (e) {
-      {
-        print(e.message);
-      }
+      print(e.message);
+    }
+  }
+
+  Future<void> _reloadRequest() async {
+    final response = await useApi().get('/request/${widget.request.id}');
+    if (response.statusCode == 200) {
+      setState(() {
+        widget.request = Request.fromJson(response.data);
+        _conversionFuture = _loadCurrencyAndConvert();
+      });
+    }
+  }
+
+  Future<void> _onEdit() async {
+    final result = await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      isScrollControlled: true,
+      builder: (context) => EditRequestModal(request: widget.request),
+    );
+    if (result != null && result) {
+      await _reloadRequest();
+      widget.onChanged?.call();
     }
   }
 
@@ -152,7 +199,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                                   CircleMarker(
                                     key: ValueKey(widget.request.location),
                                     point: widget.request.location!,
-                                    color: Colors.blue.withOpacity(0.2),
+                                    color: Colors.blue.withValues(alpha: (0.2)),
                                     borderStrokeWidth: 2,
                                     borderColor: Colors.blue,
                                     radius: metersToPixels(
@@ -177,7 +224,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                       ),
                       const SizedBox(height: 8),
                       ConvertedBudgetText(
-                        budget: widget.request.budget,
+                        budget: (widget.request.budget as num).toDouble(),
                         baseCurrency: widget.request.currency,
                         future: _conversionFuture,
                       ),
@@ -187,7 +234,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                           if (_currentUsername ==
                               widget.request.user.username.toString()) ...[
                             ElevatedButton.icon(
-                              onPressed: () {},
+                              onPressed: _onEdit,
                               icon: const Icon(Icons.edit),
                               label: const Text('Edit'),
                               style: ElevatedButton.styleFrom(
@@ -197,7 +244,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton.icon(
-                              onPressed: _OnDelete,
+                              onPressed: _onDelete,
                               icon: const Icon(Icons.delete),
                               label: const Text('Delete'),
                               style: ElevatedButton.styleFrom(

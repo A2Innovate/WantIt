@@ -1,8 +1,5 @@
-// lib/api/client.dart
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-
-import 'currencies.dart';
 
 final CookieJar cookieJar = CookieJar();
 
@@ -10,7 +7,6 @@ final Dio apiClient = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8000/api'))
   ..interceptors.add(DomainRewriteInterceptor('10.0.2.2'));
 
 Dio useApi() {
-  // print(getRates());
   return apiClient;
 }
 // class DomainRewriteInterceptor extends Interceptor {

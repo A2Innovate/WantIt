@@ -13,7 +13,11 @@ class Rate {
 
   factory Rate.fromJson(Map<String, dynamic> json) {
     return Rate(
-      currency: Currency.values.firstWhere((c) => c.symbol == json['currency']),
+      currency: Currency.values.firstWhere(
+        (c) => c.symbol == json['currency'],
+        orElse: () =>
+            throw Exception('Unknown currency symbol: ${json['currency']}'),
+      ),
       rate: (json['rate'] as num).toDouble(),
     );
   }
@@ -35,15 +39,11 @@ Future<List<Rate>> getRates() async {
   return _cachedRates;
 }
 
-Future<double> convertCurrency(
-  Currency from,
-  Currency to,
-  double amount,
-) async {
+Future<double> convertCurrency(Currency from, Currency to, int amount) async {
   final rates = await getRates();
   double amountInEUR;
   if (from == Currency.EUR) {
-    amountInEUR = amount;
+    amountInEUR = amount.toDouble();
   } else {
     final fromRate = rates.firstWhere(
       (r) => r.currency == from,

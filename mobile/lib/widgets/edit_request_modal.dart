@@ -7,17 +7,19 @@ import 'package:mobile/widgets/currency_dropdown.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 
 import '../api/client.dart';
+import '../pages/persistent_search_page.dart';
 import '../schemas/request.dart';
 import '../utils/global.dart';
 
-class CreateRequestModal extends StatefulWidget {
-  const CreateRequestModal({super.key});
+class EditRequestModal extends StatefulWidget {
+  final Request request;
+  const EditRequestModal({super.key, required this.request});
 
   @override
-  State<CreateRequestModal> createState() => _CreateRequestModalState();
+  State<EditRequestModal> createState() => _EditRequestModalState();
 }
 
-class _CreateRequestModalState extends State<CreateRequestModal> {
+class _EditRequestModalState extends State<EditRequestModal> {
   final TextEditingController contentController = TextEditingController();
   final TextEditingController budgetController = TextEditingController();
   final MapController mapController = MapController();
@@ -32,7 +34,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
   bool isGlobal = false;
   Currency selectedCurrency = Currency.USD;
 
-  Future<void> _createRequest() async {
+  Future<void> _editRequest() async {
     setState(() {
       fieldErrors = {};
     });
@@ -48,11 +50,10 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
       if (!isGlobal) 'radius': sliderValue,
       'currency': selectedCurrency.symbol.toString(),
     };
-    final result = await createRequestSchema.tryParseAsync(formData);
+    final result = await editRequestSchema.tryParseAsync(formData);
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        print(err.key);
         errors[err.key] = Map<String, String>.from(err.value).values.first;
       }
       setState(() {
@@ -60,8 +61,8 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
       });
     } else {
       try {
-        final response = await useApi().post(
-          '/request',
+        final response = await useApi().put(
+          '/request/${widget.request.id}',
           data: formData,
           options: Options(
             sendTimeout: const Duration(seconds: 30),
@@ -89,6 +90,17 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
   @override
   void initState() {
+    isGlobal = widget.request.location == null;
+    if (isGlobal) {
+      pickedLocation = const LatLng(37.78, -122.419);
+      sliderValue = 3000;
+    } else {
+      pickedLocation = widget.request.location!;
+      sliderValue = widget.request.radius!;
+    }
+    contentController.text = widget.request.content;
+    budgetController.text = widget.request.budget.toString();
+    selectedCurrency = widget.request.currency;
     _mapSub = mapController.mapEventStream.listen((event) {
       final newZoom = event.camera.zoom;
       if (newZoom != mapZoom) {
@@ -135,7 +147,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
             children: [
               const Center(
                 child: Text(
-                  'New Request',
+                  'Edit Request',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -294,8 +306,8 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _createRequest,
-                  child: const Text('Create Request'),
+                  onPressed: _editRequest,
+                  child: const Text('Edit Request'),
                 ),
               ),
               if (fieldErrors.containsKey('error'))
@@ -303,7 +315,6 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                   fieldErrors['error']!,
                   style: const TextStyle(color: Colors.red),
                 ),
-
             ],
           ),
         ),

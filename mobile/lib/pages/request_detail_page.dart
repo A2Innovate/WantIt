@@ -6,15 +6,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/client.dart';
 import '../api/currencies.dart';
+import '../types/offer.dart';
+import '../types/request.dart';
 import '../utils/global.dart';
 import '../pages/persistent_search_page.dart';
 import '../widgets/converted_budget.dart';
 import '../widgets/edit_request_modal.dart';
+import '../widgets/new_offer_modal.dart';
+import '../widgets/offer_card.dart';
 
 class RequestDetailPage extends StatefulWidget {
-  Request request;
+  final int requestId;
   final VoidCallback? onChanged;
-  RequestDetailPage({super.key, required this.request, this.onChanged});
+
+  const RequestDetailPage({super.key, required this.requestId, this.onChanged});
 
   @override
   _RequestDetailPageState createState() => _RequestDetailPageState();
@@ -24,6 +29,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   late Future<(Currency, double)?> _conversionFuture;
   final MapController _mapController = MapController();
   late final StreamSubscription<MapEvent> _mapSub;
+  Request? _request;
   String? _currentUsername;
 
   String? _selectedSort = 'newest_first';
@@ -55,7 +61,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     if (confirm != true) return;
 
     try {
-      final response = await useApi().delete('/request/${widget.request.id}');
+      final response = await useApi().delete('/request/${widget.requestId}');
       if (response.statusCode == 200) {
         if (mounted) {
           widget.onChanged?.call();
@@ -69,12 +75,27 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     }
   }
 
+  Future<void> _loadRequest() async {
+    try {
+      final response = await useApi().get('/request/${widget.requestId}');
+      if (response.statusCode == 200) {
+        final request = Request.fromJson(response.data);
+        setState(() {
+          _request = request;
+          _conversionFuture = _loadCurrencyAndConvert(request);
+        });
+      }
+    } catch (e) {
+      print('Failed to load request: $e');
+    }
+  }
+
   Future<void> _reloadRequest() async {
-    final response = await useApi().get('/request/${widget.request.id}');
+    final response = await useApi().get('/request/${widget.requestId}');
     if (response.statusCode == 200) {
       setState(() {
-        widget.request = Request.fromJson(response.data);
-        _conversionFuture = _loadCurrencyAndConvert();
+        _request = Request.fromJson(response.data);
+        _conversionFuture = _loadCurrencyAndConvert(_request!);
       });
     }
   }
@@ -86,7 +107,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       isScrollControlled: true,
-      builder: (context) => EditRequestModal(request: widget.request),
+      builder: (context) => EditRequestModal(request: _request!),
     );
     if (result != null && result) {
       await _reloadRequest();
@@ -94,10 +115,30 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     }
   }
 
+  Future<void> _onCreate() async {
+    final result = await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      isScrollControlled: true,
+      builder: (context) => NewOfferModal(
+        request: _request!,
+        onChanged: () {
+          _loadRequest();
+        },
+      ),
+    );
+    if (result != null && result) {
+      await _reloadRequest();
+      // .call(true);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _conversionFuture = _loadCurrencyAndConvert();
+    _loadRequest();
     _loadCurrentUserId();
 
     _mapSub = _mapController.mapEventStream.listen((event) {
@@ -116,19 +157,44 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     super.dispose();
   }
 
-  Future<(Currency, double)?> _loadCurrencyAndConvert() async {
+  Future<(Currency, double)?> _loadCurrencyAndConvert(Request request) async {
     final prefs = await SharedPreferences.getInstance();
     final currencyStr = prefs.getString('preferredCurrency');
     if (currencyStr == null) return null;
 
     final currency = Currency.values.byName(currencyStr);
     final result = await convertCurrency(
-      widget.request.currency,
+      request.currency,
       currency,
-      widget.request.budget,
+      request.budget,
     );
 
     return (currency, result);
+  }
+
+  List<Offer> _getSortedOffers() {
+    if (_request?.offers == null) return [];
+
+    List<Offer> offers = List.from(_request!.offers!); // copy
+
+    switch (_selectedSort) {
+      case 'newest_first':
+        offers.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+        break;
+      case 'oldest_first':
+        offers.sort((a, b) => a.createdAt!.compareTo(b.createdAt!));
+        break;
+      case 'cheapest_first':
+        offers.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case 'expensive_first':
+        offers.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      default:
+        break;
+    }
+
+    return offers;
   }
 
   Future<void> _loadCurrentUserId() async {
@@ -140,6 +206,20 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_request == null) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final request = _request!;
+    final offers = _getSortedOffers();
+    final bool? isAccepted =
+        offers.any((o) => o.id == request.acceptedOffer?.offerId) ? true : null;
+
+    // bool? isAccepted =;
+    // if (isAccepted == null) {
+    //   isAccepted = request.acceptedOffer != null;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Request Detail'),
@@ -151,157 +231,186 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: 200,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: FlutterMap(
-                            mapController: _mapController,
-                            options: MapOptions(
-                              initialCenter: widget.request.location!,
-                              initialZoom: _zoom,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (request.location != null)
+                          SizedBox(
+                            height: 200,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: FlutterMap(
+                                mapController: _mapController,
+                                options: MapOptions(
+                                  initialCenter: request.location!,
+                                  initialZoom: _zoom,
+                                ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate:
+                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    userAgentPackageName: 'com.example.yourapp',
+                                  ),
+                                  MarkerLayer(
+                                    markers: [
+                                      Marker(
+                                        key: ValueKey(request.location),
+                                        point: request.location!,
+                                        width: 40,
+                                        height: 40,
+                                        child: const Icon(
+                                          Icons.location_pin,
+                                          color: Colors.red,
+                                          size: 40,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  CircleLayer(
+                                    circles: [
+                                      CircleMarker(
+                                        key: ValueKey(request.location),
+                                        point: request.location!,
+                                        color: Colors.blue.withOpacity(0.2),
+                                        borderStrokeWidth: 2,
+                                        borderColor: Colors.blue,
+                                        radius: metersToPixels(
+                                          request.radius!,
+                                          request.location!.latitude,
+                                          _zoom,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName: 'com.example.yourapp',
-                              ),
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    key: ValueKey(widget.request.location),
-                                    point: widget.request.location!,
-                                    width: 40,
-                                    height: 40,
-                                    child: const Icon(
-                                      Icons.location_pin,
-                                      color: Colors.red,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              CircleLayer(
-                                circles: [
-                                  CircleMarker(
-                                    key: ValueKey(widget.request.location),
-                                    point: widget.request.location!,
-                                    color: Colors.blue.withValues(alpha: (0.2)),
-                                    borderStrokeWidth: 2,
-                                    borderColor: Colors.blue,
-                                    radius: metersToPixels(
-                                      widget.request.radius!,
-                                      widget.request.location!.latitude,
-                                      _zoom,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          ),
+                        const SizedBox(height: 16),
+                        Text(
+                          request.content,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        widget.request.content,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(height: 8),
+                        ConvertedBudgetText(
+                          budget: (request.budget as num).toDouble(),
+                          baseCurrency: request.currency,
+                          future: _conversionFuture,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      ConvertedBudgetText(
-                        budget: (widget.request.budget as num).toDouble(),
-                        baseCurrency: widget.request.currency,
-                        future: _conversionFuture,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          if (_currentUsername ==
-                              widget.request.user.username.toString()) ...[
-                            ElevatedButton.icon(
-                              onPressed: _onEdit,
-                              icon: const Icon(Icons.edit),
-                              label: const Text('Edit'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey[200],
-                                foregroundColor: Colors.black,
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            if (_currentUsername ==
+                                request.user.username.toString()) ...[
+                              ElevatedButton.icon(
+                                onPressed: _onEdit,
+                                icon: const Icon(Icons.edit),
+                                label: const Text('Edit'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey[200],
+                                  foregroundColor: Colors.black,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: _onDelete,
-                              icon: const Icon(Icons.delete),
-                              label: const Text('Delete'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red[100],
-                                foregroundColor: Colors.red[800],
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: _onDelete,
+                                icon: const Icon(Icons.delete),
+                                label: const Text('Delete'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[100],
+                                  foregroundColor: Colors.red[800],
+                                ),
                               ),
-                            ),
+                            ],
+                            const Spacer(),
+                            const Icon(Icons.visibility),
+                            const SizedBox(width: 4),
+                            Text(request.user.username.toString()),
                           ],
-                          const Spacer(),
-                          const Icon(Icons.visibility),
-                          const SizedBox(width: 4),
-                          Text(widget.request.user.username.toString()),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  DropdownButton<String>(
-                    value: _selectedSort,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'newest_first',
-                        child: Text('Newest first'),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    DropdownButton<String>(
+                      value: _selectedSort,
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'newest_first',
+                          child: Text('Newest first'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'oldest_first',
+                          child: Text('Oldest first'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'cheapest_first',
+                          child: Text('Cheapest first'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'expensive_first',
+                          child: Text('Expensive first'),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedSort = val;
+                        });
+                      },
+                    ),
+                    const Spacer(),
+                    ElevatedButton.icon(
+                      onPressed: _onCreate,
+                      icon: const Icon(Icons.add),
+                      label: const Text('New offer'),
+                    ),
+                  ],
+                ),
+
+                if (request.offers!.isNotEmpty)
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          const Text('Offers'),
+                          const Divider(),
+                          ..._getSortedOffers().map(
+                            (offer) => OfferCard(
+                              offer: offer,
+                              request: request,
+                              onChanged: (value) {
+                                _reloadRequest();
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                      DropdownMenuItem(
-                        value: 'oldest_first',
-                        child: Text('Oldest first'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'cheapest_first',
-                        child: Text('Cheapest first'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'expensive_first',
-                        child: Text('Expensive first'),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      // val ??= 'newest_first';
-                      setState(() {
-                        _selectedSort = val;
-                      });
-                    },
+                    ),
                   ),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.add),
-                    label: const Text('New offer'),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

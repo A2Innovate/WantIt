@@ -5,6 +5,7 @@ import 'package:mobile/api/client.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
 
+import '../types/request.dart';
 import '../utils/global.dart';
 import '../widgets/create_request_modal.dart';
 
@@ -13,56 +14,6 @@ class PersistentSearchPage extends StatefulWidget {
 
   @override
   _PersistentSearchPageState createState() => _PersistentSearchPageState();
-}
-
-class UserAndId {
-  final String username;
-  final int id;
-  UserAndId(this.username, this.id);
-}
-
-class Request {
-  final int id;
-  final String content;
-  final UserAndId user;
-  final int budget;
-  final Currency currency;
-  final LatLng? location;
-  final double? radius;
-  final String? createdAt;
-
-  Request({
-    required this.id,
-    required this.content,
-    required this.user,
-    required this.budget,
-    required this.currency,
-    this.location,
-    required this.radius,
-    this.createdAt,
-  });
-
-  factory Request.fromJson(Map<String, dynamic> json) {
-    try {
-      final location = LatLng(
-        (json['location']['y'] as num).toDouble(),
-        (json['location']['x'] as num).toDouble(),
-      );
-      return Request(
-        id: json['id'],
-        content: json['content'],
-        user: UserAndId(json['user']['username'], json['user']['id']),
-        budget: (json['budget'] as num).toInt(),
-        currency: Currency.values.byName(json['currency']),
-        location: location,
-        radius: (json['radius'] as num?)?.toDouble(),
-        createdAt: json['createdAt'],
-      );
-    } on FormatException catch (e) {
-      print(e.toString());
-      throw Exception('Failed to parse request data');
-    }
-  }
 }
 
 class _PersistentSearchPageState extends State<PersistentSearchPage> {
@@ -82,7 +33,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
       context,
       MaterialPageRoute(
         builder: (_) => RequestDetailPage(
-          request: item,
+          requestId: item.id,
           onChanged: () {
             setState(() {
               futureItems = fetchItems(query);
@@ -109,9 +60,11 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
           receiveTimeout: const Duration(seconds: 30),
         ),
       );
+
       if (response.statusCode == 200) {
         if (response.data is List) {
           List<dynamic> data = response.data;
+          print(data);
           return data
               .map((item) => Request.fromJson(item as Map<String, dynamic>))
               .toList();

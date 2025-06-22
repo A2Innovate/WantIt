@@ -27,22 +27,29 @@ class ConvertedBudgetText extends StatelessWidget {
         }
 
         final (convertedCurrency, convertedAmount) = snapshot.data!;
-        return RichText(
-          text: TextSpan(
-            style: const TextStyle(fontSize: 16, color: Colors.black),
-            children: [
-              TextSpan(
-                text: baseText,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              TextSpan(
-                text:
-                    ' (≈ ${formatCurrency(convertedAmount, convertedCurrency)})',
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-        );
+        if (convertedCurrency != baseCurrency) {
+          return RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 16, color: Colors.black),
+              children: [
+                TextSpan(
+                  text: baseText,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text:
+                      ' (≈ ${formatCurrency(convertedAmount, convertedCurrency)})',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Text(
+            baseText,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          );
+        }
       },
     );
   }

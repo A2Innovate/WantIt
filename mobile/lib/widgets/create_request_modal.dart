@@ -48,7 +48,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
       if (!isGlobal) 'radius': sliderValue,
       'currency': selectedCurrency.symbol.toString(),
     };
-    final result = await createRequestSchema.tryParseAsync(formData);
+    final result = await createAndEditRequestSchema.tryParseAsync(formData);
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
@@ -303,7 +303,6 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                   fieldErrors['error']!,
                   style: const TextStyle(color: Colors.red),
                 ),
-
             ],
           ),
         ),

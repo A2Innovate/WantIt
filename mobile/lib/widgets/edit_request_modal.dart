@@ -9,6 +9,7 @@ import 'package:mobile/widgets/local_global_toggle.dart';
 import '../api/client.dart';
 import '../pages/persistent_search_page.dart';
 import '../schemas/request.dart';
+import '../types/request.dart';
 import '../utils/global.dart';
 
 class EditRequestModal extends StatefulWidget {
@@ -50,7 +51,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
       if (!isGlobal) 'radius': sliderValue,
       'currency': selectedCurrency.symbol.toString(),
     };
-    final result = await editRequestSchema.tryParseAsync(formData);
+    final result = await createAndEditRequestSchema.tryParseAsync(formData);
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
@@ -161,7 +162,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
 
               Center(
                 child: LocalGlobalToggle(
-                  initialValue: false,
+                  initialValue: isGlobal,
                   onChanged: (value) {
                     setState(() {
                       isGlobal = value;
@@ -174,7 +175,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
 
               if (fieldErrors.containsKey('errorLocation'))
                 Text(
-                  'errorLocation',
+                  fieldErrors['errorLocation']!,
                   style: const TextStyle(color: Colors.red),
                 ),
               if (!isGlobal)

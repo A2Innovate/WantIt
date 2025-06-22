@@ -112,7 +112,7 @@ String formatCurrency(double budget, Currency currency) {
     final format = NumberFormat.simpleCurrency(
       locale: 'en_US',
       name: currency.symbol,
-      decimalDigits: budget == budget.roundToDouble() ? 0 : 2,
+      decimalDigits: 2,
     );
     return format.format(budget);
   } catch (e) {

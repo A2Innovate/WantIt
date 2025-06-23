@@ -30,7 +30,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   final MapController _mapController = MapController();
   late final StreamSubscription<MapEvent> _mapSub;
   Request? _request;
-  String? _currentUsername;
+  int? _currentUserId;
 
   String? _selectedSort = 'newest_first';
 
@@ -200,7 +200,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   Future<void> _loadCurrentUserId() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _currentUsername = prefs.getString('username');
+      _currentUserId = prefs.getInt('userId');
     });
   }
 
@@ -314,8 +314,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            if (_currentUsername ==
-                                request.user.username.toString()) ...[
+                            if (_currentUserId == request.user.id) ...[
                               ElevatedButton.icon(
                                 onPressed: _onEdit,
                                 icon: const Icon(Icons.edit),

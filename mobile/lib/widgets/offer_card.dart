@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/offer.dart';
 import 'package:mobile/widgets/new_offer_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,7 +10,9 @@ import '../api/client.dart';
 import '../api/currencies.dart';
 import '../types/request.dart';
 import '../utils/global.dart';
+import 'comment_card.dart';
 import 'converted_budget.dart';
+import 'edit_offer_modal.dart';
 
 class OfferCard extends StatefulWidget {
   final Offer offer;
@@ -28,13 +31,18 @@ class OfferCard extends StatefulWidget {
 }
 
 class _OfferCardState extends State<OfferCard> {
+  int? _currentUserId;
   int _current = 0;
   late Future<(Currency, double)?> _conversionFuture;
+  Map<String, String?> fieldErrors = {};
+
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _conversionFuture = _loadCurrencyAndConvert(widget.request);
+    _loadCurrentUserId();
   }
 
   Future<(Currency, double)?> _loadCurrencyAndConvert(Request request) async {
@@ -50,6 +58,13 @@ class _OfferCardState extends State<OfferCard> {
     );
 
     return (currency, result);
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _currentUserId = prefs.getInt('userId');
+    });
   }
 
   Future<void> _onDelete() async {
@@ -96,18 +111,22 @@ class _OfferCardState extends State<OfferCard> {
   }
 
   Future<void> _onEdit() async {
-    // final result = await showModalBottomSheet(
-    //   context: context,
-    //   shape: const RoundedRectangleBorder(
-    //     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    //   ),
-    //   isScrollControlled: true,
-    //   builder: (context) => EditOfferModal(offer: widget.offer),
-    // );
-    // if (result != null && result) {
-    //   widget.onChanged?.call(true);
-    // }
+    final result = await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      isScrollControlled: true,
+      builder: (context) => EditOfferModal(
+        offer: widget.offer,
+        request: widget.request,
+        onChanged: () {
+          widget.onChanged?.call(true);
+        },
+      ),
+    );
   }
+
   Future<void> _onAcceptOrRevert() async {
     try {
       final response = await useApi().post(
@@ -133,6 +152,43 @@ class _OfferCardState extends State<OfferCard> {
     }
   }
 
+  Future<void> _onPost() async {
+    setState(() {
+      fieldErrors = {};
+    });
+    final formData = {
+      'content': _commentController.text.trim(),
+      'offerId': widget.offer.id,
+    };
+    final result = await addCommentSchema.tryParseAsync(formData);
+    if (!result.success) {
+      final errors = <String, String?>{};
+      for (final err in result.errors.entries) {
+        errors[err.key] = Map<String, String>.from(err.value).values.first;
+      }
+      setState(() {
+        fieldErrors = errors;
+      });
+    } else {
+      try {
+        final response = await useApi().post('/comment', data: formData);
+        if (response.statusCode == 200) {
+          if (mounted) {
+            widget.onChanged?.call(true);
+          }
+        }
+      } on DioException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.response?.data['message'] ?? 'Network error'),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final offer = widget.offer;
@@ -141,10 +197,9 @@ class _OfferCardState extends State<OfferCard> {
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      color: isAccepted ? Colors.green.shade100 : null,
+      // color: isAccepted ? Colors.green.shade100 : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-
         side: isAccepted
             ? const BorderSide(color: Colors.green, width: 2)
             : BorderSide.none,
@@ -255,33 +310,37 @@ class _OfferCardState extends State<OfferCard> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (widget.request.acceptedOffer?.offerId == offer.id)
+                if (widget.request.id == _currentUserId &&
+                    widget.request.acceptedOffer?.offerId == offer.id)
                   ElevatedButton.icon(
                     onPressed: _onAcceptOrRevert,
                     icon: const Icon(Icons.cancel),
                     label: const Text('Revert acceptance'),
                   )
-                else if (widget.request.acceptedOffer == null)
+                else if (widget.request.id == _currentUserId &&
+                    widget.request.acceptedOffer == null)
                   ElevatedButton.icon(
                     onPressed: _onAcceptOrRevert,
                     icon: const Icon(Icons.check),
                     label: const Text('Accept'),
                   ),
 
-                ElevatedButton.icon(
-                  onPressed: _onEdit,
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Edit'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _onDelete,
-                  icon: const Icon(Icons.delete),
-                  label: const Text('Delete'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[100],
-                    foregroundColor: Colors.red[800],
+                if (_currentUserId == widget.offer.user.id) ...[
+                  ElevatedButton.icon(
+                    onPressed: _onEdit,
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit'),
                   ),
-                ),
+                  ElevatedButton.icon(
+                    onPressed: _onDelete,
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Delete'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[100],
+                      foregroundColor: Colors.red[800],
+                    ),
+                  ),
+                ],
               ],
             ),
 
@@ -299,6 +358,7 @@ class _OfferCardState extends State<OfferCard> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _commentController,
                     decoration: InputDecoration(
                       hintText: 'Add comment...',
                       border: OutlineInputBorder(
@@ -308,6 +368,7 @@ class _OfferCardState extends State<OfferCard> {
                         horizontal: 12,
                         vertical: 10,
                       ),
+                      errorText: fieldErrors['content'],
                     ),
                   ),
                 ),
@@ -318,11 +379,20 @@ class _OfferCardState extends State<OfferCard> {
                     minHeight: 36,
                   ),
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _onPost,
                     child: const Text('Send'),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            ...offer.comments.map(
+              (comment) => CommentCard(
+                comment: comment,
+                onChanged: () {
+                  widget.onChanged?.call(true);
+                },
+              ),
             ),
           ],
         ),

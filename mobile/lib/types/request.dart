@@ -7,6 +7,9 @@ class UserAndId {
   final String username;
   final int id;
   UserAndId(this.username, this.id);
+  factory UserAndId.fromJson(Map<String, dynamic> json) {
+    return UserAndId(json['username'], json['id']);
+  }
 }
 
 // id: number;
@@ -60,7 +63,6 @@ class Request {
         createdAt: json['createdAt'],
       );
     } on FormatException catch (e) {
-      print(e.toString());
       throw Exception('Failed to parse request data');
     }
   }

@@ -130,8 +130,6 @@ class _EditRequestModalState extends State<EditRequestModal> {
     }
   }
 
-  /// Converts meters to pixels at the given latitude and zoom level.
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -292,16 +290,11 @@ class _EditRequestModalState extends State<EditRequestModal> {
 
               const SizedBox(height: 12),
 
-              CurrencyDropdown(
-                selectedCurrency: selectedCurrency,
-                errorText: fieldErrors['currency'],
-                onChanged: (currency) {
-                  setState(() {
-                    selectedCurrency = currency!;
-                  });
-                },
+              Text(
+                selectedCurrency.symbol,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-
+              
               const SizedBox(height: 16),
 
               SizedBox(

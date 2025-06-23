@@ -62,7 +62,7 @@ class Request {
         radius: (json['radius'] as num?)?.toDouble(),
         createdAt: json['createdAt'],
       );
-    } on FormatException catch (e) {
+    } on FormatException {
       throw Exception('Failed to parse request data');
     }
   }

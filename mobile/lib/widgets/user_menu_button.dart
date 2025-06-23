@@ -114,9 +114,11 @@ class _UserMenuButtonState extends State<UserMenuButton> {
         } else if (value == 2) {
           // Logout
           await _logout();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Logged out')));
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Logged out')));
+          }
         }
       },
       itemBuilder: (context) => const [

@@ -74,14 +74,19 @@ class _EditOfferModalState extends State<EditOfferModal> {
       });
     } else {
       if (_selectedImages != null && _selectedImages!.length > 10) {
-        fieldErrors["image"] = 'One offer can have up to 10 images.';
+        setState(() {
+          fieldErrors["image"] = 'One offer can have up to 10 images.';
+        });
         return;
       }
       if (_selectedImages != null) {
         for (final image in _selectedImages!) {
           if (image.lengthSync() > 1024 * 1024 * 5) {
-            fieldErrors["image"] =
-                'At least one of your images is too large, max size is 5MB.';
+            setState(() {
+              fieldErrors["image"] =
+              'At least one of your images is too large, max size is 5MB.';
+            });
+
             return;
           }
         }
@@ -108,7 +113,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
             }
 
             // Post the images
-            await api.post(
+            final imagesResponse = await api.post(
               '/request/${widget.request.id}/offer/${response.data['id']}/image',
               data: formData,
               options: Options(
@@ -116,6 +121,12 @@ class _EditOfferModalState extends State<EditOfferModal> {
                 receiveTimeout: const Duration(seconds: 30),
               ),
             );
+            if (imagesResponse.statusCode != 200) {
+              setState(() {
+                fieldErrors['error'] = imagesResponse.data['message'];
+              });
+              return;
+            }
           }
 
           if (_imagesToDelete.isNotEmpty) {
@@ -134,11 +145,14 @@ class _EditOfferModalState extends State<EditOfferModal> {
             Navigator.of(context).pop();
           }
         } else {
-          fieldErrors['error'] = response.data['message'];
+          setState(() {
+            fieldErrors['error'] = response.data['message'];
+          });
         }
       } on DioException catch (e) {
-        print(e.response?.data);
-        fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
+        setState(() {
+          fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
+        });
       }
     }
   }

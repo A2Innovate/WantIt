@@ -74,7 +74,6 @@ class _EditRequestModalState extends State<EditRequestModal> {
           if (mounted) {
             Navigator.of(context).pop(true);
           }
-          print(response.data["id"]);
         } else {
           setState(() {
             fieldErrors['error'] = response.data['message'];
@@ -82,7 +81,6 @@ class _EditRequestModalState extends State<EditRequestModal> {
         }
       } on DioException catch (e) {
         setState(() {
-          print(e.response?.data);
           fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
         });
       }
@@ -294,7 +292,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
                 selectedCurrency.symbol,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              
+
               const SizedBox(height: 16),
 
               SizedBox(

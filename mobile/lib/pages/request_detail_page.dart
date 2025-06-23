@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/client.dart';
@@ -68,10 +69,22 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
           Navigator.of(context).pop(true);
         }
       } else {
-        print(response.data);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.data['message'] ?? 'Network error'),
+          ),
+        );
+        }
       }
     } on DioException catch (e) {
-      print(e.message);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.response?.data['message'] ?? 'Network error'),
+          ),
+        );
+      }
     }
   }
 
@@ -179,10 +192,16 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
     switch (_selectedSort) {
       case 'newest_first':
-        offers.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+        offers.sort(
+          (a, b) => (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+              .compareTo(a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)),
+        );
         break;
       case 'oldest_first':
-        offers.sort((a, b) => a.createdAt!.compareTo(b.createdAt!));
+        offers.sort(
+          (a, b) => (a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+              .compareTo(b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)),
+        );
         break;
       case 'cheapest_first':
         offers.sort((a, b) => a.price.compareTo(b.price));
@@ -213,13 +232,6 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       );
     }
     final request = _request!;
-    final offers = _getSortedOffers();
-    final bool? isAccepted =
-        offers.any((o) => o.id == request.acceptedOffer?.offerId) ? true : null;
-
-    // bool? isAccepted =;
-    // if (isAccepted == null) {
-    //   isAccepted = request.acceptedOffer != null;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Request Detail'),
@@ -253,7 +265,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                               child: FlutterMap(
                                 mapController: _mapController,
                                 options: MapOptions(
-                                  initialCenter: request.location!,
+                                  initialCenter: request.location ?? LatLng(0, 0),
                                   initialZoom: _zoom,
                                 ),
                                 children: [
@@ -282,12 +294,12 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                                       CircleMarker(
                                         key: ValueKey(request.location),
                                         point: request.location!,
-                                        color: Colors.blue.withOpacity(0.2),
+                                        color: Colors.blue.withValues(alpha:0.2),
                                         borderStrokeWidth: 2,
                                         borderColor: Colors.blue,
                                         radius: metersToPixels(
-                                          request.radius!,
-                                          request.location!.latitude,
+                                          request.radius ?? 5000,
+                                          request.location?.latitude ?? 0,
                                           _zoom,
                                         ),
                                       ),

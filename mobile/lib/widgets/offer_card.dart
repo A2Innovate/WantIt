@@ -102,11 +102,15 @@ class _OfferCardState extends State<OfferCard> {
       }
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Error deleting offer')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.response?.data['message'] ?? 'Error deleting offer',
+            ),
+          ),
+        );
+        widget.onChanged?.call(false);
       }
-      widget.onChanged?.call(false);
     }
   }
 

@@ -24,21 +24,20 @@ class Offer {
   factory Offer.fromJson(Map<String, dynamic> json) {
     try {
       return Offer(
-        json['id'],
-        json['requestId'],
+        json['id'] as int,
+        json['requestId'] as int,
         UserAndId(json['user']['username'], json['user']['id']),
-        json['content'],
+        json['content'] as String,
         (json['price'] as num).toInt(),
-        json['negotiation'],
+        json['negotiation'] as bool,
         (json['images'] as List).map((img) => ImageData.fromJson(img)).toList(),
-        DateTime.parse(json['createdAt']),
+        json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
         (json['comments'] as List)
             .map((comment) => Comment.fromJson(comment))
             .toList(),
       );
-    } on FormatException catch (e) {
-      print(e);
-      rethrow;
+    } catch (e) {
+      throw FormatException('Failed to parse Offer: $e');
     }
   }
 
@@ -57,10 +56,13 @@ class Offer {
 
 class ImageData {
   final String name;
-
   ImageData({required this.name});
 
   factory ImageData.fromJson(Map<String, dynamic> json) {
-    return ImageData(name: json['name']);
+    try {
+      return ImageData(name: json['name'] as String);
+    } catch (e) {
+      throw FormatException('Failed to parse ImageData: $e');
+    }
   }
 }

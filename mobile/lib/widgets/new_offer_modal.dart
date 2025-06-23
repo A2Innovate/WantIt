@@ -58,14 +58,19 @@ class _NewOfferModalState extends State<NewOfferModal> {
       });
     } else {
       if (_selectedImages != null && _selectedImages!.length > 10) {
-        fieldErrors["image"] = 'One offer can have up to 10 images.';
+        setState(() {
+          fieldErrors["image"] = 'One offer can have up to 10 images.';
+        });
         return;
       }
       if (_selectedImages != null) {
         for (final image in _selectedImages!) {
           if (image.lengthSync() > 1024 * 1024 * 5) {
-            fieldErrors["image"] =
-                'At least one of your images is too large, max size is 5MB.';
+            setState(() {
+              fieldErrors["image"] =
+              'At least one of your images is too large, max size is 5MB.';
+            });
+
             return;
           }
         }
@@ -107,10 +112,14 @@ class _NewOfferModalState extends State<NewOfferModal> {
             Navigator.of(context).pop();
           }
         } else {
-          fieldErrors['error'] = response.data['message'];
+          setState(() {
+            fieldErrors['error'] = response.data['message'];
+          });
         }
       } on DioException catch (e) {
-        fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
+        setState(() {
+          fieldErrors['error'] = e.response?.data['message'];
+        });
       }
     }
   }

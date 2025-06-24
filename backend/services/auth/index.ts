@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, MiddlewareHandler } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { db } from "@/db/index.ts";
 import { and, desc, eq } from "drizzle-orm";
@@ -21,6 +21,7 @@ import {
 } from "@/schema/services/auth.ts";
 import oauth from "./oauth.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
+import { or } from "@/middleware/or.ts";
 import { COOKIE_DOMAIN, COOKIE_SECURE, FRONTEND_URL } from "@/utils/global.ts";
 import { pusher } from "@/utils/pusher.ts";
 import { z } from "zod";
@@ -108,6 +109,12 @@ app.delete(
   },
 );
 
+
+const socketObject = z.object({
+  socket_id: z.string(),
+  channel_name: z.string(),
+})
+
 app.post(
   "/pusher",
   authRequired,
@@ -115,16 +122,38 @@ app.post(
     windowMs: 60 * 1000, // 1 minute
     limit: 50,
   }),
-  zValidator(
-    "json",
-    z.object({
-      socket_id: z.string(),
-      channel_name: z.string(),
-    }),
+  or(
+    zValidator(
+      "json",
+      socketObject,
+    ),
+    zValidator(
+      "form",
+      socketObject,
+    ),
   ),
   (c) => {
     const session = c.get("session");
-    const { socket_id, channel_name } = c.req.valid("json");
+    // @ts-expect-error `or` does not support infer `json`
+    const jsonData = c.req.valid('json') as socketObject ;
+    let socket_id: string | null = null;
+    let channel_name: string | null = null;
+    if (jsonData) {
+      socket_id = jsonData.socket_id;
+      channel_name = jsonData.channel_name;
+    }
+    else {
+      // @ts-expect-error `or` does not support infer `form`
+      const formData = c.req.valid('form') as socketObject;
+      if (formData) {
+        socket_id = formData.socket_id;
+        channel_name = formData.channel_name;
+      }
+    }
+
+    if (!socket_id || !channel_name) {
+      return c.json({ message: "socket_id and channel_name are required" }, 400);
+    }
     const channel_parts = channel_name.split("-");
 
     const isValidChatChannel = channel_parts.length === 5 &&

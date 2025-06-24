@@ -77,31 +77,12 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
     } on DioException {
       throw Exception('Network error. Please check your connection.');
     }
-    // final dio = useApi();
-    // final response = await dio.get(
-    //   '/request',
-    //   queryParameters: {'content': query},
-    // );
-    //
-    // if (response.statusCode == 200) {
-    //   List<dynamic> data = response.data;
-    //   return data.map((item) => Request.fromJson(item)).toList();
-    // } else {
-    //   throw Exception('Failed to fetch items');
-    // }
   }
 
   void _search(String input) {
     setState(() {
       query = input;
       futureItems = fetchItems(query);
-    });
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      // You can add navigation or page switching logic here
     });
   }
 
@@ -217,14 +198,6 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
               },
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
         ],
       ),
 

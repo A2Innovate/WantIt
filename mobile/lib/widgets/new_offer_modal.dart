@@ -68,7 +68,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
           if (image.lengthSync() > 1024 * 1024 * 5) {
             setState(() {
               fieldErrors["image"] =
-              'At least one of your images is too large, max size is 5MB.';
+                  'At least one of your images is too large, max size is 5MB.';
             });
 
             return;

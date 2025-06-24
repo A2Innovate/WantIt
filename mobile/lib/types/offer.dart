@@ -12,9 +12,9 @@ class Offer {
   final int id;
   final int requestId;
   final UserAndId user;
-  final String content;
-  final int price;
-  final bool negotiation;
+  late String content;
+  late int price;
+  late bool negotiation;
   final List<ImageData> images;
   final List<Comment> comments;
 
@@ -26,12 +26,15 @@ class Offer {
       return Offer(
         json['id'] as int,
         json['requestId'] as int,
+
         UserAndId(json['user']['username'], json['user']['id']),
         json['content'] as String,
         (json['price'] as num).toInt(),
         json['negotiation'] as bool,
         (json['images'] as List).map((img) => ImageData.fromJson(img)).toList(),
-        json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
+        json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'] as String)
+            : null,
         (json['comments'] as List)
             .map((comment) => Comment.fromJson(comment))
             .toList(),
@@ -39,6 +42,19 @@ class Offer {
     } catch (e) {
       throw FormatException('Failed to parse Offer: $e');
     }
+  }
+
+  void applyPartialUpdate(Map<String, dynamic> json) {
+    if (json.containsKey('content')) {
+      content = json['content'] as String;
+    }
+    if (json.containsKey('price')) {
+      price = (json['price'] as num).toInt();
+    }
+    if (json.containsKey('negotiation')) {
+      negotiation = json['negotiation'] as bool;
+    }
+    // You can add more fields here if needed
   }
 
   Offer(
@@ -53,6 +69,7 @@ class Offer {
     this.comments,
   );
 }
+
 
 class ImageData {
   final String name;

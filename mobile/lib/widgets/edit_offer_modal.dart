@@ -26,7 +26,7 @@ class EditOfferModal extends StatefulWidget {
 }
 
 class _EditOfferModalState extends State<EditOfferModal> {
-  List<File>? _selectedImages = [];
+  List<File> _selectedImages = [];
   bool? isNegotiable = false;
   TextEditingController priceController = TextEditingController();
   TextEditingController contentController = TextEditingController();
@@ -49,8 +49,15 @@ class _EditOfferModalState extends State<EditOfferModal> {
   initState() {
     super.initState();
     priceController.text = widget.offer.price.toString();
-    contentController.text = widget.offer.content;
+    contentController.text = widget.offer.content!;
     isNegotiable = widget.offer.negotiation;
+  }
+
+  @override
+  void dispose() {
+    contentController.dispose();
+    priceController.dispose();
+    super.dispose();
   }
 
   Future<void> _editOffer() async {
@@ -73,22 +80,20 @@ class _EditOfferModalState extends State<EditOfferModal> {
         fieldErrors = errors;
       });
     } else {
-      if (_selectedImages != null && _selectedImages!.length > 10) {
+      if (_selectedImages.length > 10) {
         setState(() {
           fieldErrors["image"] = 'One offer can have up to 10 images.';
         });
         return;
       }
-      if (_selectedImages != null) {
-        for (final image in _selectedImages!) {
-          if (image.lengthSync() > 1024 * 1024 * 5) {
-            setState(() {
-              fieldErrors["image"] =
-              'At least one of your images is too large, max size is 5MB.';
-            });
+      for (final image in _selectedImages) {
+        if (image.lengthSync() > 1024 * 1024 * 5) {
+          setState(() {
+            fieldErrors["image"] =
+                'At least one of your images is too large, max size is 5MB.';
+          });
 
-            return;
-          }
+          return;
         }
       }
       try {
@@ -102,9 +107,9 @@ class _EditOfferModalState extends State<EditOfferModal> {
           ),
         );
         if (response.statusCode == 200) {
-          if (_selectedImages != null && _selectedImages!.isNotEmpty) {
+          if (_selectedImages.isNotEmpty) {
             final formData = FormData();
-            for (final image in _selectedImages!) {
+            for (final image in _selectedImages) {
               final file = await MultipartFile.fromFile(
                 image.path,
                 contentType: DioMediaType.parse(lookupMimeType(image.path)!),
@@ -112,7 +117,6 @@ class _EditOfferModalState extends State<EditOfferModal> {
               formData.files.add(MapEntry('images[]', file));
             }
 
-            // Post the images
             final imagesResponse = await api.post(
               '/request/${widget.request.id}/offer/${response.data['id']}/image',
               data: formData,

@@ -49,6 +49,9 @@ dependencies:
   image_picker: ^1.1.2
   mime: ^2.0.0
   timeago: ^3.7.1
+  pusher_client_socket: ^0.0.5
+  provider: ^6.1.5
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:

@@ -33,7 +33,7 @@ class Request {
   final Currency currency;
   final LatLng? location;
   final double? radius;
-  final List<Offer>? offers;
+  late List<Offer>? offers;
   final OfferUserId? acceptedOffer;
   final String? createdAt;
 

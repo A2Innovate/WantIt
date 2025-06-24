@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/offer.dart';
-import 'package:mobile/widgets/new_offer_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/client.dart';
@@ -45,6 +44,12 @@ class _OfferCardState extends State<OfferCard> {
     _loadCurrentUserId();
   }
 
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
   Future<(Currency, double)?> _loadCurrencyAndConvert(Request request) async {
     final prefs = await SharedPreferences.getInstance();
     final currencyStr = prefs.getString('preferredCurrency');
@@ -54,7 +59,7 @@ class _OfferCardState extends State<OfferCard> {
     final result = await convertCurrency(
       request.currency,
       currency,
-      widget.offer.price,
+      widget.offer.price!,
     );
 
     return (currency, result);
@@ -201,7 +206,6 @@ class _OfferCardState extends State<OfferCard> {
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      // color: isAccepted ? Colors.green.shade100 : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: isAccepted
@@ -213,23 +217,22 @@ class _OfferCardState extends State<OfferCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with username and badge
             Row(
               children: [
                 CircleAvatar(
                   radius: 16,
                   child: Text(
-                    offer.user.username[0].toUpperCase(),
+                    offer.user!.username[0].toUpperCase(),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '@${offer.user.username}',
+                  '@${offer.user!.username}',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
-                if (offer.negotiation)
+                if (offer.negotiation!)
                   Chip(
                     label: Text(
                       'NEGOTIABLE',
@@ -247,7 +250,6 @@ class _OfferCardState extends State<OfferCard> {
 
             const SizedBox(height: 12),
 
-            // Carousel with dot indicators
             if (offer.images.isNotEmpty)
               Column(
                 children: [
@@ -304,12 +306,10 @@ class _OfferCardState extends State<OfferCard> {
 
             const SizedBox(height: 12),
 
-            // Offer content
-            Text(offer.content, style: const TextStyle(fontSize: 16)),
+            Text(offer.content!, style: const TextStyle(fontSize: 16)),
 
             const SizedBox(height: 12),
 
-            // Action buttons
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -329,7 +329,7 @@ class _OfferCardState extends State<OfferCard> {
                     label: const Text('Accept'),
                   ),
 
-                if (_currentUserId == widget.offer.user.id) ...[
+                if (_currentUserId == widget.offer.user?.id) ...[
                   ElevatedButton.icon(
                     onPressed: _onEdit,
                     icon: const Icon(Icons.edit),

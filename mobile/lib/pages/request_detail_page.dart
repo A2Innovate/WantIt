@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/api/pusher.dart';
+import 'package:pusher_client_socket/channels/channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/client.dart';
@@ -32,6 +35,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   late final StreamSubscription<MapEvent> _mapSub;
   Request? _request;
   int? _currentUserId;
+  Channel? _pusherChannel;
 
   String? _selectedSort = 'newest_first';
 
@@ -71,10 +75,10 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response.data['message'] ?? 'Network error'),
-          ),
-        );
+            SnackBar(
+              content: Text(response.data['message'] ?? 'Network error'),
+            ),
+          );
         }
       }
     } on DioException catch (e) {
@@ -154,6 +158,30 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     _loadRequest();
     _loadCurrentUserId();
 
+    _pusherChannel = usePusher().subscribe('public-request-${widget.requestId}');
+    _pusherChannel?.bind('new-offer', (event) {
+      setState(() {
+        _request?.offers?.add(Offer.fromJson(event));
+      });
+    });
+    _pusherChannel?.bind('update-offer', (event) {
+      setState(() {
+        final int? id = event['id'] as int?;
+        final offer = _request?.offers?.firstWhereOrNull(
+              (offer) => offer.id == id);
+        if (offer != null) {
+          setState(() {
+            offer.applyPartialUpdate(event);
+          });
+        }
+      });
+    });
+    _pusherChannel?.bind('delete-offer', (event) {
+      setState(() {
+        final int? id = event as int?;
+        _request?.offers?.removeWhere((offer) => offer.id == id);
+      });
+    });
     _mapSub = _mapController.mapEventStream.listen((event) {
       final newZoom = event.camera.zoom;
       if (newZoom != _zoom) {
@@ -167,6 +195,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   @override
   void dispose() {
     _mapSub.cancel();
+    _pusherChannel?.unsubscribe();
     super.dispose();
   }
 
@@ -204,10 +233,10 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         );
         break;
       case 'cheapest_first':
-        offers.sort((a, b) => a.price.compareTo(b.price));
+        offers.sort((a, b) => a.price!.compareTo(b.price!));
         break;
       case 'expensive_first':
-        offers.sort((a, b) => b.price.compareTo(a.price));
+        offers.sort((a, b) => b.price!.compareTo(a.price!));
         break;
       default:
         break;
@@ -265,7 +294,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                               child: FlutterMap(
                                 mapController: _mapController,
                                 options: MapOptions(
-                                  initialCenter: request.location ?? LatLng(0, 0),
+                                  initialCenter:
+                                      request.location ?? LatLng(0, 0),
                                   initialZoom: _zoom,
                                 ),
                                 children: [
@@ -294,7 +324,9 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                                       CircleMarker(
                                         key: ValueKey(request.location),
                                         point: request.location!,
-                                        color: Colors.blue.withValues(alpha:0.2),
+                                        color: Colors.blue.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         borderStrokeWidth: 2,
                                         borderColor: Colors.blue,
                                         radius: metersToPixels(

@@ -13,10 +13,10 @@ class CommentCard extends StatefulWidget {
 
   const CommentCard({super.key, required this.comment, this.onChanged});
   @override
-  _CommentState createState() => _CommentState();
+  _CommentCardState createState() => _CommentCardState();
 }
 
-class _CommentState extends State<CommentCard> {
+class _CommentCardState extends State<CommentCard> {
   bool isEditing = false;
   int? _currentUserId;
   final editCommentController = TextEditingController();
@@ -110,6 +110,12 @@ class _CommentState extends State<CommentCard> {
     }
   }
 
+  @override
+  void dispose() {
+    editCommentController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadCurrentUserId() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -126,8 +132,6 @@ class _CommentState extends State<CommentCard> {
 
   @override
   Widget build(BuildContext context) {
-    final comment = widget.comment;
-
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       elevation: 2,
@@ -145,7 +149,7 @@ class _CommentState extends State<CommentCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '@${comment.user.username}',
+                  '@${widget.comment.user.username}',
                   style: TextStyle(
                     color: Colors.grey[800],
                     fontWeight: FontWeight.w500,
@@ -153,7 +157,7 @@ class _CommentState extends State<CommentCard> {
                   ),
                 ),
                 Text(
-                  timeago.format(comment.createdAt),
+                  timeago.format(widget.comment.createdAt),
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
@@ -171,7 +175,7 @@ class _CommentState extends State<CommentCard> {
               ),
             if (!isEditing)
               Text(
-                comment.content,
+                widget.comment.content,
                 style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
 
@@ -183,7 +187,7 @@ class _CommentState extends State<CommentCard> {
 
             const SizedBox(height: 16),
 
-            if (_currentUserId == comment.user.id)
+            if (_currentUserId == widget.comment.user.id)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

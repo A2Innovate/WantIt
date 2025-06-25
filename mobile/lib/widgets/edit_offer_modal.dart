@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
+import 'package:mobile/api_config.dart';
 
 import '../api/client.dart';
 import '../schemas/request.dart';
@@ -49,7 +50,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
   initState() {
     super.initState();
     priceController.text = widget.offer.price.toString();
-    contentController.text = widget.offer.content!;
+    contentController.text = widget.offer.content;
     isNegotiable = widget.offer.negotiation;
   }
 
@@ -225,7 +226,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
                                       child: ColorFiltered(
                                         colorFilter: isMarked
                                             ? ColorFilter.mode(
-                                                Colors.red.withOpacity(0.2),
+                                                Colors.red.withValues(alpha: 0.2),
                                                 BlendMode.srcATop,
                                               )
                                             : const ColorFilter.mode(
@@ -233,7 +234,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
                                                 BlendMode.multiply,
                                               ),
                                         child: Image.network(
-                                          'http://172.21.0.2:9000/mybucket/request/${widget.request.id}/offer/${widget.offer.id}/images/${file.name}',
+                                          'http://${ApiConfig.s3Endpoint}/${ApiConfig.s3Bucket}/request/${widget.request.id}/offer/${widget.offer.id}/images/${file.name}',
                                           width: 100,
                                           height: 100,
                                           fit: BoxFit.cover,
@@ -257,7 +258,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.6),
+                                        color: Colors.black.withValues(alpha: 0.2),
                                         shape: BoxShape.circle,
                                       ),
                                       padding: const EdgeInsets.all(4),
@@ -292,10 +293,10 @@ class _EditOfferModalState extends State<EditOfferModal> {
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: _selectedImages!.isNotEmpty
+                  child: _selectedImages.isNotEmpty
                       ? ListView(
                           scrollDirection: Axis.horizontal,
-                          children: _selectedImages!
+                          children: _selectedImages
                               .map(
                                 (file) => Padding(
                                   padding: const EdgeInsets.all(4.0),

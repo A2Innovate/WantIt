@@ -3,11 +3,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:mobile/widgets/currency_dropdown.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 
 import '../api/client.dart';
-import '../pages/persistent_search_page.dart';
 import '../schemas/request.dart';
 import '../types/request.dart';
 import '../utils/global.dart';

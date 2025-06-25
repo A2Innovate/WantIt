@@ -50,7 +50,7 @@ Future<bool> initPusher(int userId, MessagesProvider messagesProvider) async {
   pusherClient?.connect();
 
   final userChannel = pusherClient?.subscribe(
-    'private-user-${userId}',
+    'private-user-$userId',
   );
   userChannel?.bind('new-notification', (event) {
     try {

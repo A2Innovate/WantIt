@@ -52,7 +52,6 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        print(err.key);
         errors[err.key] = Map<String, String>.from(err.value).values.first;
       }
       setState(() {
@@ -72,7 +71,6 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
           if (mounted) {
             Navigator.of(context).pop(true);
           }
-          print(response.data["id"]);
         } else {
           setState(() {
             fieldErrors['error'] = response.data['message'];
@@ -80,7 +78,6 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
         }
       } on DioException catch (e) {
         setState(() {
-          print(e.response?.data);
           fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
         });
       }

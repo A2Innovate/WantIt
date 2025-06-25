@@ -14,29 +14,6 @@ Future<void> initCookieJar() async {
 Dio useApi() {
   return apiClient;
 }
-// class DomainRewriteInterceptor extends Interceptor {
-//   final String desiredDomain;
-//
-//   DomainRewriteInterceptor(this.desiredDomain);
-//
-//   List<String> cookies = [];
-//
-//   @override
-//   void onResponse(Response response, ResponseInterceptorHandler handler) {
-//     final headers = response.headers;
-//     final setCookieHeaders = headers.map['set-cookie'];
-//     if (setCookieHeaders != null) {
-//       cookies = setCookieHeaders;
-//     }
-//     handler.next(response);
-//   }
-//   @override
-//   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-//     options.headers["cookie"] =  cookies;
-//     handler.next(options);
-//
-//   }
-// }
 
 class DomainRewriteInterceptor extends Interceptor {
   final String desiredDomain;
@@ -54,7 +31,6 @@ class DomainRewriteInterceptor extends Interceptor {
         // Basic parse: extract name and value before ';'
         final cookieString = str.split(';').first;
         final nameValue = cookieString.split('=');
-        print(cookieString);
 
         return Cookie(
           nameValue[0].trim(),
@@ -83,7 +59,6 @@ class DomainRewriteInterceptor extends Interceptor {
           .join('; ');
       options.headers['cookie'] = cookieHeader;
     }
-    print(cookies);
     handler.next(options);
   }
 }

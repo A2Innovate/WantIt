@@ -52,6 +52,7 @@ dependencies:
   pusher_client_socket: ^0.0.5
   provider: ^6.1.5
   collection: ^1.19.1
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:

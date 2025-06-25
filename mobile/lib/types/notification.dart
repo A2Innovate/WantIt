@@ -20,10 +20,6 @@
 // createdAt: string;
 // }
 
-import 'package:mobile/types/request.dart';
-
-import 'offer.dart';
-
 enum NotificationType {
   NEW_OFFER,
   NEW_MESSAGE,

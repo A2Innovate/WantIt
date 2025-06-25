@@ -3,8 +3,6 @@ import 'package:mobile/pages/chat_details.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/message_provider.dart';
-import '../types/messages.dart';
-import '/api/messages.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'dart:async'; // For Timer
 
@@ -45,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
       });
     }
 
-    if (!refresh && sessionExists) {
+    if (!refresh && sessionExists && mounted) {
       await Provider.of<MessagesProvider>(context, listen: false)
           .fetchRefreshMessages();
     }

@@ -3,7 +3,6 @@ import 'package:mobile/api/client.dart';
 import 'package:mobile/pages/main_page.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/providers/message_provider.dart';
-import 'package:mobile/types/notification.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

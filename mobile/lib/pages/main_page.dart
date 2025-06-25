@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../api/messages.dart';
-import '../api/pusher.dart';
 import 'persistent_search_page.dart';
 import 'chat_page.dart'; // Your ChatPage
 
@@ -16,19 +13,10 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [PersistentSearchPage(), ChatPage()];
-  int? _currentUserId;
 
-
-  Future<void> _loadCurrentUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentUserId = prefs.getInt('userId');
-    });
-  }
   @override
   void initState() {
     super.initState();
-    _loadCurrentUserId();
   }
 
   void _onItemTapped(int index) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/types/messages.dart';
-import 'package:mobile/api/messages.dart' as messageApi;
+import 'package:mobile/api/messages.dart' as message;
 
 class MessagesProvider extends ChangeNotifier {
   List<LastMessage> messages = [];
@@ -13,7 +13,7 @@ class MessagesProvider extends ChangeNotifier {
     notifyListeners();
     try {
       isLoading = true;
-      messages = await messageApi.fetchLastMessages();
+      messages = await message.fetchLastMessages();
     } catch (e) {
       errorMessage = 'Failed to load messages: ${e.toString()}';
     } finally {

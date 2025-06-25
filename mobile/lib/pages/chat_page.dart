@@ -13,8 +13,6 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-// ... other imports
-
 class _ChatPageState extends State<ChatPage> {
   bool _loggedIn = false;
   bool _loading = true;
@@ -35,7 +33,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _checkLoginStatus({bool refresh = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    final sessionExists = prefs.containsKey('sessionId');
+    final sessionExists = prefs.containsKey('userId');
 
     if (refresh && mounted && sessionExists != _loggedIn) {
       setState(() {
@@ -44,8 +42,10 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     if (!refresh && sessionExists && mounted) {
-      await Provider.of<MessagesProvider>(context, listen: false)
-          .fetchRefreshMessages();
+      await Provider.of<MessagesProvider>(
+        context,
+        listen: false,
+      ).fetchRefreshMessages();
     }
 
     if (mounted) {
@@ -57,7 +57,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _startSessionMonitor() {
-    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       _checkLoginStatus(refresh: true);
     });
   }
@@ -68,9 +68,7 @@ class _ChatPageState extends State<ChatPage> {
     final lastMessages = provider.messages;
 
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (!_loggedIn) {
@@ -126,54 +124,54 @@ class _ChatPageState extends State<ChatPage> {
               child: lastMessages.isEmpty
                   ? const Center(child: Text('No messages yet.'))
                   : ListView.builder(
-                itemCount: lastMessages.length,
-                itemBuilder: (context, index) {
-                  final message = lastMessages[index];
-                  return GestureDetector(
-                    onTap: () {
-                      if (mounted) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ChatDetailsPage(user: message.person),
-                          ),
-                        );
-                      }
-                    },
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 10.0,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(
-                              child: Text(
-                                message.person.username[1].toUpperCase(),
+                      itemCount: lastMessages.length,
+                      itemBuilder: (context, index) {
+                        final message = lastMessages[index];
+                        return GestureDetector(
+                          onTap: () {
+                            if (mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ChatDetailsPage(user: message.person),
+                                ),
+                              );
+                            }
+                          },
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0,
+                                vertical: 10.0,
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('@${message.person.username}'),
-                                  Text(message.content),
+                                  CircleAvatar(
+                                    child: Text(
+                                      message.person.username[1].toUpperCase(),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('@${message.person.username}'),
+                                        Text(message.content),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(timeago.format(message.createdAt)),
                                 ],
                               ),
                             ),
-                            Text(timeago.format(message.createdAt)),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

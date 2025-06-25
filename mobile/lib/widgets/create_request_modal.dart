@@ -159,7 +159,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
               if (fieldErrors.containsKey('errorLocation'))
                 Text(
-                  'errorLocation',
+                  fieldErrors['errorLocation']!,
                   style: const TextStyle(color: Colors.red),
                 ),
               if (!isGlobal)
@@ -180,7 +180,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                       TileLayer(
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.yourapp',
+                        userAgentPackageName: 'com.wantit.mobile',
                         errorTileCallback: (title, error, stackTrace) {
                           setState(() {
                             isGlobal = true;

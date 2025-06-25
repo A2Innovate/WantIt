@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:mobile/api_config.dart';
 import 'package:path_provider/path_provider.dart';
 
-final Dio apiClient = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8000/api'));
+final Dio apiClient = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
 
 PersistCookieJar? cookieJar;
 
@@ -39,7 +40,9 @@ class DomainRewriteInterceptor extends Interceptor {
       }).toList();
 
       // Save cookies to cookieJar for future requests
-      await cookieJar!.saveFromResponse(uri, cookies);
+      if (cookieJar != null) {
+        await cookieJar!.saveFromResponse(uri, cookies);
+      }
     }
     handler.next(response);
   }

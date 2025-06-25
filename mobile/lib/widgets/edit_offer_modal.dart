@@ -226,7 +226,9 @@ class _EditOfferModalState extends State<EditOfferModal> {
                                       child: ColorFiltered(
                                         colorFilter: isMarked
                                             ? ColorFilter.mode(
-                                                Colors.red.withValues(alpha: 0.2),
+                                                Colors.red.withValues(
+                                                  alpha: 0.2,
+                                                ),
                                                 BlendMode.srcATop,
                                               )
                                             : const ColorFilter.mode(
@@ -258,7 +260,9 @@ class _EditOfferModalState extends State<EditOfferModal> {
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.2),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         shape: BoxShape.circle,
                                       ),
                                       padding: const EdgeInsets.all(4),

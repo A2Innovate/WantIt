@@ -26,7 +26,7 @@ class Offer {
         json['id'] as int,
         json['requestId'] as int,
 
-        UserAndId(json['user']['username'], json['user']['id']),
+        UserAndId.fromJson(json['user'] as Map<String, dynamic>),
         json['content'] as String,
         (json['price'] as num).toInt(),
         json['negotiation'] as bool,
@@ -81,7 +81,6 @@ class ImageData {
   }
   @override
   String toString() {
-    // TODO: implement toString
     return name;
   }
 }

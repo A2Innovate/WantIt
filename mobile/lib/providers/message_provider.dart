@@ -8,7 +8,6 @@ class MessagesProvider extends ChangeNotifier {
   String? errorMessage;
 
   Future<void> fetchRefreshMessages() async {
-    isLoading = true;
     errorMessage = null;
     notifyListeners();
     try {

@@ -26,7 +26,6 @@ final class Message {
       content = json['content'] as String;
       edited = true;
     }
-    edited = true;
   }
 }
 

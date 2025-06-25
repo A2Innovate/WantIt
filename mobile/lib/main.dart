@@ -15,7 +15,10 @@ void main() async {
   final sharedPrefs = await SharedPreferences.getInstance();
   final int? userId = sharedPrefs.getInt('userId');
   if (userId != null) {
-    await initPusher(userId, messagesProvider);
+    final pusherInitialized = await initPusher(userId, messagesProvider);
+    if (!pusherInitialized) {
+      print('Warning: Failed to initialize Pusher client');
+    }
   }
   useApi().interceptors.add(DomainRewriteInterceptor('10.0.2.2'));
   runApp(
@@ -45,9 +48,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const MainPage(),
       debugShowCheckedModeBanner: false,
-      routes: {
-        '/signin': (context) => const SignInPage(),
-      }
+      routes: {'/signin': (context) => const SignInPage()},
     );
   }
 }

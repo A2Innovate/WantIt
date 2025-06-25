@@ -64,11 +64,16 @@ class _SignInPageState extends State<SignInPage> {
         if (response.statusCode == 200) {
           await saveUserData(response.data);
           if (mounted) {
-            initPusher(response.data['id'], Provider.of<MessagesProvider>(context, listen: false));
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const MainPage()),
+            await initPusher(
+              response.data['id'],
+              Provider.of<MessagesProvider>(context, listen: false),
             );
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MainPage()),
+              );
+            }
           }
         } else {
           setState(() {

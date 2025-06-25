@@ -29,8 +29,8 @@ enum NotificationType {
 }
 
 class RelatedUser {
-  final int? id;
-  final String? name;
+  final int id;
+  final String name;
 
   RelatedUser({required this.id, required this.name});
 

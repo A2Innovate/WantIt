@@ -8,7 +8,6 @@ import '../types/notification.dart';
 PusherClient? pusherClient;
 Channel? userChannel;
 
-
 void disconnectPusher() {
   try {
     if (userChannel != null) {
@@ -21,6 +20,7 @@ void disconnectPusher() {
     print('Error disconnecting Pusher: $e');
   }
 }
+
 Future<bool> initPusher(int userId, MessagesProvider messagesProvider) async {
   // Load cookies for the auth URL
   final cookies = await cookieJar!.loadForRequest(
@@ -49,9 +49,7 @@ Future<bool> initPusher(int userId, MessagesProvider messagesProvider) async {
   pusherClient = PusherClient(options: pusherOptions);
   pusherClient?.connect();
 
-  final userChannel = pusherClient?.subscribe(
-    'private-user-$userId',
-  );
+  userChannel = pusherClient?.subscribe('private-user-$userId');
   userChannel?.bind('new-notification', (event) {
     try {
       NotificationData notification = NotificationData.fromJson(event);

@@ -22,19 +22,6 @@ class UserAndId {
   }
 }
 
-// id: number;
-// content: string;
-// user: Omit<User, 'email' | 'preferredCurrency' | 'sessionId' | 'isAdmin'>;
-// budget: number;
-// currency: string;
-// location: {
-// x: number;
-// y: number;
-// } | null;
-// radius: number | null;
-// offers: Offer[];
-// acceptedOffer: { offerId: number } | null;
-// createdAt: string;
 class Request {
   final int id;
   String content;
@@ -59,7 +46,7 @@ class Request {
       return Request(
         id: json['id'],
         content: json['content'],
-        user: UserAndId(json['user']['username'], json['user']['id']),
+        user: UserAndId.fromJson(json['user'] as Map<String, dynamic>),
         budget: (json['budget'] as num).toInt(),
         currency: Currency.values.byName(json['currency']),
         location: location,

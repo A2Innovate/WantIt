@@ -48,7 +48,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     } catch (e) {
       setState(() {
         isLoading = false;
-        errorMessage = 'Failed to load chat: $e';
+        errorMessage = 'Failed to load chat. Please try again';
       });
     }
   }
@@ -83,7 +83,13 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     final result = await sendChatMessageSchema.tryParseAsync(value);
     if (!result.success) {
       for (final err in result.errors.entries) {
-        errorFormMessage = Map<String, String>.from(err.value).values.first;
+        final errorValue = err.value;
+        if (errorValue is Map && errorValue.isNotEmpty) {
+          errorFormMessage =
+              errorValue.values.first?.toString() ?? 'Validation error';
+        } else {
+          errorFormMessage = 'Invalid ${err.key}';
+        }
       }
       return;
     }
@@ -126,6 +132,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   void dispose() {
     _messageController.dispose();
     _timer?.cancel();
+    _pusherChannel?.unsubscribe();
     super.dispose();
   }
 

@@ -23,7 +23,6 @@ class _LocalGlobalToggleState extends State<LocalGlobalToggle> {
 
   @override
   Widget build(BuildContext context) {
-    // return Placeholder();
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/api/client.dart';
+import 'package:mobile/api/pusher.dart';
 import 'package:mobile/pages/main_page.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/reset_password.dart';
 import 'package:mobile/schemas/auth.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../providers/message_provider.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -57,11 +61,10 @@ class _SignInPageState extends State<SignInPage> {
     if (result.success) {
       try {
         final response = await dio.post('/auth/login', data: formData);
-        final cookies = response.headers['set-cookie'];
-        print(cookies);
         if (response.statusCode == 200) {
           await saveUserData(response.data);
           if (mounted) {
+            initPusher(response.data['id'], Provider.of<MessagesProvider>(context, listen: false));
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const MainPage()),
@@ -74,7 +77,6 @@ class _SignInPageState extends State<SignInPage> {
         }
       } on DioException catch (e) {
         setState(() {
-          print(e);
           fieldErrors['login'] = e.response?.data['message'] ?? 'Network error';
         });
       }

@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:mobile/api/client.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../types/request.dart';
 import '../utils/global.dart';
@@ -20,7 +20,6 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   final TextEditingController _controller = TextEditingController();
   String query = '';
   Future<List<Request>>? futureItems;
-  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -64,7 +63,6 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
       if (response.statusCode == 200) {
         if (response.data is List) {
           List<dynamic> data = response.data;
-          print(data);
           return data
               .map((item) => Request.fromJson(item as Map<String, dynamic>))
               .toList();
@@ -150,7 +148,6 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                       final item = items[index];
                       return InkWell(
                         onTap: () {
-                          // print(item.content);
                           _openRequestDetails(item);
                         },
                         child: Card(
@@ -181,6 +178,17 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                                   children: [
                                     Text(
                                       item.user.username,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      timeago.format(item.createdAt!),
                                       style: Theme.of(
                                         context,
                                       ).textTheme.bodySmall,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/api/client.dart';
+import 'package:mobile/api/pusher.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';
@@ -41,12 +43,14 @@ class _UserMenuButtonState extends State<UserMenuButton> {
     await prefs.remove('username');
     await prefs.remove('name');
     await prefs.remove('email');
-    await prefs.remove('currency');
+    await prefs.remove('preferredCurrency');
+    cookieJar?.deleteAll();
     await prefs.remove('isAdmin');
     setState(() {
       _loggedIn = false;
       _username = '';
     });
+    disconnectPusher();
   }
 
   @override
@@ -94,7 +98,6 @@ class _UserMenuButtonState extends State<UserMenuButton> {
       ),
       onSelected: (value) async {
         if (value == 0) {
-          // TODO: Navigate to Profile page
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => ProfilePage()),

@@ -31,6 +31,7 @@ enum NotificationType {
   NEW_ALERT_MATCH,
   OFFER_ACCEPTED,
 }
+
 class RelatedUser {
   final int? id;
   final String? name;
@@ -38,31 +39,25 @@ class RelatedUser {
   RelatedUser({required this.id, required this.name});
 
   factory RelatedUser.fromJson(Map<String, dynamic> json) {
-    return RelatedUser(
-      id: json['id'],
-      name: json['name'],
-    );
+    return RelatedUser(id: json['id'], name: json['name']);
   }
 
   @override
   String toString() => 'RelatedUser(id: $id, name: $name)';
 }
-class RelatedOffer {
 
+class RelatedOffer {
   final String? content;
 
   RelatedOffer({required this.content});
 
   factory RelatedOffer.fromJson(Map<String, dynamic> json) {
-    return RelatedOffer(
-      content: json['content'],
-    );
+    return RelatedOffer(content: json['content']);
   }
 
   @override
   String toString() => 'RelatedOffer(content: $content)';
 }
-
 
 class NotificationData {
   final int id;
@@ -72,6 +67,7 @@ class NotificationData {
   final int? relatedRequestId;
   final RelatedUser? relatedUser;
   final RelatedOffer? relatedOffer;
+  // Change the field’s type
   final int? relatedRequest;
   final NotificationType type;
   final bool read;
@@ -99,12 +95,14 @@ class NotificationData {
         relatedUserId: json['relatedUserId'],
         relatedOfferId: json['relatedOfferId'],
         relatedRequestId: json['relatedRequestId'],
-        relatedUser: json['relatedUser'] != null ? RelatedUser.fromJson(json['relatedUser']) : null,
-        relatedOffer: json['relatedOffer'] != null ? RelatedOffer.fromJson(json['relatedOffer']) : null,
-
-        relatedRequest: json['relatedRequest'] != null
-            ? (json['relatedRequest'] as int)
+        relatedUser: json['relatedUser'] != null
+            ? RelatedUser.fromJson(json['relatedUser'])
             : null,
+        relatedOffer: json['relatedOffer'] != null
+            ? RelatedOffer.fromJson(json['relatedOffer'])
+            : null,
+
+        relatedRequest: null,
         type: NotificationType.values.byName(json['type']),
         read: json['read'],
         createdAt: DateTime.parse(json['createdAt']),

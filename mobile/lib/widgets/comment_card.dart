@@ -179,7 +179,7 @@ class _CommentCardState extends State<CommentCard> {
                 style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
 
-            if (widget.comment.edited)
+            if (widget.comment.edited != null && widget.comment.edited!)
               Text(
                 'Edited',
                 style: TextStyle(color: Colors.grey[600], fontSize: 12),

@@ -1,4 +1,4 @@
-import { Hono, MiddlewareHandler } from "hono";
+import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { db } from "@/db/index.ts";
 import { and, desc, eq } from "drizzle-orm";
@@ -109,11 +109,10 @@ app.delete(
   },
 );
 
-
 const socketObject = z.object({
   socket_id: z.string(),
   channel_name: z.string(),
-})
+});
 
 app.post(
   "/pusher",
@@ -123,37 +122,43 @@ app.post(
     limit: 50,
   }),
   or(
-    zValidator(
-      "json",
-      socketObject,
-    ),
-    zValidator(
-      "form",
-      socketObject,
-    ),
+    zValidator("json", socketObject),
+    zValidator("form", socketObject),
   ),
   (c) => {
     const session = c.get("session");
-    // @ts-expect-error `or` does not support infer `json`
-    const jsonData = c.req.valid('json') as socketObject ;
-    let socket_id: string | null = null;
-    let channel_name: string | null = null;
-    if (jsonData) {
-      socket_id = jsonData.socket_id;
-      channel_name = jsonData.channel_name;
-    }
-    else {
-      // @ts-expect-error `or` does not support infer `form`
-      const formData = c.req.valid('form') as socketObject;
-      if (formData) {
-        socket_id = formData.socket_id;
-        channel_name = formData.channel_name;
+
+    const getData = (): { socket_id: string; channel_name: string } | null => {
+      // @ts-expect-error `or` does not support infer `json`
+      const jsonData = c.req.valid("json") as {
+        socket_id: string;
+        channel_name: string;
+      } | undefined;
+      if (jsonData) {
+        return jsonData;
       }
+
+      // @ts-expect-error `or` does not support infer `form`
+      const formData = c.req.valid("form") as {
+        socket_id: string;
+        channel_name: string;
+      } | undefined;
+      if (formData) {
+        return formData;
+      }
+
+      return null;
+    };
+
+    const data = getData();
+    if (!data) {
+      return c.json(
+        { message: "socket_id and channel_name are required" },
+        400,
+      );
     }
 
-    if (!socket_id || !channel_name) {
-      return c.json({ message: "socket_id and channel_name are required" }, 400);
-    }
+    const { socket_id, channel_name } = data;
     const channel_parts = channel_name.split("-");
 
     const isValidChatChannel = channel_parts.length === 5 &&

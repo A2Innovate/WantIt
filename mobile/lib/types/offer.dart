@@ -12,13 +12,12 @@ class Offer {
   final int id;
   final int requestId;
   final UserAndId user;
-  late String content;
-  late int price;
-  late bool negotiation;
-  final List<ImageData> images;
+  String content;
+  int price;
+  bool negotiation;
+  List<ImageData> images;
   final List<Comment> comments;
 
-  // final List<Comment> comments;
   final DateTime? createdAt;
 
   factory Offer.fromJson(Map<String, dynamic> json) {
@@ -54,7 +53,6 @@ class Offer {
     if (json.containsKey('negotiation')) {
       negotiation = json['negotiation'] as bool;
     }
-    // You can add more fields here if needed
   }
 
   Offer(
@@ -70,7 +68,6 @@ class Offer {
   );
 }
 
-
 class ImageData {
   final String name;
   ImageData({required this.name});
@@ -81,5 +78,10 @@ class ImageData {
     } catch (e) {
       throw FormatException('Failed to parse ImageData: $e');
     }
+  }
+  @override
+  String toString() {
+    // TODO: implement toString
+    return name;
   }
 }

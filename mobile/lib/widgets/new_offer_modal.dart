@@ -19,7 +19,7 @@ class NewOfferModal extends StatefulWidget {
 }
 
 class _NewOfferModalState extends State<NewOfferModal> {
-  List<File>? _selectedImages = [];
+  List<File> _selectedImages = [];
   bool? isNegotiable = false;
   TextEditingController priceController = TextEditingController();
   TextEditingController contentController = TextEditingController();
@@ -57,22 +57,20 @@ class _NewOfferModalState extends State<NewOfferModal> {
         fieldErrors = errors;
       });
     } else {
-      if (_selectedImages != null && _selectedImages!.length > 10) {
+      if (_selectedImages.length > 10) {
         setState(() {
           fieldErrors["image"] = 'One offer can have up to 10 images.';
         });
         return;
       }
-      if (_selectedImages != null) {
-        for (final image in _selectedImages!) {
-          if (image.lengthSync() > 1024 * 1024 * 5) {
-            setState(() {
-              fieldErrors["image"] =
-                  'At least one of your images is too large, max size is 5MB.';
-            });
+      for (final image in _selectedImages) {
+        if (image.lengthSync() > 1024 * 1024 * 5) {
+          setState(() {
+            fieldErrors["image"] =
+                'At least one of your images is too large, max size is 5MB.';
+          });
 
-            return;
-          }
+          return;
         }
       }
       try {
@@ -86,10 +84,10 @@ class _NewOfferModalState extends State<NewOfferModal> {
           ),
         );
         if (response.statusCode == 200) {
-          if (_selectedImages != null && _selectedImages!.isNotEmpty) {
+          if (_selectedImages.isNotEmpty) {
             final formData = FormData();
 
-            for (final image in _selectedImages!) {
+            for (final image in _selectedImages) {
               final file = await MultipartFile.fromFile(
                 image.path,
                 contentType: DioMediaType.parse(lookupMimeType(image.path)!),
@@ -98,7 +96,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
             }
 
             // Post the images
-            await api.post(
+            final imageResponse = await api.post(
               '/request/${widget.request.id}/offer/${response.data['id']}/image',
               data: formData,
               options: Options(
@@ -106,6 +104,20 @@ class _NewOfferModalState extends State<NewOfferModal> {
                 receiveTimeout: const Duration(seconds: 30),
               ),
             );
+
+            if (imageResponse.statusCode != 200) {
+              // Show warning that offer was created but images failed to upload
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      imageResponse.data['message'] ?? 'Network error',
+                    ),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
+            }
           }
           widget.onChanged?.call();
           if (mounted) {
@@ -162,10 +174,10 @@ class _NewOfferModalState extends State<NewOfferModal> {
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: _selectedImages!.isNotEmpty
+                  child: _selectedImages.isNotEmpty
                       ? ListView(
                           scrollDirection: Axis.horizontal,
-                          children: _selectedImages!
+                          children: _selectedImages
                               .map(
                                 (file) => Padding(
                                   padding: const EdgeInsets.all(4.0),

@@ -10,10 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/client.dart';
 import '../api/currencies.dart';
+import '../types/comment.dart';
 import '../types/offer.dart';
 import '../types/request.dart';
 import '../utils/global.dart';
-import '../pages/persistent_search_page.dart';
 import '../widgets/converted_budget.dart';
 import '../widgets/edit_request_modal.dart';
 import '../widgets/new_offer_modal.dart';
@@ -103,7 +103,11 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         });
       }
     } catch (e) {
-      print('Failed to load request: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load request details')),
+        );
+      }
     }
   }
 
@@ -158,7 +162,9 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     _loadRequest();
     _loadCurrentUserId();
 
-    _pusherChannel = usePusher().subscribe('public-request-${widget.requestId}');
+    _pusherChannel = usePusher().subscribe(
+      'public-request-${widget.requestId}',
+    );
     _pusherChannel?.bind('new-offer', (event) {
       setState(() {
         _request?.offers?.add(Offer.fromJson(event));
@@ -168,7 +174,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       setState(() {
         final int? id = event['id'] as int?;
         final offer = _request?.offers?.firstWhereOrNull(
-              (offer) => offer.id == id);
+          (offer) => offer.id == id,
+        );
         if (offer != null) {
           setState(() {
             offer.applyPartialUpdate(event);
@@ -182,6 +189,93 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         _request?.offers?.removeWhere((offer) => offer.id == id);
       });
     });
+    _pusherChannel?.bind('update-offer-images', (event) {
+      final int? id = event['offerId'] as int?;
+      final offer = _request?.offers?.firstWhereOrNull(
+        (offer) => offer.id == id,
+      );
+      if (offer != null) {
+        setState(() {
+          offer.images.addAll(
+            event['images'].map<ImageData>((image) {
+              return ImageData(name: image);
+            }).toList(),
+          );
+        });
+      }
+    });
+    _pusherChannel?.bind('delete-offer-images', (event) {
+      final int? id = event['offerId'] as int?;
+      final offer = _request?.offers?.firstWhereOrNull(
+        (offer) => offer.id == id,
+      );
+      if (offer != null) {
+        final images = event['images'].map((image) => image as String).toList();
+        setState(() {
+          offer.images = offer.images
+              .where((image) => !images.contains(image.name))
+              .toList();
+        });
+      }
+    });
+    _pusherChannel?.bind('update-request', (event) {
+      setState(() {
+        _request?.applyPartialUpdate(event);
+      });
+    });
+    _pusherChannel?.bind('new-offer-comment', (event) {
+      Comment comment = Comment.fromJson(event);
+      final offer = _request?.offers?.firstWhereOrNull(
+        (offer) => offer.id == comment.offerId,
+      );
+      if (offer != null) {
+        setState(() {
+          offer.comments.add(comment);
+        });
+      }
+    });
+    _pusherChannel?.bind('update-offer-comment', (event) {
+      final int? id = event['offerId'] as int?;
+      final int? commentId = event['commentId'] as int?;
+
+      final offer = _request?.offers?.firstWhereOrNull(
+        (offer) => offer.id == id,
+      );
+      if (offer != null) {
+        final comment = offer.comments.firstWhereOrNull(
+          (comment) => comment.id == commentId,
+        );
+        if (comment != null) {
+          setState(() {
+            comment.applyPartialUpdate(event);
+          });
+        }
+      }
+    });
+    _pusherChannel?.bind('delete-offer-comment', (event) {
+      final int? id = event['offerId'] as int?;
+      final int? commentId = event['commentId'] as int?;
+
+      final offer = _request?.offers?.firstWhereOrNull(
+        (offer) => offer.id == id,
+      );
+      if (offer != null) {
+        final comment = offer.comments.firstWhereOrNull(
+          (comment) => comment.id == commentId,
+        );
+        if (comment != null) {
+          setState(() {
+            offer.comments.remove(comment);
+          });
+        }
+      }
+    });
+    _pusherChannel?.bind(
+      'delete-request',
+      (requestId) => {
+        if (mounted) {Navigator.of(context).pop(true)},
+      },
+    );
     _mapSub = _mapController.mapEventStream.listen((event) {
       final newZoom = event.camera.zoom;
       if (newZoom != _zoom) {
@@ -217,7 +311,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   List<Offer> _getSortedOffers() {
     if (_request?.offers == null) return [];
 
-    List<Offer> offers = List.from(_request!.offers!); // copy
+    List<Offer> offers = List.from(_request!.offers!);
 
     switch (_selectedSort) {
       case 'newest_first':
@@ -233,10 +327,10 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         );
         break;
       case 'cheapest_first':
-        offers.sort((a, b) => a.price!.compareTo(b.price!));
+        offers.sort((a, b) => a.price.compareTo(b.price));
         break;
       case 'expensive_first':
-        offers.sort((a, b) => b.price!.compareTo(a.price!));
+        offers.sort((a, b) => b.price.compareTo(a.price));
         break;
       default:
         break;

@@ -8,7 +8,17 @@ class UserAndId {
   final int id;
   UserAndId(this.username, this.id);
   factory UserAndId.fromJson(Map<String, dynamic> json) {
-    return UserAndId(json['username'], json['id']);
+    final username = json['username'];
+    final id = json['id'];
+    if (username == null || id == null) {
+      throw FormatException('Missing required fields: username or id');
+    }
+    if (username is! String || id is! int) {
+      throw FormatException(
+        'Invalid field types: username must be String, id must be int',
+      );
+    }
+    return UserAndId(username, id);
   }
 }
 
@@ -27,15 +37,15 @@ class UserAndId {
 // createdAt: string;
 class Request {
   final int id;
-  final String content;
+  String content;
   final UserAndId user;
-  final int budget;
-  final Currency currency;
-  final LatLng? location;
-  final double? radius;
-  late List<Offer>? offers;
+  int budget;
+  Currency currency;
+  LatLng? location;
+  double? radius;
+  final List<Offer>? offers;
   final OfferUserId? acceptedOffer;
-  final String? createdAt;
+  final DateTime? createdAt;
 
   factory Request.fromJson(Map<String, dynamic> json) {
     try {
@@ -60,10 +70,33 @@ class Request {
             ? null
             : OfferUserId(offerId: json['acceptedOffer']['offerId'] as int),
         radius: (json['radius'] as num?)?.toDouble(),
-        createdAt: json['createdAt'],
+        createdAt: json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'] as String)
+            : null,
       );
     } on FormatException {
       throw Exception('Failed to parse request data');
+    }
+  }
+
+  void applyPartialUpdate(Map<String, dynamic> json) {
+    if (json.containsKey('content')) {
+      content = json['content'] as String;
+    }
+    if (json.containsKey('budget')) {
+      budget = (json['budget'] as num).toInt();
+    }
+    if (json.containsKey('currency')) {
+      currency = Currency.values.byName(json['currency']);
+    }
+    if (json.containsKey('location')) {
+      location = LatLng(
+        (json['location']['y'] as num).toDouble(),
+        (json['location']['x'] as num).toDouble(),
+      );
+    }
+    if (json.containsKey('radius')) {
+      radius = (json['radius'] as num).toDouble();
     }
   }
 

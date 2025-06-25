@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:mobile/api/client.dart';
-import 'package:mobile/api/messages.dart';
 import 'package:mobile/pages/main_page.dart';
+import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/providers/message_provider.dart';
 import 'package:mobile/types/notification.dart';
 import 'package:provider/provider.dart';
@@ -14,35 +12,17 @@ import 'api/pusher.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initCookieJar();
-  await initPusher();
-  final pusher = usePusher();
-
+  final messagesProvider = MessagesProvider();
   final sharedPrefs = await SharedPreferences.getInstance();
-  final messagesProvider = MessagesProvider(); // <-- Add this
-
-  final userChannel = pusher.subscribe(
-    'private-user-${sharedPrefs.getInt('userId')}',
-  );
-  userChannel.bind('new-notification', (event) {
-    try {
-      NotificationData notification = NotificationData.fromJson(event);
-      if (notification.type == NotificationType.NEW_MESSAGE) {
-        messagesProvider.loadMessages();
-      }
-    } on Exception catch (e) {
-      print(e.toString());
-    }
-
-  });
-
+  final int? userId = sharedPrefs.getInt('userId');
+  if (userId != null) {
+    await initPusher(userId, messagesProvider);
+  }
   useApi().interceptors.add(DomainRewriteInterceptor('10.0.2.2'));
   runApp(
-
-    ChangeNotifierProvider.value(
-      value: messagesProvider,
-      child: const MyApp(),
-    ),
-  );}
+    ChangeNotifierProvider.value(value: messagesProvider, child: const MyApp()),
+  );
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -66,6 +46,9 @@ class MyApp extends StatelessWidget {
       ),
       home: const MainPage(),
       debugShowCheckedModeBanner: false,
+      routes: {
+        '/signin': (context) => const SignInPage(),
+      }
     );
   }
 }

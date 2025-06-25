@@ -12,6 +12,7 @@ import '../utils/global.dart';
 import 'comment_card.dart';
 import 'converted_budget.dart';
 import 'edit_offer_modal.dart';
+import '../api_config.dart';
 
 class OfferCard extends StatefulWidget {
   final Offer offer;
@@ -59,7 +60,7 @@ class _OfferCardState extends State<OfferCard> {
     final result = await convertCurrency(
       request.currency,
       currency,
-      widget.offer.price!,
+      widget.offer.price,
     );
 
     return (currency, result);
@@ -120,7 +121,7 @@ class _OfferCardState extends State<OfferCard> {
   }
 
   Future<void> _onEdit() async {
-    final result = await showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -222,17 +223,17 @@ class _OfferCardState extends State<OfferCard> {
                 CircleAvatar(
                   radius: 16,
                   child: Text(
-                    offer.user!.username[0].toUpperCase(),
+                    offer.user.username[0].toUpperCase(),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '@${offer.user!.username}',
+                  '@${offer.user.username}',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
-                if (offer.negotiation!)
+                if (offer.negotiation)
                   Chip(
                     label: Text(
                       'NEGOTIABLE',
@@ -267,7 +268,7 @@ class _OfferCardState extends State<OfferCard> {
                     ),
                     items: offer.images.map((image) {
                       final imageUrl =
-                          'http://172.21.0.2:9000/mybucket/request/${offer.requestId}/offer/${offer.id}/images/${image.name}';
+                          '${ApiConfig.s3Endpoint}/${ApiConfig.s3Bucket}/request/${offer.requestId}/offer/${offer.id}/images/${image.name}';
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.network(
@@ -306,7 +307,7 @@ class _OfferCardState extends State<OfferCard> {
 
             const SizedBox(height: 12),
 
-            Text(offer.content!, style: const TextStyle(fontSize: 16)),
+            Text(offer.content, style: const TextStyle(fontSize: 16)),
 
             const SizedBox(height: 12),
 
@@ -329,7 +330,7 @@ class _OfferCardState extends State<OfferCard> {
                     label: const Text('Accept'),
                   ),
 
-                if (_currentUserId == widget.offer.user?.id) ...[
+                if (_currentUserId == widget.offer.user.id) ...[
                   ElevatedButton.icon(
                     onPressed: _onEdit,
                     icon: const Icon(Icons.edit),

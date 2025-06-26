@@ -269,7 +269,7 @@ function canAccept(offerId: number) {
   return true;
 }
 
-function openInMobileApp(){
+function openInMobileApp() {
   window.location.href = `wantit://request/${route.params.requestId}`;
 }
 

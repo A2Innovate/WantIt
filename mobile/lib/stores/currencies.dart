@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:mobile/api/client.dart';
+import 'package:mobile/stores/client.dart';
 import 'package:mobile/utils/global.dart';
 
 List<Rate> _cachedRates = [];

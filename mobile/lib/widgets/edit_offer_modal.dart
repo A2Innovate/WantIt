@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:mobile/api_config.dart';
 
-import '../api/client.dart';
+import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../types/offer.dart';
 import '../types/request.dart';

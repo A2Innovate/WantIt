@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/api/client.dart';
-import 'package:mobile/api/pusher.dart';
+import 'package:mobile/stores/client.dart';
+import 'package:mobile/stores/pusher.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';

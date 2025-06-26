@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="mobile"
         android:name="${applicationName}"
@@ -21,6 +22,14 @@
               android:resource="@style/NormalTheme"
               />
             <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="wantit" />
+            </intent-filter>
+
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
@@ -42,4 +51,5 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+
 </manifest>

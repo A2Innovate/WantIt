@@ -5,7 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 
-import '../api/client.dart';
+import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../types/request.dart';
 import '../utils/global.dart';

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/schemas/user.dart';
 import 'package:mobile/schemas/auth.dart';
 import 'package:mobile/utils/global.dart';
-import 'package:mobile/api/client.dart';
+import 'package:mobile/stores/client.dart';
 
 import 'package:mobile/widgets/password_field.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';

@@ -3,7 +3,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:mobile/api_config.dart';
 import 'package:path_provider/path_provider.dart';
 
-final Dio apiClient = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
+final Dio apiClient = Dio(BaseOptions(baseUrl: "${ApiConfig.baseUrl}/api"));
 
 PersistCookieJar? cookieJar;
 

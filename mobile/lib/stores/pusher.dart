@@ -1,6 +1,6 @@
 import 'package:mobile/providers/message_provider.dart';
 import 'package:pusher_client_socket/pusher_client_socket.dart';
-import 'package:mobile/api/client.dart'; // for cookieJar
+import 'package:mobile/stores/client.dart'; // for cookieJar
 import 'package:mobile/api_config.dart';
 
 import '../types/notification.dart';

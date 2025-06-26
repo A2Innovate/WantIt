@@ -5,8 +5,8 @@ import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/offer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../api/client.dart';
-import '../api/currencies.dart';
+import '../stores/client.dart';
+import '../stores/currencies.dart';
 import '../types/request.dart';
 import '../utils/global.dart';
 import 'comment_card.dart';

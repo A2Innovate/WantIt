@@ -2,14 +2,15 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/api/client.dart';
-import 'package:mobile/api/messages.dart';
-import 'package:mobile/api/pusher.dart';
+import 'package:mobile/stores/client.dart';
+import 'package:mobile/stores/pusher.dart';
 import 'package:mobile/types/chat.dart';
+import 'package:provider/provider.dart';
 import 'package:pusher_client_socket/channels/channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../providers/message_provider.dart';
 import '../schemas/chat.dart';
 import '../types/messages.dart';
 
@@ -99,18 +100,19 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         '/chat/${widget.user.id}',
         data: value,
       );
+
       _messageController.clear();
       await getChatResponse();
       final message = Message.fromJson(response.data);
-      setState(() {
-        upsertLastMessage(
+      if (mounted) {
+        Provider.of<MessagesProvider>(context, listen: false).upsertLastMessage(
           widget.user.id,
           _currentName!,
           _currentUsername!,
           message.createdAt,
           message.content,
         );
-      });
+      }
     } catch (e) {
       setState(() {
         errorMessage = 'Failed to send message: $e';
@@ -153,7 +155,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       setState(() {
         chat?.messages.add(message);
         scrollToBottom();
-        upsertLastMessage(
+        Provider.of<MessagesProvider>(context, listen: false)!.upsertLastMessage(
           widget.user.id,
           _currentName ?? '',
           _currentUsername ?? '',

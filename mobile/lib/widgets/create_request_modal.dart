@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 
-import '../api/client.dart';
+import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../utils/global.dart';
 

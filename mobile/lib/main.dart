@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/api/client.dart';
+import 'package:mobile/pages/request_detail_page.dart';
+import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/main_page.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/providers/message_provider.dart';
+import 'package:mobile/widgets/deep_link_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'api/pusher.dart';
+import 'stores/pusher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   await initCookieJar();
   final messagesProvider = MessagesProvider();
+  final notificationProvider = NotificationProvider();
   final sharedPrefs = await SharedPreferences.getInstance();
   final int? userId = sharedPrefs.getInt('userId');
   if (userId != null) {
@@ -21,9 +25,14 @@ void main() async {
     }
   }
   useApi().interceptors.add(DomainRewriteInterceptor('10.0.2.2'));
+
   runApp(
-    ChangeNotifierProvider.value(value: messagesProvider, child: const MyApp()),
-  );
+    MultiProvider(providers: [
+      ChangeNotifierProvider<MessagesProvider>.value(value: messagesProvider),
+      ChangeNotifierProvider<NotificationProvider>.value(value: notificationProvider),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -46,9 +55,25 @@ class MyApp extends StatelessWidget {
         colorSchemeSeed: Colors.amberAccent,
         scaffoldBackgroundColor: const Color(0xFF121212),
       ),
-      home: const MainPage(),
+      home: const DeepLinkHandler(),
       debugShowCheckedModeBanner: false,
-      routes: {'/signin': (context) => const SignInPage()},
+      routes: {
+        '/signin': (context) => const SignInPage(),
+        '/main': (context) => const MainPage(),
+      },
+      onGenerateRoute: (settings) {
+        final uri = Uri.parse(settings.name ?? '');
+        if (uri.pathSegments.length == 2 && uri.pathSegments[0] == 'request') {
+          final requestId = uri.pathSegments[1];
+
+          return MaterialPageRoute(
+            builder: (_) => RequestDetailPage(requestId: int.parse(requestId)),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => const MainPage(),
+        );
+      },
     );
   }
 }

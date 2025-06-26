@@ -5,7 +5,7 @@ import 'package:mobile/types/comment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../api/client.dart';
+import '../stores/client.dart';
 
 class CommentCard extends StatefulWidget {
   final Comment comment;

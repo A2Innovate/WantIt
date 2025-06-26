@@ -57,7 +57,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _startSessionMonitor() {
-    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 6), (_) {
       _checkLoginStatus(refresh: true);
     });
   }

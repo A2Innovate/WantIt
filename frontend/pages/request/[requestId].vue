@@ -98,6 +98,10 @@
           :options="offerSortingModes"
           @update:model-value="offerSortingMode = $event"
         />
+        <UiButton @click="openInMobileApp">
+          <Icon name="material-symbols:open-in-new" />
+          <span class="hidden sm:block">Open in Mobile App</span>
+        </UiButton>
         <UiButton
           v-if="request && userStore.current"
           @click="isAddOfferModalOpen = true"
@@ -263,6 +267,10 @@ function canAccept(offerId: number) {
     return false;
   }
   return true;
+}
+
+function openInMobileApp(){
+  window.location.href = `wantit://request/${route.params.requestId}`;
 }
 
 onMounted(() => {

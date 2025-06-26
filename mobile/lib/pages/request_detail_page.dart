@@ -4,12 +4,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:mobile/api/pusher.dart';
+import 'package:mobile/stores/pusher.dart';
 import 'package:pusher_client_socket/channels/channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../api/client.dart';
-import '../api/currencies.dart';
+import '../stores/client.dart';
+import '../stores/currencies.dart';
 import '../types/comment.dart';
 import '../types/offer.dart';
 import '../types/request.dart';
@@ -36,6 +36,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   Request? _request;
   int? _currentUserId;
   Channel? _pusherChannel;
+  bool _loadFailed = false;
 
   String? _selectedSort = 'newest_first';
 
@@ -97,13 +98,28 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       final response = await useApi().get('/request/${widget.requestId}');
       if (response.statusCode == 200) {
         final request = Request.fromJson(response.data);
-        setState(() {
-          _request = request;
-          _conversionFuture = _loadCurrencyAndConvert(request);
-        });
+        if (mounted) {
+          setState(() {
+            _request = request;
+            _conversionFuture = _loadCurrencyAndConvert(request);
+            _loadFailed = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _loadFailed = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to load request details')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _loadFailed = true;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to load request details')),
         );
@@ -348,6 +364,20 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loadFailed){
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Request Detail'),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Text("Can't find request ${widget.requestId}"),
+        ),
+      );
+    }
     if (_request == null) {
       return const Scaffold(
         backgroundColor: Colors.white,

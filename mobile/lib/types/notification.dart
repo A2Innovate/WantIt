@@ -1,24 +1,4 @@
-// export enum NotificationType {
-//   NEW_OFFER = 'NEW_OFFER',
-//   NEW_MESSAGE = 'NEW_MESSAGE',
-//   NEW_OFFER_COMMENT = 'NEW_OFFER_COMMENT',
-//   NEW_ALERT_MATCH = 'NEW_ALERT_MATCH',
-//   OFFER_ACCEPTED = 'OFFER_ACCEPTED'
-// }
-//
-// export interface Notification {
-// id: number;
-// userId: number;
-// relatedUserId: number | null;
-// relatedOfferId: number | null;
-// relatedRequestId: number | null;
-// relatedUser?: Pick<User, 'name'>;
-// relatedOffer?: Offer;
-// relatedRequest?: Request;
-// type: NotificationType;
-// read: boolean;
-// createdAt: string;
-// }
+// ignore_for_file: constant_identifier_names
 
 enum NotificationType {
   NEW_OFFER,
@@ -29,10 +9,10 @@ enum NotificationType {
 }
 
 class RelatedUser {
-  final int id;
+  final int? id;
   final String name;
 
-  RelatedUser({required this.id, required this.name});
+  RelatedUser({this.id, required this.name});
 
   factory RelatedUser.fromJson(Map<String, dynamic> json) {
     return RelatedUser(id: json['id'], name: json['name']);
@@ -57,21 +37,20 @@ class RelatedOffer {
 
 class NotificationData {
   final int id;
-  final int userId;
+  final int? userId;
   final int? relatedUserId;
   final int? relatedOfferId;
   final int? relatedRequestId;
   final RelatedUser? relatedUser;
   final RelatedOffer? relatedOffer;
-  // Change the field’s type
   final int? relatedRequest;
   final NotificationType type;
-  final bool read;
+  bool read;
   final DateTime createdAt;
 
   NotificationData({
     required this.id,
-    required this.userId,
+    this.userId,
     this.relatedUserId,
     this.relatedOfferId,
     this.relatedRequestId,

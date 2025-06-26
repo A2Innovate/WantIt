@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/api/client.dart';
+import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
 import 'package:timeago/timeago.dart' as timeago;

@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/message_provider.dart';
+import '../providers/user_provider.dart';
 
 class SignInPage extends StatefulWidget {
   Map<String, dynamic>? queryParameters;
@@ -44,18 +45,8 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
-  Future<void> saveUserData(Map<String, dynamic> userData) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('userId', userData['id']);
-    await prefs.setString('username', userData['username']);
-    await prefs.setString('name', userData['name']);
-    await prefs.setString('email', userData['email']);
-    await prefs.setString('currency', userData['preferredCurrency']);
-    await prefs.setBool('isAdmin', userData['isAdmin']);
-    await prefs.setString('sessionId', userData['sessionId']);
-  }
-
   Future<void> _onLogin() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     setState(() {
       fieldErrors = {};
       _loading = true;
@@ -72,7 +63,14 @@ class _SignInPageState extends State<SignInPage> {
       try {
         final response = await dio.post('/auth/login', data: formData);
         if (response.statusCode == 200) {
-          await saveUserData(response.data);
+          userProvider.fetchFromData(response.data);
+          if (mounted) {
+            await Provider.of<MessagesProvider>(
+              context,
+              listen: false,
+            ).fetchRefreshMessages();
+          }
+
           if (mounted) {
             await initPusher(
               response.data['id'],
@@ -127,6 +125,9 @@ class _SignInPageState extends State<SignInPage> {
         sharedPrefs.setString('oauth_state', response.data['state']);
       }
       await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } else {
       try {
         final pkceCodeVerifier = sharedPrefs.getString('pkceCodeVerifier');
@@ -143,19 +144,23 @@ class _SignInPageState extends State<SignInPage> {
           '/auth/oauth/google/callback-mobile',
           queryParameters: query,
         );
-        response.headers['set-cookie']?.forEach((cookie) {
-          print(cookie);
-        });
+        sharedPrefs.remove('pkceCodeVerifier');
+        sharedPrefs.remove('oauth_state');
 
         if (response.statusCode == 200) {
-          await saveUserData(response.data);
           if (mounted) {
+            final userProvider = Provider.of<UserProvider>(
+              context,
+              listen: false,
+            );
+            userProvider.fetchFromData(response.data);
+
             await initPusher(
               response.data['id'],
               Provider.of<MessagesProvider>(context, listen: false),
             );
             if (mounted) {
-              Navigator.pushReplacement(
+              Navigator.pop(
                 context,
                 MaterialPageRoute(builder: (_) => const MainPage()),
               );
@@ -170,8 +175,6 @@ class _SignInPageState extends State<SignInPage> {
             ),
           );
         }
-        // print(e.response?.data!['message']);
-        // print(e);
       }
     }
   }

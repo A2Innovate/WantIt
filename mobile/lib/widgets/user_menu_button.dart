@@ -4,9 +4,11 @@ import 'package:mobile/stores/pusher.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../pages/settings.dart';
+import '../providers/user_provider.dart';
 
 class UserMenuButton extends StatefulWidget {
   const UserMenuButton({super.key});
@@ -16,46 +18,18 @@ class UserMenuButton extends StatefulWidget {
 }
 
 class _UserMenuButtonState extends State<UserMenuButton> {
-  bool _loggedIn = false;
-  String _username = '';
-
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final sessionIdExists = prefs.containsKey('sessionId');
-    final username = prefs.getString('name') ?? '';
-
-    setState(() {
-      _loggedIn = sessionIdExists;
-      _username = username;
-    });
-  }
-
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('sessionId');
-    await prefs.remove('userId');
-    await prefs.remove('username');
-    await prefs.remove('name');
-    await prefs.remove('email');
-    await prefs.remove('preferredCurrency');
-    cookieJar?.deleteAll();
-    await prefs.remove('isAdmin');
-    setState(() {
-      _loggedIn = false;
-      _username = '';
-    });
-    disconnectPusher();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_loggedIn) {
+    final provider = Provider.of<UserProvider>(context);
+    final user = provider.current;
+    final loggedIn = user != null;
+
+    if (!loggedIn) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -65,7 +39,6 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 context,
                 MaterialPageRoute(builder: (_) => SignInPage()),
               );
-              _loadUserData();
             },
             child: const Text('Sign In', style: TextStyle(color: Colors.black)),
           ),
@@ -75,7 +48,6 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 context,
                 MaterialPageRoute(builder: (_) => const SignUpPage()),
               );
-              _loadUserData();
             },
             child: const Text('Sign Up', style: TextStyle(color: Colors.black)),
           ),
@@ -88,7 +60,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Text(
-          _username.isNotEmpty ? _username : '?',
+          user.username.isNotEmpty ? user.username : '?',
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -111,12 +83,9 @@ class _UserMenuButtonState extends State<UserMenuButton> {
             context,
             MaterialPageRoute(builder: (_) => const SettingsPage()),
           );
-          if (settings == true) {
-            _loadUserData(); // Refresh username after return
-          }
         } else if (value == 2) {
           // Logout
-          await _logout();
+          await provider.logout();
           if (context.mounted) {
             ScaffoldMessenger.of(
               context,

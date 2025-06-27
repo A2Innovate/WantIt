@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../providers/user_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -9,26 +12,19 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String? profileImageUrl;
-  String? userName;
 
   @override
   void initState() {
     super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      // Suppose you saved these keys during login:
-      userName = prefs.getString('name') ?? 'No Name';
-      // If you have a profile image URL saved, load it, else null
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+
+    final current = Provider.of<UserProvider>(context).current;
+    if (current == null){
+      Navigator.pop(context);
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
       body: Center(
@@ -39,15 +35,15 @@ class _ProfilePageState extends State<ProfilePage> {
             CircleAvatar(
               radius: 50,
               child: Text(
-                (userName?.isNotEmpty ?? false)
-                    ? userName![0].toUpperCase()
+                (current!.username.isNotEmpty)
+                    ? current.username[0].toUpperCase()
                     : '?',
                 style: const TextStyle(color: Colors.black),
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              userName ?? '',
+              current.username ?? '',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ],

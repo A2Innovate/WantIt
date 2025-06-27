@@ -2,6 +2,7 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/main_page.dart';
 import 'package:mobile/pages/sign_in.dart';
@@ -16,21 +17,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initCookieJar();
+  useApi().interceptors.add(
+    DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
+  );
   final messagesProvider = MessagesProvider();
   final notificationProvider = NotificationProvider();
-  final sharedPrefs = await SharedPreferences.getInstance();
-  final int? userId = sharedPrefs.getInt('userId');
-  if (userId != null) {
+  final userProvider = UserProvider();
+  await userProvider.fetchUser();
+  if (userProvider.current != null) {
+    final int userId = userProvider.current!.id;
     final pusherInitialized = await initPusher(userId, messagesProvider);
     if (!pusherInitialized) {
       print('Warning: Failed to initialize Pusher client');
     }
   }
-  // useApi().interceptors.add(CookieManager(cookieJar!));
-  useApi().interceptors.add(
-    DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
-  );
-
   runApp(
     MultiProvider(
       providers: [
@@ -38,6 +38,7 @@ void main() async {
         ChangeNotifierProvider<NotificationProvider>.value(
           value: notificationProvider,
         ),
+        ChangeNotifierProvider<UserProvider>.value(value: userProvider),
       ],
       child: const MyApp(),
     ),

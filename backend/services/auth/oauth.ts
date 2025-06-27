@@ -63,7 +63,6 @@ app.get(
         state,
       }, 200);
     } else {
-      // For web: set cookies as before and return URL only
       setCookie(c, "pkce_verifier", pkceCodeVerifier, {
         httpOnly: true,
         secure: COOKIE_SECURE,
@@ -216,19 +215,7 @@ app.get(
     limit: 100,
   }),
   (c) => {
-    const queries = c.req.queries(); // Returns Record<string, string[]>
-
-    const searchParams = new URLSearchParams();
-
-    for (const key in queries) {
-      for (const value of queries[key]) {
-        searchParams.append(key, value);
-      }
-    }
-
     const redirectUrl = `wantit://auth/google?${c.req.url}`;
-
-    console.log(redirectUrl);
 
     return c.redirect(redirectUrl, 302);
   },
@@ -242,12 +229,7 @@ app.get(
   }),
   async (c) => {
     try {
-      let url = c.req.query("url")!;
-
-      url = url.replace(
-        "wantit://auth/google",
-        `${new URL(url).origin}/api/auth/oauth/google/return-to-mobile`,
-      );
+      const url = c.req.query("url")!;
       const pkceCodeVerifier = c.req.query("pkce_code_verifier");
       let state = c.req.query("state");
       if (state == "") {
@@ -324,11 +306,13 @@ app.get(
 
         const sessionToken = await generateSessionToken();
 
-        await db.insert(userSessionsTable).values({
+        const [session] = await db.insert(userSessionsTable).values({
           userId: existingUser.id,
           sessionToken,
           ip: getIp(c),
           expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+        }).returning({
+          id: userSessionsTable.id,
         });
 
         setCookie(c, "wantit_session", sessionToken, {
@@ -346,7 +330,7 @@ app.get(
           username: existingUser.username,
           preferredCurrency: existingUser.preferredCurrency,
           isAdmin: existingUser.isAdmin,
-          sessionId: sessionToken,
+          sessionId: session.id,
         }, 200);
       }
 
@@ -362,11 +346,13 @@ app.get(
 
       const sessionToken = await generateSessionToken();
 
-      await db.insert(userSessionsTable).values({
+      const [session] = await db.insert(userSessionsTable).values({
         userId: user[0].id,
         sessionToken,
         ip: getIp(c),
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+      }).returning({
+        id: userSessionsTable.id,
       });
 
       setCookie(c, "wantit_session", sessionToken, {
@@ -384,7 +370,7 @@ app.get(
         username: user[0].username,
         preferredCurrency: user[0].preferredCurrency,
         isAdmin: user[0].isAdmin,
-        sessionId: sessionToken,
+        sessionId: session.id,
       }, 200);
     } catch (error) {
       console.error("Error in Google OAuth callback:", error);

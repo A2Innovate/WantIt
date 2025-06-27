@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/message_provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'dart:async'; // For Timer
+import 'dart:async';
+
+import '../providers/user_provider.dart'; // For Timer
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -14,64 +16,38 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  bool _loggedIn = false;
-  bool _loading = true;
-  Timer? _sessionCheckTimer;
-
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
-    _startSessionMonitor();
+    Future.microtask(
+      () => {
+        if (mounted)
+          {
+            if (Provider.of<UserProvider>(context, listen: false).current !=
+                null)
+              {
+                Provider.of<MessagesProvider>(
+                  context,
+                  listen: false,
+                ).fetchRefreshMessages(),
+              },
+          },
+      },
+    );
   }
 
   @override
   void dispose() {
-    _sessionCheckTimer?.cancel();
     super.dispose();
-  }
-
-  Future<void> _checkLoginStatus({bool refresh = false}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final sessionExists = prefs.containsKey('userId');
-
-    if (refresh && mounted && sessionExists != _loggedIn) {
-      setState(() {
-        _loggedIn = sessionExists;
-      });
-    }
-
-    if (!refresh && sessionExists && mounted) {
-      await Provider.of<MessagesProvider>(
-        context,
-        listen: false,
-      ).fetchRefreshMessages();
-    }
-
-    if (mounted) {
-      setState(() {
-        _loggedIn = sessionExists;
-        _loading = false;
-      });
-    }
-  }
-
-  void _startSessionMonitor() {
-    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 6), (_) {
-      _checkLoginStatus(refresh: true);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<MessagesProvider>(context);
-    final lastMessages = provider.messages;
+    return Placeholder();
+    final messageProvider = Provider.of<MessagesProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
 
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (!_loggedIn) {
+    if (userProvider.current == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Chat')),
         body: Center(
@@ -98,6 +74,7 @@ class _ChatPageState extends State<ChatPage> {
         ),
       );
     }
+    final lastMessages = messageProvider.messages;
 
     return Scaffold(
       appBar: AppBar(
@@ -105,7 +82,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: provider.fetchRefreshMessages,
+            onPressed: messageProvider.fetchRefreshMessages,
           ),
         ],
       ),

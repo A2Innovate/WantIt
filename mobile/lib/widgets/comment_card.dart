@@ -2,9 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/comment.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../providers/user_provider.dart';
 import '../stores/client.dart';
 
 class CommentCard extends StatefulWidget {
@@ -18,7 +19,6 @@ class CommentCard extends StatefulWidget {
 
 class _CommentCardState extends State<CommentCard> {
   bool isEditing = false;
-  int? _currentUserId;
   final editCommentController = TextEditingController();
   Map<String, String?> fieldErrors = {};
 
@@ -116,22 +116,15 @@ class _CommentCardState extends State<CommentCard> {
     super.dispose();
   }
 
-  Future<void> _loadCurrentUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentUserId = prefs.getInt('userId');
-    });
-  }
-
   @override
   initState() {
     super.initState();
-    _loadCurrentUserId();
     editCommentController.text = widget.comment.content;
   }
 
   @override
   Widget build(BuildContext context) {
+    final current = Provider.of<UserProvider>(context).current;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       elevation: 2,
@@ -187,7 +180,7 @@ class _CommentCardState extends State<CommentCard> {
 
             const SizedBox(height: 16),
 
-            if (_currentUserId == widget.comment.user.id)
+            if (current?.id == widget.comment.user.id)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

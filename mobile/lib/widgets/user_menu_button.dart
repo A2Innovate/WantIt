@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/stores/client.dart';
-import 'package:mobile/stores/pusher.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../pages/settings.dart';
 import '../providers/user_provider.dart';
@@ -37,7 +34,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => SignInPage()),
+                MaterialPageRoute(builder: (_) => const SignInPage()),
               );
             },
             child: const Text('Sign In', style: TextStyle(color: Colors.black)),
@@ -79,7 +76,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Go to Settings')));
-          final settings = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SettingsPage()),
           );

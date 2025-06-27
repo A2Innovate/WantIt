@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/offer.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/user_provider.dart';
 import '../stores/client.dart';
 import '../stores/currencies.dart';
 import '../types/request.dart';
@@ -203,7 +205,10 @@ class _OfferCardState extends State<OfferCard> {
   Widget build(BuildContext context) {
     final offer = widget.offer;
     final isAccepted = widget.request.acceptedOffer?.offerId == widget.offer.id;
-
+    final current = Provider.of<UserProvider>(context).current;
+    final isOfferOrAdmin =
+        current != null &&
+        (current.id == widget.offer.user.id || (current.isAdmin ?? false));
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -330,7 +335,7 @@ class _OfferCardState extends State<OfferCard> {
                     label: const Text('Accept'),
                   ),
 
-                if (_currentUserId == widget.offer.user.id) ...[
+                if (isOfferOrAdmin) ...[
                   ElevatedButton.icon(
                     onPressed: _onEdit,
                     icon: const Icon(Icons.edit),

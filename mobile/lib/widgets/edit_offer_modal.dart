@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:mobile/api_config.dart';
-
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../types/offer.dart';
@@ -98,10 +99,23 @@ class _EditOfferModalState extends State<EditOfferModal> {
         }
       }
       try {
+        // if ((current?.isAdmin ?? false) && (_request?.user.id != null) && (_request?.user.id != current?.id))
+        final current = Provider.of<UserProvider>(
+          context,
+          listen: false,
+        ).current;
+        bool isAdmin =
+            ((current?.isAdmin ?? false) &&
+            (widget.offer.user.id != current?.id));
         final api = useApi();
+        print(
+          ((current?.isAdmin ?? false) &&
+              (widget.offer.user.id != current?.id)),
+        );
         final response = await api.put(
           '/request/${widget.request.id}/offer/${widget.offer.id}',
           data: formData,
+          queryParameters: {if (isAdmin) 'pretendUser': widget.offer.user.id},
           options: Options(
             sendTimeout: const Duration(seconds: 30),
             receiveTimeout: const Duration(seconds: 30),
@@ -121,6 +135,9 @@ class _EditOfferModalState extends State<EditOfferModal> {
             final imagesResponse = await api.post(
               '/request/${widget.request.id}/offer/${response.data['id']}/image',
               data: formData,
+              queryParameters: {
+                if (isAdmin) 'pretendUser': widget.offer.user.id,
+              },
               options: Options(
                 sendTimeout: const Duration(seconds: 30),
                 receiveTimeout: const Duration(seconds: 30),
@@ -138,6 +155,9 @@ class _EditOfferModalState extends State<EditOfferModal> {
             await api.delete(
               '/request/${widget.request.id}/offer/${widget.offer.id}/images',
               data: {'images': _imagesToDelete},
+              queryParameters: {
+                if (isAdmin) 'pretendUser': widget.offer.user.id,
+              },
               options: Options(
                 sendTimeout: const Duration(seconds: 30),
                 receiveTimeout: const Duration(seconds: 30),
@@ -236,7 +256,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
                                                 BlendMode.multiply,
                                               ),
                                         child: Image.network(
-                                          'http://${ApiConfig.s3Endpoint}/${ApiConfig.s3Bucket}/request/${widget.request.id}/offer/${widget.offer.id}/images/${file.name}',
+                                          '${ApiConfig.s3Endpoint}/${ApiConfig.s3Bucket}/request/${widget.request.id}/offer/${widget.offer.id}/images/${file.name}',
                                           width: 100,
                                           height: 100,
                                           fit: BoxFit.cover,

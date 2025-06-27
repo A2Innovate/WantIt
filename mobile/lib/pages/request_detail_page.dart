@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/stores/pusher.dart';
+import 'package:provider/provider.dart';
 import 'package:pusher_client_socket/channels/channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/user_provider.dart';
 import '../stores/client.dart';
 import '../stores/currencies.dart';
 import '../types/comment.dart';
@@ -34,9 +36,9 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   final MapController _mapController = MapController();
   late final StreamSubscription<MapEvent> _mapSub;
   Request? _request;
-  int? _currentUserId;
   Channel? _pusherChannel;
   bool _loadFailed = false;
+  bool _closed = false;
 
   String? _selectedSort = 'newest_first';
 
@@ -66,29 +68,43 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     );
     if (confirm != true) return;
 
-    try {
-      final response = await useApi().delete('/request/${widget.requestId}');
-      if (response.statusCode == 200) {
-        if (mounted) {
-          widget.onChanged?.call();
-          Navigator.of(context).pop(true);
+    if (mounted) {
+      final current = Provider.of<UserProvider>(context, listen: false).current;
+      setState(() {
+        _closed = true;
+      });
+      try {
+        final response = await useApi().delete(
+          '/request/${widget.requestId}',
+          queryParameters: {
+            if ((current?.isAdmin ?? false) &&
+                (_request?.user.id != null) &&
+                (_request?.user.id != current?.id))
+              'pretendUser': _request!.user.id,
+          },
+        );
+        if (response.statusCode == 200) {
+          if (mounted) {
+            widget.onChanged?.call();
+            Navigator.of(context).pop(true);
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response.data['message'] ?? 'Network error'),
+              ),
+            );
+          }
         }
-      } else {
+      } on DioException catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response.data['message'] ?? 'Network error'),
+              content: Text(e.response?.data['message'] ?? 'Network error'),
             ),
           );
         }
-      }
-    } on DioException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.response?.data['message'] ?? 'Network error'),
-          ),
-        );
       }
     }
   }
@@ -176,7 +192,6 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   void initState() {
     super.initState();
     _loadRequest();
-    _loadCurrentUserId();
 
     _pusherChannel = usePusher().subscribe(
       'public-request-${widget.requestId}',
@@ -289,7 +304,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     _pusherChannel?.bind(
       'delete-request',
       (requestId) => {
-        if (mounted) {Navigator.of(context).pop(true)},
+        if (mounted && !_closed) {Navigator.of(context).pop(true)},
       },
     );
     _mapSub = _mapController.mapEventStream.listen((event) {
@@ -355,15 +370,13 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     return offers;
   }
 
-  Future<void> _loadCurrentUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentUserId = prefs.getInt('userId');
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final current = Provider.of<UserProvider>(context).current;
+    final isRequestOwnerOrAdmin =
+        current != null &&
+        _request != null &&
+        (current.id == _request!.user.id || (current.isAdmin ?? false));
     if (_loadFailed) {
       return Scaffold(
         appBar: AppBar(
@@ -480,7 +493,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            if (_currentUserId == request.user.id) ...[
+                            if (isRequestOwnerOrAdmin) ...[
                               ElevatedButton.icon(
                                 onPressed: _onEdit,
                                 icon: const Icon(Icons.edit),

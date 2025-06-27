@@ -231,10 +231,7 @@ app.get(
     try {
       const url = c.req.query("url")!;
       const pkceCodeVerifier = c.req.query("pkce_code_verifier");
-      let state = c.req.query("state");
-      if (state == "") {
-        state = undefined;
-      }
+      const state = c.req.query("state") || undefined;
       if (!pkceCodeVerifier) {
         return c.json(
           {
@@ -286,7 +283,7 @@ app.get(
           {
             message: "Your Google account email is not verified",
           },
-          400,
+          401,
         );
       }
 
@@ -300,7 +297,7 @@ app.get(
             {
               message: "Your account is blocked",
             },
-            400,
+            401,
           );
         }
 

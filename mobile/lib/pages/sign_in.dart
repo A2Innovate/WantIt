@@ -15,8 +15,8 @@ import '../providers/message_provider.dart';
 import '../providers/user_provider.dart';
 
 class SignInPage extends StatefulWidget {
-  Map<String, dynamic>? queryParameters;
-  SignInPage({super.key, this.queryParameters});
+  final Map<String, dynamic>? queryParameters;
+  const SignInPage({super.key, this.queryParameters});
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -160,7 +160,7 @@ class _SignInPageState extends State<SignInPage> {
               Provider.of<MessagesProvider>(context, listen: false),
             );
             if (mounted) {
-              Navigator.pop(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const MainPage()),
               );

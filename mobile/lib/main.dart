@@ -1,4 +1,3 @@
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/providers/notification_provider.dart';
@@ -9,8 +8,6 @@ import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/providers/message_provider.dart';
 import 'package:mobile/widgets/deep_link_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'api_config.dart';
 import 'stores/pusher.dart';
 
 void main() async {
@@ -77,10 +74,12 @@ class MyApp extends StatelessWidget {
           );
         }
         if (uri.pathSegments[0] == 'signin') {
+          final args = settings.arguments;
+          if (args is! Map<String, dynamic>) {
+            return MaterialPageRoute(builder: (_) => SignInPage());
+          }
           return MaterialPageRoute(
-            builder: (_) => SignInPage(
-              queryParameters: settings.arguments as Map<String, dynamic>,
-            ),
+            builder: (_) => SignInPage(queryParameters: args),
           );
         }
         return MaterialPageRoute(builder: (_) => const MainPage());

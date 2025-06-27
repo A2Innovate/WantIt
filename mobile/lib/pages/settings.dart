@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:mobile/schemas/user.dart';
 import 'package:mobile/schemas/auth.dart';
 import 'package:mobile/utils/global.dart';
@@ -8,6 +8,8 @@ import 'package:mobile/stores/client.dart';
 
 import 'package:mobile/widgets/password_field.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
+
+import '../providers/user_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -53,19 +55,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _loadProfileData() async {
-    final prefs = await SharedPreferences.getInstance();
-    _nameCtrl.text = prefs.getString('name') ?? '';
-    _usernameCtrl.text = prefs.getString('username') ?? '';
-    _emailCtrl.text = prefs.getString('email') ?? '';
-    final savedCurrency = prefs.getString('preferredCurrency');
-    _selectedCurrency = Currency.values.firstWhere(
-      (c) => c.symbol == savedCurrency,
-      orElse: () => Currency.USD,
-    );
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final current = userProvider.current;
+    _nameCtrl.text = current?.name ?? '';
+    _usernameCtrl.text = current?.username ?? '';
+    _emailCtrl.text = current?.email ?? '';
+    _selectedCurrency = current?.preferredCurrency ?? Currency.USD;
     setState(() {});
   }
 
   Future<void> _onSaveProfile() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     setState(() {
       _profileErrors = {};
       _isSavingProfile = true;
@@ -95,14 +95,11 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       final response = await useApi().put('/user/update', data: formData);
       if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('name', formData['name']!);
-        await prefs.setString('username', formData['username']!);
-        await prefs.setString(
-          'preferredCurrency',
-          formData['preferredCurrency']!,
-        );
-
+        if (formData['email'] != userProvider.current?.email) {
+          await userProvider.logout();
+        } else {
+          await userProvider.fetchUser();
+        }
         setState(() {
           _profileErrors = {};
           _isSavingProfile = false;
@@ -116,20 +113,6 @@ class _SettingsPageState extends State<SettingsPage> {
         }
 
         // If email changed, log out user
-        if (formData['email'] != prefs.getString('email')) {
-          await prefs.remove('sessionId');
-          await prefs.remove('userId');
-          await prefs.remove('username');
-          await prefs.remove('name');
-          await prefs.remove('email');
-          await prefs.remove('currency');
-          await prefs.remove('isAdmin');
-          if (mounted) {
-            Navigator.of(
-              context,
-            ).pushNamedAndRemoveUntil('/sign-in', (route) => false);
-          }
-        }
       } else {
         setState(() {
           _profileErrors['error'] =

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/pages/chat_details.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/message_provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'dart:async';
 
-import '../providers/user_provider.dart'; // For Timer
+import '../providers/user_provider.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -43,7 +42,6 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Placeholder();
     final messageProvider = Provider.of<MessagesProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
 

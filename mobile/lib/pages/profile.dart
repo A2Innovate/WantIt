@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/user_provider.dart';
 
@@ -12,19 +11,17 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-
     final current = Provider.of<UserProvider>(context).current;
-    if (current == null){
-      Navigator.pop(context);
+
+    if (current == null) {
+      if (mounted) {
+        Future.microtask(() => Navigator.pop(context));
+      }
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
       body: Center(
@@ -35,7 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
             CircleAvatar(
               radius: 50,
               child: Text(
-                (current!.username.isNotEmpty)
+                (current.username.isNotEmpty)
                     ? current.username[0].toUpperCase()
                     : '?',
                 style: const TextStyle(color: Colors.black),
@@ -43,7 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 12),
             Text(
-              current.username ?? '',
+              current.username,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ],

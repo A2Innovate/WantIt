@@ -22,13 +22,15 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    print(json);
     return User(
       id: json['id'],
       name: json['name'],
       username: json['username'],
       email: json['email'],
-      preferredCurrency: Currency.values.byName(json['preferredCurrency']),
+      preferredCurrency: Currency.values.firstWhere(
+        (currency) => currency.name == json['preferredCurrency'],
+        orElse: () => Currency.USD,
+      ),
       sessionId: json['sessionId'],
       isAdmin: json['isAdmin'],
       isBlocked: json['isBlocked'],

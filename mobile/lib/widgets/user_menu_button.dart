@@ -63,7 +63,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const SignInPage()),
+                MaterialPageRoute(builder: (_) => SignInPage()),
               );
               _loadUserData();
             },

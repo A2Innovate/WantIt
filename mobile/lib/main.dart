@@ -1,3 +1,4 @@
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/providers/notification_provider.dart';
@@ -8,11 +9,12 @@ import 'package:mobile/providers/message_provider.dart';
 import 'package:mobile/widgets/deep_link_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_config.dart';
 import 'stores/pusher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await initCookieJar();
   final messagesProvider = MessagesProvider();
   final notificationProvider = NotificationProvider();
@@ -24,15 +26,22 @@ void main() async {
       print('Warning: Failed to initialize Pusher client');
     }
   }
-  useApi().interceptors.add(DomainRewriteInterceptor('10.0.2.2'));
+  // useApi().interceptors.add(CookieManager(cookieJar!));
+  useApi().interceptors.add(
+    DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
+  );
 
   runApp(
-    MultiProvider(providers: [
-      ChangeNotifierProvider<MessagesProvider>.value(value: messagesProvider),
-      ChangeNotifierProvider<NotificationProvider>.value(value: notificationProvider),
-    ],
-    child: const MyApp(),
-  ));
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<MessagesProvider>.value(value: messagesProvider),
+        ChangeNotifierProvider<NotificationProvider>.value(
+          value: notificationProvider,
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -57,22 +66,23 @@ class MyApp extends StatelessWidget {
       ),
       home: const DeepLinkHandler(),
       debugShowCheckedModeBanner: false,
-      routes: {
-        '/signin': (context) => const SignInPage(),
-        '/main': (context) => const MainPage(),
-      },
+      routes: {'/main': (context) => const MainPage()},
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name ?? '');
         if (uri.pathSegments.length == 2 && uri.pathSegments[0] == 'request') {
           final requestId = uri.pathSegments[1];
-
           return MaterialPageRoute(
             builder: (_) => RequestDetailPage(requestId: int.parse(requestId)),
           );
         }
-        return MaterialPageRoute(
-          builder: (_) => const MainPage(),
-        );
+        if (uri.pathSegments[0] == 'signin') {
+          return MaterialPageRoute(
+            builder: (_) => SignInPage(
+              queryParameters: settings.arguments as Map<String, dynamic>,
+            ),
+          );
+        }
+        return MaterialPageRoute(builder: (_) => const MainPage());
       },
     );
   }

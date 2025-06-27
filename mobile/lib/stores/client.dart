@@ -38,7 +38,6 @@ class DomainRewriteInterceptor extends Interceptor {
           nameValue.sublist(1).join('=').trim(),
         )..domain = desiredDomain;
       }).toList();
-
       // Save cookies to cookieJar for future requests
       if (cookieJar != null) {
         await cookieJar!.saveFromResponse(uri, cookies);

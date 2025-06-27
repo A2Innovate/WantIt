@@ -21,12 +21,24 @@ class _DeepLinkHandlerState extends State<DeepLinkHandler> {
   }
 
   void _handleUri(Uri uri) {
-
     switch (uri.host) {
       case 'request':
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Navigator.pushNamed(context, '/request/${uri.pathSegments.last}');
         });
+        break;
+      case "auth":
+        if (uri.pathSegments.last == "google") {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final queryParameters = <String, String>{};
+            queryParameters['url'] = uri.toString().replaceAll(
+              'wantit://auth/google?',
+              '',
+            );
+            queryParameters['oauth'] = 'google';
+            Navigator.pushNamed(context, '/signin', arguments: queryParameters);
+          });
+        }
         break;
       default:
         break;
@@ -35,7 +47,7 @@ class _DeepLinkHandlerState extends State<DeepLinkHandler> {
 
   Future<void> _handleInitialLink() async {
     try {
-      final uri = await _appLinks.getInitialLink();
+      final uri = await _appLinks.getLatestLink();
       if (uri != null) _handleUri(uri);
     } catch (e) {
       debugPrint('Initial link error: $e');
@@ -50,6 +62,6 @@ class _DeepLinkHandlerState extends State<DeepLinkHandler> {
 
   @override
   Widget build(BuildContext context) {
-    return const MainPage(); // default home page
+    return const MainPage();
   }
 }

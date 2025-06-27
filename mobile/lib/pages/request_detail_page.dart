@@ -364,7 +364,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loadFailed){
+    if (_loadFailed) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Request Detail'),
@@ -373,9 +373,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
           elevation: 0,
         ),
         backgroundColor: Colors.white,
-        body: Center(
-          child: Text("Can't find request ${widget.requestId}"),
-        ),
+        body: Center(child: Text("Can't find request ${widget.requestId}")),
       );
     }
     if (_request == null) {
@@ -426,7 +424,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                                   TileLayer(
                                     urlTemplate:
                                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    userAgentPackageName: 'com.example.yourapp',
+                                    userAgentPackageName: 'com.wantit.mobile',
                                   ),
                                   MarkerLayer(
                                     markers: [

@@ -1,11 +1,13 @@
 class ApiConfig {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
+    // defaultValue: 'http://10.0.2.2:8000',
+    defaultValue: 'http://three-ghosts-pay.loca.lt',
   );
   static const String pusherHost = String.fromEnvironment(
     'PUSHER_HOST',
     defaultValue: '10.0.2.2',
+    // defaultValue: '192.168.1.135',
   );
   static const int pusherPort = int.fromEnvironment(
     'PUSHER_PORT',

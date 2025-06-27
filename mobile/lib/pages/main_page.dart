@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/providers/notification_provider.dart';
-import 'package:provider/provider.dart';
 import 'persistent_search_page.dart';
-import 'chat_page.dart'; // Your ChatPage
+import 'chat_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -19,7 +17,6 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    Provider.of<NotificationProvider>(context, listen: false).fetchNotifications();
   }
 
   void _onItemTapped(int index) {

@@ -155,7 +155,10 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       setState(() {
         chat?.messages.add(message);
         scrollToBottom();
-        Provider.of<MessagesProvider>(context, listen: false)!.upsertLastMessage(
+        Provider.of<MessagesProvider>(
+          context,
+          listen: false,
+        )!.upsertLastMessage(
           widget.user.id,
           _currentName ?? '',
           _currentUsername ?? '',

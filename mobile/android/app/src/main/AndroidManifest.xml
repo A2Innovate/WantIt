@@ -28,6 +28,7 @@
                 <data android:scheme="wantit" />
             </intent-filter>
 
+
             <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -51,5 +52,23 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <!-- Provide required visibility configuration for API level 30 and above -->
+    <queries>
+        <!-- If your app checks for SMS support -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+        <!-- If your app checks for call support -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="tel" />
+        </intent>
+        <!-- If your application checks for inAppBrowserView launch mode support -->
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+    </queries>
+
 
 </manifest>

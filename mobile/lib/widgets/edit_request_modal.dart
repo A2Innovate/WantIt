@@ -190,7 +190,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
                       TileLayer(
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.yourapp',
+                        userAgentPackageName: 'com.wantit.mobile',
                         errorTileCallback: (title, error, stackTrace) {
                           setState(() {
                             isGlobal = true;

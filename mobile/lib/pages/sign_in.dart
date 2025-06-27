@@ -6,13 +6,16 @@ import 'package:mobile/pages/main_page.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/reset_password.dart';
 import 'package:mobile/schemas/auth.dart';
+import 'package:mobile/widgets/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/message_provider.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({super.key});
+  Map<String, dynamic>? queryParameters;
+  SignInPage({super.key, this.queryParameters});
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -32,6 +35,13 @@ class _SignInPageState extends State<SignInPage> {
   void initState() {
     super.initState();
     dio = useApi();
+    if (widget.queryParameters != null) {
+      switch (widget.queryParameters!['oauth']) {
+        case 'google':
+          _onGoogleSignIn(true);
+          break;
+      }
+    }
   }
 
   Future<void> saveUserData(Map<String, dynamic> userData) async {
@@ -42,7 +52,7 @@ class _SignInPageState extends State<SignInPage> {
     await prefs.setString('email', userData['email']);
     await prefs.setString('currency', userData['preferredCurrency']);
     await prefs.setBool('isAdmin', userData['isAdmin']);
-    await prefs.setInt('sessionId', userData['sessionId']);
+    await prefs.setString('sessionId', userData['sessionId']);
   }
 
   Future<void> _onLogin() async {
@@ -98,6 +108,72 @@ class _SignInPageState extends State<SignInPage> {
     setState(() {
       _loading = false;
     });
+  }
+
+  Future<void> _onGoogleSignIn(bool queryParameters) async {
+    final sharedPrefs = await SharedPreferences.getInstance();
+    if (!queryParameters) {
+      final response = await useApi().get(
+        '/auth/oauth/google',
+        queryParameters: {"mobile": true},
+      );
+      final url = response.data['url'];
+
+      sharedPrefs.setString(
+        'pkceCodeVerifier',
+        response.data['pkceCodeVerifier'],
+      );
+      if (response.data.containsKey('state')) {
+        sharedPrefs.setString('oauth_state', response.data['state']);
+      }
+      await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
+    } else {
+      try {
+        final pkceCodeVerifier = sharedPrefs.getString('pkceCodeVerifier');
+        final state = sharedPrefs.getString('oauth_state');
+        final query = {
+          'url': (widget.queryParameters?['url'] as String).replaceAll(
+            'wantit://auth/google',
+            '',
+          ),
+          'pkce_code_verifier': pkceCodeVerifier,
+          'state': state,
+        };
+        final response = await dio.get(
+          '/auth/oauth/google/callback-mobile',
+          queryParameters: query,
+        );
+        response.headers['set-cookie']?.forEach((cookie) {
+          print(cookie);
+        });
+
+        if (response.statusCode == 200) {
+          await saveUserData(response.data);
+          if (mounted) {
+            await initPusher(
+              response.data['id'],
+              Provider.of<MessagesProvider>(context, listen: false),
+            );
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MainPage()),
+              );
+            }
+          }
+        }
+      } on DioException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.response?.data['message'] ?? 'Network error'),
+            ),
+          );
+        }
+        // print(e.response?.data!['message']);
+        // print(e);
+      }
+    }
   }
 
   @override
@@ -167,6 +243,7 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                 const SizedBox(height: 40),
+
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -189,6 +266,9 @@ class _SignInPageState extends State<SignInPage> {
                         : const Text('Login'),
                   ),
                 ),
+                const SizedBox(height: 20),
+
+                GoogleSignInButton(onPressed: () => _onGoogleSignIn(false)),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

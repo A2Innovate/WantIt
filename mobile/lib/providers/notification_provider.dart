@@ -4,17 +4,18 @@ import 'package:mobile/stores/client.dart';
 import '../types/notification.dart';
 
 class NotificationProvider extends ChangeNotifier {
-
   List<NotificationData> notifications = [];
-  Future<void> fetchNotifications() async{
-
+  Future<void> fetchNotifications() async {
     final response = await useApi().get('/notification');
 
-    response.data.map((e) => notifications.add(NotificationData.fromJson(e))).toList();
+    response.data
+        .map((e) => notifications.add(NotificationData.fromJson(e)))
+        .toList();
 
     notifyListeners();
   }
-  Future<void> markAsRead(NotificationData notification) async{
+
+  Future<void> markAsRead(NotificationData notification) async {
     try {
       notification.read = true;
       await useApi().post('/notification/${notification.id}/read');
@@ -24,9 +25,12 @@ class NotificationProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-  Future<void> deleteNotification(NotificationData notification) async{
+
+  Future<void> deleteNotification(NotificationData notification) async {
     try {
-      notifications = notifications.where((element) => element.id == notification.id).toList();
+      notifications = notifications
+          .where((element) => element.id == notification.id)
+          .toList();
       await useApi().delete('/notification/${notification.id}');
     } catch (e) {
       print(e);
@@ -34,6 +38,4 @@ class NotificationProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-
-
 }

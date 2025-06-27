@@ -214,7 +214,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       onPressed: () async {
                         await Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (_) => const SignInPage()),
+                          MaterialPageRoute(builder: (_) => SignInPage()),
                         );
                       },
                       child: const Text("Have an account?"),

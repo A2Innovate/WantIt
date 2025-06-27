@@ -8,7 +8,6 @@ class MessagesProvider extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
-
   Future<List<LastMessage>> fetchLastMessages() async {
     final response = await useApi().get('/chat');
     return (response.data as List)
@@ -18,9 +17,9 @@ class MessagesProvider extends ChangeNotifier {
 
   Future<void> fetchRefreshMessages() async {
     errorMessage = null;
+    isLoading = true;
     notifyListeners();
     try {
-      isLoading = true;
       messages = await fetchLastMessages();
     } catch (e) {
       errorMessage = 'Failed to load messages: ${e.toString()}';
@@ -29,13 +28,14 @@ class MessagesProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
   void upsertLastMessage(
-      int personId,
-      String senderName,
-      String senderUsername,
-      DateTime createdAt,
-      String content,
-      ) {
+    int personId,
+    String senderName,
+    String senderUsername,
+    DateTime createdAt,
+    String content,
+  ) {
     final index = messages.indexWhere((msg) => msg.person.id == personId);
     if (index == -1) {
       messages.add(
@@ -53,7 +53,13 @@ class MessagesProvider extends ChangeNotifier {
       messages[index] = LastMessage(
         createdAt: createdAt,
         content: content,
-        person: Person(id: personId, name: senderName, username: senderUsername),
+        person: Person(
+          id: personId,
+          name: senderName,
+          username: senderUsername,
+        ),
       );
+      notifyListeners();
     }
-}}
+  }
+}

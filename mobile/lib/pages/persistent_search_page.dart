@@ -57,7 +57,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   }
 
   Future<List<Request>> fetchItems(String query) async {
-    var localizedStrings = AppLocalizations.of(context);
+    var localizedStrings = AppLocalizations.of(context)!;
     try {
       final dio = useApi();
       final response = await dio.get(
@@ -76,13 +76,13 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
               .map((item) => Request.fromJson(item as Map<String, dynamic>))
               .toList();
         } else {
-          throw Exception('Invalid response format');
+          throw Exception(localizedStrings.invalid_response_format);
         }
       } else {
-        throw Exception('Failed to fetch items');
+        throw Exception(localizedStrings.failed_to_fetch_items);
       }
     } on DioException {
-      throw Exception(localizedStrings?.network_error);
+      throw Exception(localizedStrings.network_error);
     }
   }
 

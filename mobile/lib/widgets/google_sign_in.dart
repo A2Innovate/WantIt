@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback onPressed;
 
@@ -7,6 +9,7 @@ class GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizedStrings = AppLocalizations.of(context)!;
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
@@ -29,8 +32,8 @@ class GoogleSignInButton extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Text(
-            'Sign in with Google',
+          Text(
+            localizedStrings.continue_with_google,
             style: TextStyle(
               color: Color(0xFF3c4043),
               fontSize: 14,

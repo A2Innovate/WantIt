@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:mobile/api_config.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/user_provider.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
@@ -63,6 +64,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
   }
 
   Future<void> _editOffer() async {
+    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       fieldErrors = {};
     });
@@ -84,15 +86,14 @@ class _EditOfferModalState extends State<EditOfferModal> {
     } else {
       if (_selectedImages.length > 10) {
         setState(() {
-          fieldErrors["image"] = 'One offer can have up to 10 images.';
+          fieldErrors["image"] = appLocalizations.max_offer_images;
         });
         return;
       }
       for (final image in _selectedImages) {
         if (image.lengthSync() > 1024 * 1024 * 5) {
           setState(() {
-            fieldErrors["image"] =
-                'At least one of your images is too large, max size is 5MB.';
+            fieldErrors["image"] = appLocalizations.max_image_size;
           });
 
           return;
@@ -179,6 +180,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -191,17 +193,16 @@ class _EditOfferModalState extends State<EditOfferModal> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
+              Center(
                 child: Text(
-                  'Edit Offer',
+                  appLocalizations.edit_offer,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Add Image Picker UI
-              const Text(
-                'Current Images',
+              Text(
+                appLocalizations.current_images,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -293,12 +294,12 @@ class _EditOfferModalState extends State<EditOfferModal> {
                             );
                           }).toList(),
                         )
-                      : const Center(child: Text('No current images')),
+                      : Center(child: Text(appLocalizations.no_images)),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'New Images',
+              Text(
+                appLocalizations.new_images,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -329,7 +330,9 @@ class _EditOfferModalState extends State<EditOfferModal> {
                               )
                               .toList(),
                         )
-                      : const Center(child: Text('Tap to select image')),
+                      : Center(
+                          child: Text(appLocalizations.tap_to_select_image),
+                        ),
                 ),
               ),
 
@@ -359,7 +362,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
 
               Row(
                 children: [
-                  const Text('Negotiable'),
+                  Text(appLocalizations.negotiable),
                   const Spacer(),
                   Checkbox(
                     value: isNegotiable,
@@ -377,7 +380,7 @@ class _EditOfferModalState extends State<EditOfferModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _editOffer,
-                  child: const Text('Save'),
+                  child: Text(appLocalizations.save),
                 ),
               ),
               const SizedBox(height: 16),

@@ -7,6 +7,7 @@ import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../types/request.dart';
@@ -36,6 +37,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
   Currency selectedCurrency = Currency.USD;
 
   Future<void> _editRequest() async {
+    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       fieldErrors = {};
     });
@@ -85,12 +87,16 @@ class _EditRequestModalState extends State<EditRequestModal> {
           }
         } else {
           setState(() {
-            fieldErrors['error'] = response.data['message'];
+            fieldErrors['error'] = (response.data is Map<String, dynamic>)
+                ? (response.data['message'] ?? appLocalizations.unknown_error)
+                : appLocalizations.network_error;
           });
         }
       } on DioException catch (e) {
         setState(() {
-          fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
+          fieldErrors['error'] = (e.response?.data is Map<String, dynamic>)
+              ? (e.response?.data['message'] ?? appLocalizations.unknown_error)
+              : appLocalizations.network_error;
         });
       }
     }
@@ -139,6 +145,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -151,16 +158,16 @@ class _EditRequestModalState extends State<EditRequestModal> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
+              Center(
                 child: Text(
-                  'Edit Request',
+                  appLocalizations.edit_request,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 16),
 
-              const Text(
-                'Location',
+              Text(
+                appLocalizations.location,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -205,7 +212,8 @@ class _EditRequestModalState extends State<EditRequestModal> {
                         errorTileCallback: (title, error, stackTrace) {
                           setState(() {
                             isGlobal = true;
-                            fieldErrors['errorLocation'] = 'Unable to load map';
+                            fieldErrors['errorLocation'] =
+                                appLocalizations.unable_to_load_map;
                           });
                         },
                       ),
@@ -268,8 +276,8 @@ class _EditRequestModalState extends State<EditRequestModal> {
 
               const SizedBox(height: 16),
 
-              const Text(
-                'Request Details',
+              Text(
+                appLocalizations.request_details,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -308,7 +316,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _editRequest,
-                  child: const Text('Edit Request'),
+                  child: Text(appLocalizations.edit_request),
                 ),
               ),
               if (fieldErrors.containsKey('error'))

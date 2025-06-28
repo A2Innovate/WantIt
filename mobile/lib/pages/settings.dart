@@ -9,6 +9,7 @@ import 'package:mobile/stores/client.dart';
 import 'package:mobile/widgets/password_field.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/user_provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -17,8 +18,6 @@ class SettingsPage extends StatefulWidget {
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
-
-// Reusable password field with toggle
 
 class _SettingsPageState extends State<SettingsPage> {
   final _nameCtrl = TextEditingController();
@@ -130,6 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _onChangePassword() async {
+    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       _passwordErrors = {};
       _isChangingPassword = true;
@@ -137,7 +137,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (_newPassCtrl.text.trim() != _repeatPassCtrl.text.trim()) {
       setState(() {
-        _passwordErrors['repeatPassword'] = 'Passwords do not match';
+        _passwordErrors['repeatPassword'] = appLocalizations.passwords_dont_match;
         _isChangingPassword = false;
       });
       return;

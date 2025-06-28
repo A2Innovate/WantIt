@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 
+import '../l10n/app_localizations.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../types/request.dart';
@@ -38,6 +39,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
   }
 
   Future<void> _createOffer() async {
+    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       fieldErrors = {};
     });
@@ -59,15 +61,14 @@ class _NewOfferModalState extends State<NewOfferModal> {
     } else {
       if (_selectedImages.length > 10) {
         setState(() {
-          fieldErrors["image"] = 'One offer can have up to 10 images.';
+          fieldErrors["image"] = appLocalizations.max_offer_images;
         });
         return;
       }
       for (final image in _selectedImages) {
         if (image.lengthSync() > 1024 * 1024 * 5) {
           setState(() {
-            fieldErrors["image"] =
-                'At least one of your images is too large, max size is 5MB.';
+            fieldErrors["image"] = appLocalizations.max_image_size;
           });
 
           return;

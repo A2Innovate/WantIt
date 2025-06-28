@@ -4,6 +4,7 @@ import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../pages/settings.dart';
 import '../providers/user_provider.dart';
 
@@ -23,6 +24,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<UserProvider>(context);
+    var localizedStrings = AppLocalizations.of(context)!;
     final user = provider.current;
     final loggedIn = user != null;
 
@@ -37,7 +39,10 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 MaterialPageRoute(builder: (_) => const SignInPage()),
               );
             },
-            child: const Text('Sign In', style: TextStyle(color: Colors.black)),
+            child: Text(
+              localizedStrings.sign_in,
+              style: const TextStyle(color: Colors.black),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -46,7 +51,10 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 MaterialPageRoute(builder: (_) => const SignUpPage()),
               );
             },
-            child: const Text('Sign Up', style: TextStyle(color: Colors.black)),
+            child: Text(
+              localizedStrings.sign_up,
+              style: const TextStyle(color: Colors.black),
+            ),
           ),
         ],
       );
@@ -90,10 +98,10 @@ class _UserMenuButtonState extends State<UserMenuButton> {
           }
         }
       },
-      itemBuilder: (context) => const [
-        PopupMenuItem(value: 0, child: Text('Profile')),
-        PopupMenuItem(value: 1, child: Text('Settings')),
-        PopupMenuItem(value: 2, child: Text('Logout')),
+      itemBuilder: (context) => [
+        PopupMenuItem(value: 0, child: Text(localizedStrings.profile)),
+        PopupMenuItem(value: 1, child: Text(localizedStrings.settings)),
+        PopupMenuItem(value: 2, child: Text(localizedStrings.logout)),
       ],
     );
   }

@@ -1,6 +1,9 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import '../l10n/app_localizations.dart';
 
 // ignore_for_file: constant_identifier_names
 enum Currency {
@@ -38,70 +41,72 @@ enum Currency {
 }
 
 extension CurrencyExtension on Currency {
-  String get name {
+  String localizedName(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     switch (this) {
       case Currency.USD:
-        return 'United States dollar';
+        return loc.currency_usd_name;
       case Currency.PLN:
-        return 'Polish złoty';
+        return loc.currency_pln_name;
       case Currency.EUR:
-        return 'Euro';
+        return loc.currency_eur_name;
       case Currency.GBP:
-        return 'British Pound Sterling';
+        return loc.currency_gbp_name;
       case Currency.JPY:
-        return 'Japanese Yen';
+        return loc.currency_jpy_name;
       case Currency.BGN:
-        return 'Bulgarian Lev';
+        return loc.currency_bgn_name;
       case Currency.CZK:
-        return 'Czech koruna';
+        return loc.currency_czk_name;
       case Currency.DKK:
-        return 'Danish Krone';
+        return loc.currency_dkk_name;
       case Currency.HUF:
-        return 'Hungarian Forint';
+        return loc.currency_huf_name;
       case Currency.RON:
-        return 'Romanian Leu';
+        return loc.currency_ron_name;
       case Currency.SEK:
-        return 'Swedish Krona';
+        return loc.currency_sek_name;
       case Currency.CHF:
-        return 'Swiss Franc';
+        return loc.currency_chf_name;
       case Currency.ISK:
-        return 'Icelandic Krona';
+        return loc.currency_isk_name;
       case Currency.NOK:
-        return 'Norwegian Krone';
+        return loc.currency_nok_name;
       case Currency.TRY:
-        return 'Turkish Lira';
+        return loc.currency_try_name;
       case Currency.AUD:
-        return 'Australian Dollar';
+        return loc.currency_aud_name;
       case Currency.BRL:
-        return 'Brazilian Real';
+        return loc.currency_brl_name;
       case Currency.CAD:
-        return 'Canadian Dollar';
+        return loc.currency_cad_name;
       case Currency.CNY:
-        return 'Chinese Yuan';
+        return loc.currency_cny_name;
       case Currency.HKD:
-        return 'Hong Kong Dollar';
+        return loc.currency_hkd_name;
       case Currency.IDR:
-        return 'Indonesian Rupiah';
+        return loc.currency_idr_name;
       case Currency.ILS:
-        return 'Israeli Shekel';
+        return loc.currency_ils_name;
       case Currency.INR:
-        return 'Indian Rupee';
+        return loc.currency_inr_name;
       case Currency.KRW:
-        return 'South Korean Won';
+        return loc.currency_krw_name;
       case Currency.MXN:
-        return 'Mexican Peso';
+        return loc.currency_mxn_name;
       case Currency.MYR:
-        return 'Malaysian Ringgit';
+        return loc.currency_myr_name;
       case Currency.NZD:
-        return 'New Zealand Dollar';
+        return loc.currency_nzd_name;
       case Currency.PHP:
-        return 'Philippine Peso';
+        return loc.currency_php_name;
       case Currency.SGD:
-        return 'Singapore Dollar';
+        return loc.currency_sgd_name;
       case Currency.THB:
-        return 'Thai Baht';
+        return loc.currency_thb_name;
       case Currency.ZAR:
-        return 'South African Rand';
+        return loc.currency_zar_name;
     }
   }
 

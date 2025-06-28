@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/stores/pusher.dart';
 import 'package:provider/provider.dart';
 import 'package:pusher_client_socket/channels/channel.dart';
@@ -45,22 +46,24 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   double _zoom = 13;
 
   Future<void> _onDelete() async {
+    final appLocalizations = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: const Text(
-            'Are you sure you want to delete this request? This action cannot be undone.',
-          ),
+          title: Text(appLocalizations.confirm_deletion),
+          content: Text(appLocalizations.deletion_confirmation_request),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(appLocalizations.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Text(
+                appLocalizations.delete,
+                style: const TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -92,7 +95,12 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(response.data['message'] ?? 'Network error'),
+                content: Text(
+                  (response.data is Map<String, dynamic>)
+                      ? (response.data['message'] ??
+                            appLocalizations.unknown_error)
+                      : appLocalizations.network_error,
+                ),
               ),
             );
           }
@@ -101,7 +109,12 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.response?.data['message'] ?? 'Network error'),
+              content: Text(
+                (e.response?.data is Map<String, dynamic>)
+                    ? (e.response?.data['message'] ??
+                          appLocalizations.unknown_error)
+                    : appLocalizations.network_error,
+              ),
             ),
           );
         }
@@ -373,19 +386,22 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   @override
   Widget build(BuildContext context) {
     final current = Provider.of<UserProvider>(context).current;
+    final appLocalizations = AppLocalizations.of(context)!;
     bool isRequestOwnerOrAdmin =
         (current != null && current.id == _request?.user.id) ||
         ((current?.isAdmin ?? false));
     if (_loadFailed) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Request Detail'),
+          title: Text(appLocalizations.request_details),
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
         ),
         backgroundColor: Colors.white,
-        body: Center(child: Text("Can't find request ${widget.requestId}")),
+        body: Center(
+          child: Text(appLocalizations.request_not_found(widget.requestId)),
+        ),
       );
     }
     if (_request == null) {
@@ -397,7 +413,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     final request = _request!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Request Detail'),
+        title: Text(appLocalizations.request_details),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -496,7 +512,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                               ElevatedButton.icon(
                                 onPressed: _onEdit,
                                 icon: const Icon(Icons.edit),
-                                label: const Text('Edit'),
+                                label: Text(appLocalizations.edit),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.grey[200],
                                   foregroundColor: Colors.black,
@@ -506,7 +522,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                               ElevatedButton.icon(
                                 onPressed: _onDelete,
                                 icon: const Icon(Icons.delete),
-                                label: const Text('Delete'),
+                                label: Text(appLocalizations.delete),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red[100],
                                   foregroundColor: Colors.red[800],
@@ -528,22 +544,22 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                   children: [
                     DropdownButton<String>(
                       value: _selectedSort,
-                      items: const [
+                      items: [
                         DropdownMenuItem(
                           value: 'newest_first',
-                          child: Text('Newest first'),
+                          child: Text(appLocalizations.newest_first),
                         ),
                         DropdownMenuItem(
                           value: 'oldest_first',
-                          child: Text('Oldest first'),
+                          child: Text(appLocalizations.oldest_first),
                         ),
                         DropdownMenuItem(
                           value: 'cheapest_first',
-                          child: Text('Cheapest first'),
+                          child: Text(appLocalizations.cheapest_first),
                         ),
                         DropdownMenuItem(
                           value: 'expensive_first',
-                          child: Text('Expensive first'),
+                          child: Text(appLocalizations.expensive_first),
                         ),
                       ],
                       onChanged: (val) {
@@ -556,7 +572,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                     ElevatedButton.icon(
                       onPressed: _onCreate,
                       icon: const Icon(Icons.add),
-                      label: const Text('New offer'),
+                      label: Text(appLocalizations.new_offer),
                     ),
                   ],
                 ),
@@ -571,7 +587,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          const Text('Offers'),
+                          Text(appLocalizations.offers),
                           const Divider(),
                           ..._getSortedOffers().map(
                             (offer) => OfferCard(

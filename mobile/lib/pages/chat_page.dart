@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/pages/chat_details.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/message_provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'dart:async';
@@ -44,6 +45,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessagesProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
+    final appLocalizations = AppLocalizations.of(context)!;
 
     if (userProvider.current == null) {
       return Scaffold(
@@ -54,8 +56,8 @@ class _ChatPageState extends State<ChatPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'You must be signed in to view your chats.',
+                Text(
+                  appLocalizations.auth_required_for_chat,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),

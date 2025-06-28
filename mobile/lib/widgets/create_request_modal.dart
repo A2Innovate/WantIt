@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 
+import '../l10n/app_localizations.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../utils/global.dart';
@@ -120,6 +121,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -132,16 +134,16 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
+              Center(
                 child: Text(
-                  'New Request',
+                  appLocalizations.new_request,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 16),
 
-              const Text(
-                'Location',
+              Text(
+                appLocalizations.location,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -186,7 +188,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                         errorTileCallback: (title, error, stackTrace) {
                           setState(() {
                             isGlobal = true;
-                            fieldErrors['errorLocation'] = 'Unable to load map';
+                            fieldErrors['errorLocation'] = appLocalizations.unable_to_load_map;
                           });
                         },
                       ),
@@ -249,8 +251,8 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
               const SizedBox(height: 16),
 
-              const Text(
-                'Request Details',
+              Text(
+                appLocalizations.request_details,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -294,7 +296,8 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _createRequest,
-                  child: const Text('Create Request'),
+                  child: Text(
+                    appLocalizations.new_request),
                 ),
               ),
               if (fieldErrors.containsKey('error'))

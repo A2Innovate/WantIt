@@ -4,6 +4,8 @@ import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/schemas/auth.dart';
 
+import '../l10n/app_localizations.dart';
+
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -94,13 +96,14 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localizedStrings = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
-        title: const Text('Sign Up'),
+        title: Text(localizedStrings.sign_up),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -110,9 +113,9 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Column(
               children: [
                 const SizedBox(height: 32),
-                const Text(
-                  'Create Account',
-                  style: TextStyle(
+                Text(
+                  localizedStrings.create_an_account,
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -199,7 +202,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               color: Colors.black,
                             ),
                           )
-                        : const Text('Sign Up'),
+                        : Text(localizedStrings.sign_up),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -208,7 +211,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text("Back to Home"),
+                      child: Text(localizedStrings.back_to_home),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -217,7 +220,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           MaterialPageRoute(builder: (_) => SignInPage()),
                         );
                       },
-                      child: const Text("Have an account?"),
+                      child: Text(localizedStrings.already_have_an_account),
                     ),
                   ],
                 ),

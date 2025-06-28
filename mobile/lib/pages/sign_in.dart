@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/message_provider.dart';
 import '../providers/user_provider.dart';
 
@@ -47,6 +48,7 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<void> _onLogin() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       fieldErrors = {};
       _loading = true;
@@ -85,14 +87,16 @@ class _SignInPageState extends State<SignInPage> {
           }
         } else {
           setState(() {
-            fieldErrors['login'] = response.data['message'] ?? 'Login failed';
+            fieldErrors['login'] = (response.data is Map<String, dynamic>)
+                ? (response.data['message'] ?? appLocalizations.unknown_error)
+                : appLocalizations.network_error;
           });
         }
       } on DioException catch (e) {
         setState(() {
           fieldErrors['login'] = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? 'Unknown error')
-              : 'Network error. Please check your connection';
+              ? (e.response?.data['message'] ?? appLocalizations.unknown_error)
+              : appLocalizations.network_error;
         });
       }
     } else {
@@ -131,6 +135,7 @@ class _SignInPageState extends State<SignInPage> {
         Navigator.pop(context);
       }
     } else {
+      final appLocalizations = AppLocalizations.of(context)!;
       try {
         final pkceCodeVerifier = sharedPrefs.getString('pkceCodeVerifier');
         final state = sharedPrefs.getString('oauth_state');
@@ -173,7 +178,12 @@ class _SignInPageState extends State<SignInPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.response?.data['message'] ?? 'Network error'),
+              content: Text(
+                (e.response?.data is Map<String, dynamic>)
+                    ? (e.response?.data['message'] ??
+                          appLocalizations.unknown_error)
+                    : appLocalizations.network_error,
+              ),
             ),
           );
         }
@@ -183,13 +193,14 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localizedStrings = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
-        title: const Text('Sign In'),
+        title: Text(localizedStrings.sign_in),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -199,9 +210,9 @@ class _SignInPageState extends State<SignInPage> {
             child: Column(
               children: [
                 const SizedBox(height: 32),
-                const Text(
-                  'Sign In',
-                  style: TextStyle(
+                Text(
+                  localizedStrings.sign_in,
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -268,7 +279,7 @@ class _SignInPageState extends State<SignInPage> {
                               color: Colors.black,
                             ),
                           )
-                        : const Text('Login'),
+                        : Text(localizedStrings.sign_in),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -285,7 +296,7 @@ class _SignInPageState extends State<SignInPage> {
                           MaterialPageRoute(builder: (_) => const SignUpPage()),
                         );
                       },
-                      child: const Text("Don't have an account?"),
+                      child: Text(localizedStrings.dont_have_an_account),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -296,7 +307,7 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                         );
                       },
-                      child: const Text("Forgot Password?"),
+                      child: Text(localizedStrings.forgot_password),
                     ),
                   ],
                 ),

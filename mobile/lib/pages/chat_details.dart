@@ -10,6 +10,7 @@ import 'package:pusher_client_socket/channels/channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../l10n/app_localizations.dart';
 import '../providers/message_provider.dart';
 import '../schemas/chat.dart';
 import '../types/messages.dart';
@@ -177,6 +178,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Column(

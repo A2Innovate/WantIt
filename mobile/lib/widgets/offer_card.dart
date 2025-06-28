@@ -6,6 +6,7 @@ import 'package:mobile/types/offer.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/user_provider.dart';
 import '../stores/client.dart';
 import '../stores/currencies.dart';
@@ -76,13 +77,14 @@ class _OfferCardState extends State<OfferCard> {
   }
 
   Future<void> _onDelete() async {
+    final appLocalizations = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: const Text(
-            'Are you sure you want to delete this offer? This action cannot be undone.',
+          title: Text(appLocalizations.confirm_deletion),
+          content: Text(
+            appLocalizations.deletion_confirmation_offer,
           ),
           actions: [
             TextButton(

@@ -29,7 +29,7 @@ class CurrencyDropdown extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(width: 8),
-              Text(currency.name),
+              Text(currency.localizedName(context)),
             ],
           ),
         );

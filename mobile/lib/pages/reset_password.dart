@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/schemas/auth.dart';
 
+import '../l10n/app_localizations.dart';
+
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
 
@@ -23,6 +25,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   Future<void> _validateAndSubmit() async {
+    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       _emailError = null;
       _loading = true;
@@ -44,22 +47,22 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
         if (response.statusCode == 200 && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Reset link sent! Please check your email.'),
+            SnackBar(
+              content: Text(appLocalizations.reset_link_sent),
               backgroundColor: Colors.green,
             ),
           );
           Navigator.of(context).pop();
         } else {
           setState(() {
-            _emailError = 'Something went wrong. Please try again.';
+            _emailError = appLocalizations.unknown_error;
           });
         }
       } on DioException catch (e) {
         setState(() {
           _emailError = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? 'Unknown error')
-              : 'Network error. Please check your connection';
+              ? (e.response?.data['message'] ?? appLocalizations.unknown_error)
+              : appLocalizations.network_error;
         });
       }
     } else {
@@ -77,10 +80,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Reset Password'),
+        title: Text(appLocalizations.reset_password),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
@@ -92,13 +96,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             key: _formKey,
             child: Column(
               children: [
-                const Text(
-                  'Forgot your password?',
+                Text(
+                  appLocalizations.reset_password,
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Enter your email to receive a password reset link.',
+                Text(
+                  appLocalizations.reset_password_desc,
                   style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
                 const SizedBox(height: 32),
@@ -133,7 +137,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               color: Colors.black,
                             ),
                           )
-                        : const Text('Send Reset Link'),
+                        : Text(appLocalizations.send_reset_link),
                   ),
                 ),
               ],

@@ -130,7 +130,9 @@ class _NewOfferModalState extends State<NewOfferModal> {
         }
       } on DioException catch (e) {
         setState(() {
-          fieldErrors['error'] = e.response?.data['message'];
+          fieldErrors['error'] = (e.response?.data is Map<String, dynamic>)
+              ? (e.response?.data['message'] ?? 'Unknown error')
+              : 'Network error. Please check your connection';
         });
       }
     }

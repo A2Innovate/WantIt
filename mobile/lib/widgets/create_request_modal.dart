@@ -78,7 +78,9 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
         }
       } on DioException catch (e) {
         setState(() {
-          fieldErrors['error'] = e.response?.data['message'] ?? 'Network error';
+          fieldErrors['error'] = (e.response?.data is Map<String, dynamic>)
+              ? (e.response?.data['message'] ?? 'Unknown error')
+              : 'Network error. Please check your connection';
         });
       }
     }

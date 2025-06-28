@@ -57,9 +57,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         }
       } on DioException catch (e) {
         setState(() {
-          _emailError = e.response?.data is Map
-              ? e.response?.data['message'] ?? 'Password reset failed'
-              : 'Network error. Please check your connection.';
+          _emailError = (e.response?.data is Map<String, dynamic>)
+              ? (e.response?.data['message'] ?? 'Unknown error')
+              : 'Network error. Please check your connection';
         });
       }
     } else {

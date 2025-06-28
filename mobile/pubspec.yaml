@@ -37,7 +37,6 @@ dependencies:
   acanthis: ^1.2.3
   http: ^1.4.0
   shared_preferences: ^2.5.3
-  intl: ^0.20.2
   dio: ^5.8.0+1
   dio_cookie_manager: ^3.2.0
   cookie_jar: ^4.0.8
@@ -54,6 +53,9 @@ dependencies:
   collection: ^1.19.1
   path_provider: ^2.1.5
   url_launcher: ^6.3.1
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +73,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

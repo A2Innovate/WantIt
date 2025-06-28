@@ -373,10 +373,9 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   @override
   Widget build(BuildContext context) {
     final current = Provider.of<UserProvider>(context).current;
-    final isRequestOwnerOrAdmin =
-        current != null &&
-        _request != null &&
-        (current.id == _request!.user.id || (current.isAdmin ?? false));
+    bool isRequestOwnerOrAdmin =
+        (current != null && current.id == _request?.user.id) ||
+        ((current?.isAdmin ?? false));
     if (_loadFailed) {
       return Scaffold(
         appBar: AppBar(

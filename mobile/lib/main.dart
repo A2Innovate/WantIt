@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/pages/request_detail_page.dart';
+import 'package:mobile/providers/locale_provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
 import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/stores/client.dart';
@@ -12,7 +15,6 @@ import 'stores/pusher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await initCookieJar();
   useApi().interceptors.add(
     DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
@@ -21,12 +23,10 @@ void main() async {
   final notificationProvider = NotificationProvider();
   final userProvider = UserProvider();
   await userProvider.fetchUser();
-  if (userProvider.current != null) {
-    final int userId = userProvider.current!.id;
-    final pusherInitialized = await initPusher(userId, messagesProvider);
-    if (!pusherInitialized) {
-      print('Warning: Failed to initialize Pusher client');
-    }
+  final int userId = userProvider.current?.id ?? -1;
+  final pusherInitialized = await initPusher(userId, messagesProvider);
+  if (!pusherInitialized) {
+    print('Warning: Failed to initialize Pusher client');
   }
   runApp(
     MultiProvider(
@@ -36,6 +36,7 @@ void main() async {
           value: notificationProvider,
         ),
         ChangeNotifierProvider<UserProvider>.value(value: userProvider),
+        ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
       ],
       child: const MyApp(),
     ),
@@ -84,6 +85,14 @@ class MyApp extends StatelessWidget {
         }
         return MaterialPageRoute(builder: (_) => const MainPage());
       },
+      supportedLocales: const [Locale('en'), Locale('pl')],
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: context.watch<LocaleProvider>().locale,
     );
   }
 }

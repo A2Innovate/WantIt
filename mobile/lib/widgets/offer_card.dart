@@ -99,9 +99,13 @@ class _OfferCardState extends State<OfferCard> {
     );
     if (confirm != true) return;
 
+    final current = Provider.of<UserProvider>(context, listen: false).current;
+    bool isAdmin =
+        ((current?.isAdmin ?? false) && (widget.offer.user.id != current?.id));
     try {
       final response = await useApi().delete(
         '/request/${widget.request.id}/offer/${widget.offer.id}',
+        queryParameters: {if (isAdmin) 'pretendUser': widget.offer.user.id},
       );
       if (response.statusCode == 200) {
         if (mounted) {
@@ -206,7 +210,7 @@ class _OfferCardState extends State<OfferCard> {
     final offer = widget.offer;
     final isAccepted = widget.request.acceptedOffer?.offerId == widget.offer.id;
     final current = Provider.of<UserProvider>(context).current;
-    final isOfferOrAdmin =
+    final isOfferOwnerOrAdmin =
         current != null &&
         (current.id == widget.offer.user.id || (current.isAdmin ?? false));
     return Card(
@@ -335,7 +339,7 @@ class _OfferCardState extends State<OfferCard> {
                     label: const Text('Accept'),
                   ),
 
-                if (isOfferOrAdmin) ...[
+                if (isOfferOwnerOrAdmin) ...[
                   ElevatedButton.icon(
                     onPressed: _onEdit,
                     icon: const Icon(Icons.edit),

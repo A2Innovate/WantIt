@@ -3,7 +3,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
+import 'package:provider/provider.dart';
 
 import '../stores/client.dart';
 import '../schemas/request.dart';
@@ -60,9 +62,18 @@ class _EditRequestModalState extends State<EditRequestModal> {
       });
     } else {
       try {
+        final current = Provider.of<UserProvider>(
+          context,
+          listen: false,
+        ).current;
+        bool isAdmin =
+            ((current?.isAdmin ?? false) &&
+            (widget.request.user.id != current?.id));
+
         final response = await useApi().put(
           '/request/${widget.request.id}',
           data: formData,
+          queryParameters: {if (isAdmin) 'pretendUser': widget.request.user.id},
           options: Options(
             sendTimeout: const Duration(seconds: 30),
             receiveTimeout: const Duration(seconds: 30),

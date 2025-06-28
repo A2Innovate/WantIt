@@ -23,6 +23,11 @@ class _CommentCardState extends State<CommentCard> {
   Map<String, String?> fieldErrors = {};
 
   Future<void> _onDelete() async {
+    final current = Provider.of<UserProvider>(context, listen: false).current;
+    bool isAdmin =
+        ((current?.isAdmin ?? false) &&
+        (widget.comment.user.id != current?.id));
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -47,6 +52,9 @@ class _CommentCardState extends State<CommentCard> {
     try {
       final response = await useApi().delete(
         '/comment/${widget.comment.id.toString()}',
+        queryParameters: {
+          if (isAdmin) 'pretendUser': widget.comment.user.id.toString(),
+        },
       );
       if (response.statusCode == 200) {
         if (mounted) {
@@ -65,6 +73,10 @@ class _CommentCardState extends State<CommentCard> {
   }
 
   Future<void> _onEdit() async {
+    final current = Provider.of<UserProvider>(context, listen: false).current;
+    bool isAdmin =
+        ((current?.isAdmin ?? false) &&
+        (widget.comment.user.id != current?.id));
     setState(() {
       fieldErrors = {};
     });
@@ -85,6 +97,9 @@ class _CommentCardState extends State<CommentCard> {
           final response = await useApi().put(
             '/comment/${widget.comment.id}',
             data: formData,
+            queryParameters: {
+              if (isAdmin) 'pretendUser': widget.comment.user.id,
+            },
           );
           if (response.statusCode == 200) {
             if (mounted) {
@@ -125,6 +140,10 @@ class _CommentCardState extends State<CommentCard> {
   @override
   Widget build(BuildContext context) {
     final current = Provider.of<UserProvider>(context).current;
+    bool isCommentOwnerOrAdmin =
+        (current != null && current.id == widget.comment.user.id) ||
+        ((current?.isAdmin ?? false));
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       elevation: 2,
@@ -161,10 +180,7 @@ class _CommentCardState extends State<CommentCard> {
             if (isEditing)
               TextField(
                 controller: editCommentController,
-                decoration: InputDecoration(
-                  // labelText: 'Edit Comment',
-                  errorText: fieldErrors['content'],
-                ),
+                decoration: InputDecoration(errorText: fieldErrors['content']),
               ),
             if (!isEditing)
               Text(
@@ -180,7 +196,7 @@ class _CommentCardState extends State<CommentCard> {
 
             const SizedBox(height: 16),
 
-            if (current?.id == widget.comment.user.id)
+            if (isCommentOwnerOrAdmin)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

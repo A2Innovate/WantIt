@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
@@ -24,7 +25,14 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   @override
   void initState() {
     super.initState();
-    futureItems = fetchItems(query);
+    Future.microtask(
+      () => {
+        setState(() {
+          futureItems = fetchItems(query);
+        }),
+      },
+    );
+    // futureItems = fetchItems(query);
   }
 
   Future<void> _openRequestDetails(Request item) async {
@@ -49,6 +57,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   }
 
   Future<List<Request>> fetchItems(String query) async {
+    var localizedStrings = AppLocalizations.of(context);
     try {
       final dio = useApi();
       final response = await dio.get(
@@ -73,7 +82,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
         throw Exception('Failed to fetch items');
       }
     } on DioException {
-      throw Exception('Network error. Please check your connection.');
+      throw Exception(localizedStrings?.network_error);
     }
   }
 
@@ -86,6 +95,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    var localizedStrings = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: const Text('WantIt'),
@@ -98,7 +108,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: 'Search items...',
+                hintText: localizedStrings.search_items,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -115,7 +125,28 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('${snapshot.error}'));
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        futureItems = fetchItems(query);
+                      });
+                    },
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: 300,
+                          child: Center(
+                            child: Text(
+                              '${snapshot.error}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return RefreshIndicator(
                     onRefresh: () async {
@@ -125,10 +156,12 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                     },
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
+                      children: [
                         SizedBox(
                           height: 300,
-                          child: Center(child: Text('No results found.')),
+                          child: Center(
+                            child: Text(localizedStrings.no_results),
+                          ),
                         ),
                       ],
                     ),

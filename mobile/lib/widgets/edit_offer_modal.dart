@@ -99,7 +99,6 @@ class _EditOfferModalState extends State<EditOfferModal> {
         }
       }
       try {
-        // if ((current?.isAdmin ?? false) && (_request?.user.id != null) && (_request?.user.id != current?.id))
         final current = Provider.of<UserProvider>(
           context,
           listen: false,
@@ -108,10 +107,6 @@ class _EditOfferModalState extends State<EditOfferModal> {
             ((current?.isAdmin ?? false) &&
             (widget.offer.user.id != current?.id));
         final api = useApi();
-        print(
-          ((current?.isAdmin ?? false) &&
-              (widget.offer.user.id != current?.id)),
-        );
         final response = await api.put(
           '/request/${widget.request.id}/offer/${widget.offer.id}',
           data: formData,

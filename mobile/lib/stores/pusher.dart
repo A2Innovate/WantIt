@@ -13,11 +13,9 @@ void disconnectPusher() {
     if (userChannel != null) {
       pusherClient?.unsubscribe(userChannel!.name);
     }
-    pusherClient?.disconnect();
     userChannel = null;
-    pusherClient = null;
   } catch (e) {
-    print('Error disconnecting Pusher: $e');
+    print('Error disconnecting private channel from Pusher: $e');
   }
 }
 
@@ -26,9 +24,9 @@ Future<bool> initPusher(int userId, MessagesProvider messagesProvider) async {
   final cookies = await cookieJar!.loadForRequest(
     Uri.parse('${ApiConfig.baseUrl}/api/auth/pusher'),
   );
-  if (cookies.isEmpty) {
-    return false;
-  }
+  // if (cookies.isEmpty) {
+  //   return false;
+  // }
 
   // Build cookie header string "name=value; name2=value2"
   final cookieHeader = cookies.map((c) => '${c.name}=${c.value}').join('; ');
@@ -49,6 +47,23 @@ Future<bool> initPusher(int userId, MessagesProvider messagesProvider) async {
   pusherClient = PusherClient(options: pusherOptions);
   pusherClient?.connect();
 
+  if (userId != -1) {
+    bindPrivateChannel(userId, messagesProvider);
+  }
+
+  return true;
+}
+
+Future<void> bindPrivateChannel(
+  int userId,
+  MessagesProvider messagesProvider,
+) async {
+  final cookies = await cookieJar!.loadForRequest(
+    Uri.parse('${ApiConfig.baseUrl}/api/auth/pusher'),
+  );
+  pusherClient?.options.authOptions.headers['Cookie'] = cookies
+      .map((c) => '${c.name}=${c.value}')
+      .join('; ');
   userChannel = pusherClient?.subscribe('private-user-$userId');
   userChannel?.bind('new-notification', (event) {
     try {
@@ -60,7 +75,6 @@ Future<bool> initPusher(int userId, MessagesProvider messagesProvider) async {
       print(e.toString());
     }
   });
-  return true;
 }
 
 PusherClient usePusher() {

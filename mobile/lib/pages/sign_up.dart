@@ -63,9 +63,9 @@ class _SignUpPageState extends State<SignUpPage> {
         }
       } on DioException catch (e) {
         setState(() {
-          fieldErrors['login'] = e.response?.data is Map
-              ? e.response?.data['message'] ?? 'Sign up failed'
-              : 'Network error. Please check your connection.';
+          fieldErrors['login'] = (e.response?.data is Map<String, dynamic>)
+              ? (e.response?.data['message'] ?? 'Unknown error')
+              : 'Network error. Please check your connection';
         });
       }
     } else {

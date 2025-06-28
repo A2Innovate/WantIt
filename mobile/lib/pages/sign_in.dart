@@ -72,8 +72,8 @@ class _SignInPageState extends State<SignInPage> {
           }
 
           if (mounted) {
-            await initPusher(
-              response.data['id'],
+            await bindPrivateChannel(
+              userProvider.current?.id ?? -1,
               Provider.of<MessagesProvider>(context, listen: false),
             );
             if (mounted) {
@@ -90,7 +90,9 @@ class _SignInPageState extends State<SignInPage> {
         }
       } on DioException catch (e) {
         setState(() {
-          fieldErrors['login'] = e.response?.data['message'] ?? 'Network error';
+          fieldErrors['login'] = (e.response?.data is Map<String, dynamic>)
+              ? (e.response?.data['message'] ?? 'Unknown error')
+              : 'Network error. Please check your connection';
         });
       }
     } else {

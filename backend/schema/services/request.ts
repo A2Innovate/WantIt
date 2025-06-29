@@ -23,8 +23,7 @@ export const createRequestSchema = z.object({
     (data.location !== null && data.radius !== null) ||
     (data.location === null && data.radius === null),
   {
-    message:
-      "validation_request_location_radius",
+    message: "validation_request_location_radius",
   },
 );
 
@@ -44,8 +43,7 @@ export const editRequestSchema = z.object({
     (data.location !== null && data.radius !== null) ||
     (data.location === null && data.radius === null),
   {
-    message:
-      "validation_request_location_radius",
+    message: "validation_request_location_radius",
   },
 );
 

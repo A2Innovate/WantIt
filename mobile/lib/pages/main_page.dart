@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'persistent_search_page.dart';
 import 'chat_page.dart';
 
@@ -15,11 +15,6 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = const [PersistentSearchPage(), ChatPage()];
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -28,7 +23,9 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final homeLabel = FlutterI18n.translate(context, 'home');
+    final chatLabel = FlutterI18n.translate(context, 'chat');
+
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
@@ -36,12 +33,12 @@ class _MainPageState extends State<MainPage> {
         onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: appLocalizations.home,
+            icon: const Icon(Icons.home),
+            label: homeLabel,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: appLocalizations.chat,
+            icon: const Icon(Icons.chat),
+            label: chatLabel,
           ),
         ],
       ),

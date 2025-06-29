@@ -2,16 +2,16 @@ import { z } from "zod";
 import { COMPARISON_MODES, CURRENCIES } from "@/utils/global.ts";
 
 export const updateProfileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters long").max(
+  name: z.string().min(2, "validation_name_min_length").max(
     256,
-    "Name must be at most 256 characters long",
+    "validation_name_max_length",
   ),
-  username: z.string().min(2, "Username must be at least 2 characters long")
+  username: z.string().min(2, "validation_username_min_length")
     .max(
       32,
-      "Username must be at most 32 characters long",
-    ).regex(/^[a-zA-Z0-9]+$/, "Username must only contain letters and numbers"),
-  email: z.string().email("Invalid email"),
+      "validation_username_max_length",
+    ).regex(/^[a-zA-Z0-9]+$/, "validation_username_regex"),
+  email: z.string().email("validation_email"),
   preferredCurrency: z.enum(CURRENCIES),
 });
 
@@ -25,11 +25,11 @@ export const getUserByIdSchema = z.object({
 export const createEditAlertSchema = z.object({
   content: z
     .string()
-    .min(4, "Content must be at least 4 characters long")
-    .max(512, "Content must be at most 512 characters long"),
+    .min(4, "validation_alert_content_min_length")
+    .max(512, "validation_alert_content_max_length"),
   budget: z
     .number()
-    .max(2147483647, "Budget must be at most 2147483647"),
+    .max(2147483647, "validation_alert_budget_max_length"),
   budgetComparisonMode: z.enum(COMPARISON_MODES),
   location: z
     .object({
@@ -44,8 +44,7 @@ export const createEditAlertSchema = z.object({
     (data.location !== null && data.radius !== null) ||
     (data.location === null && data.radius === null),
   {
-    message:
-      "Either both location and radius must be provided, or both must be null",
+    message: "validation_alert_location_radius",
   },
 );
 
@@ -66,11 +65,11 @@ export const reviewByIdSchema = z.object({
 export const addEditReviewSchema = z.object({
   content: z
     .string()
-    .min(4, "Content must be at least 4 characters long")
-    .max(512, "Content must be at most 512 characters long")
+    .min(4, "validation_review_content_min_length")
+    .max(512, "validation_review_content_max_length")
     .nullable(),
-  rating: z.number().min(1, "Rating must be at least 1").max(
+  rating: z.number().min(1, "validation_review_rating_min_length").max(
     5,
-    "Rating must be at most 5",
+    "validation_review_rating_max_length",
   ),
 });

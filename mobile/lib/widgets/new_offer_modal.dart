@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../types/request.dart';
@@ -39,21 +39,21 @@ class _NewOfferModalState extends State<NewOfferModal> {
   }
 
   Future<void> _createOffer() async {
-    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       fieldErrors = {};
     });
-    final price = int.tryParse(priceController.text.trim());
+    final price = int.tryParse(priceController.text.trim()) ?? 0;
     final formData = {
       'content': contentController.text.trim(),
-      if (price != null) 'price': price,
+      'price': price,
       'negotiation': isNegotiable,
     };
     final result = await createAndEditOfferSchema.tryParseAsync(formData);
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        print(err.value);
+        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
       }
       setState(() {
         fieldErrors = errors;
@@ -61,14 +61,14 @@ class _NewOfferModalState extends State<NewOfferModal> {
     } else {
       if (_selectedImages.length > 10) {
         setState(() {
-          fieldErrors["image"] = appLocalizations.max_offer_images;
+          fieldErrors["image"] = context.translate("max_offer_images");
         });
         return;
       }
       for (final image in _selectedImages) {
         if (image.lengthSync() > 1024 * 1024 * 5) {
           setState(() {
-            fieldErrors["image"] = appLocalizations.max_image_size;
+            fieldErrors["image"] = context.translate("max_image_size");
           });
 
           return;
@@ -107,12 +107,13 @@ class _NewOfferModalState extends State<NewOfferModal> {
             );
 
             if (imageResponse.statusCode != 200) {
-              // Show warning that offer was created but images failed to upload
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      imageResponse.data['message'] ?? 'Network error',
+                      context.translate(
+                        imageResponse.data['message'] ?? 'network_error',
+                      ),
                     ),
                     backgroundColor: Colors.orange,
                   ),
@@ -126,14 +127,19 @@ class _NewOfferModalState extends State<NewOfferModal> {
           }
         } else {
           setState(() {
-            fieldErrors['error'] = response.data['message'];
+            fieldErrors['error'] = (response.data is Map<String, dynamic>)
+                ? context.translate(response.data['message'] ?? 'unknown_error')
+                : context.translate('network_error');
           });
         }
       } on DioException catch (e) {
         setState(() {
+          print(e.response?.data);
           fieldErrors['error'] = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? 'Unknown error')
-              : 'Network error. Please check your connection';
+              ? context.translate(
+                  e.response?.data['message'] ?? 'unknown_error',
+                )
+              : context.translate('network_error');
         });
       }
     }
@@ -153,17 +159,17 @@ class _NewOfferModalState extends State<NewOfferModal> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
+              Center(
                 child: Text(
-                  'New Offer',
+                  context.translate('new_offer'),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 16),
 
               // Add Image Picker UI
-              const Text(
-                'Image',
+              Text(
+                context.translate('images'),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -194,7 +200,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
                               )
                               .toList(),
                         )
-                      : const Center(child: Text('Tap to select image')),
+                      : Center(child: Text(context.translate('tap_to_select_images'))),
                 ),
               ),
               if (fieldErrors.containsKey('image'))
@@ -207,7 +213,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
               TextFormField(
                 controller: contentController,
                 decoration: InputDecoration(
-                  labelText: 'What is your offer?',
+                  labelText: context.translate('what_is_your_offer'),
                   errorText: fieldErrors['content'],
                 ),
               ),
@@ -215,7 +221,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
               TextFormField(
                 controller: priceController,
                 decoration: InputDecoration(
-                  labelText: 'Price',
+                  labelText: context.translate('price'),
                   errorText: fieldErrors['price'],
                 ),
                 keyboardType: TextInputType.number,
@@ -223,7 +229,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
 
               Row(
                 children: [
-                  const Text('Negotiable'),
+                  Text(context.translate('negotiable')),
                   const Spacer(),
                   Checkbox(
                     value: isNegotiable,
@@ -241,7 +247,7 @@ class _NewOfferModalState extends State<NewOfferModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _createOffer,
-                  child: const Text('Add Offer'),
+                  child: Text(context.translate('add_offer')),
                 ),
               ),
               const SizedBox(height: 16),

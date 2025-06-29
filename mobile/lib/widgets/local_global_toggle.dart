@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 
 class LocalGlobalToggle extends StatefulWidget {
   final bool initialValue;
@@ -25,7 +25,6 @@ class _LocalGlobalToggleState extends State<LocalGlobalToggle> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -37,7 +36,7 @@ class _LocalGlobalToggleState extends State<LocalGlobalToggle> {
             ),
             SizedBox(width: 4),
             Text(
-              appLocalizations.location_local,
+              context.translate("location_local"),
               style: TextStyle(
                 color: isGlobal ? Colors.black : Colors.blue,
                 fontWeight: FontWeight.w500,
@@ -63,7 +62,7 @@ class _LocalGlobalToggleState extends State<LocalGlobalToggle> {
         Row(
           children: [
             Text(
-              appLocalizations.location_global,
+              context.translate("location_global"),
               style: TextStyle(
                 color: isGlobal ? Colors.blue : Colors.black,
                 fontWeight: FontWeight.w500,

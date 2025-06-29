@@ -4,11 +4,12 @@ import { CURRENCIES } from "@/utils/global.ts";
 export const createRequestSchema = z.object({
   content: z
     .string()
-    .min(4, "Content must be at least 4 characters long")
-    .max(512, "Content must be at most 512 characters long"),
+    .min(4, "validation_request_content_min_length")
+    .max(512, "validation_request_content_max_length"),
   budget: z
     .number()
-    .max(2147483647, "Budget must be at most 2147483647"),
+    .min(0, "validation_request_budget_min_length")
+    .max(2147483647, "validation_request_budget_max_length"),
   location: z
     .object({
       x: z.number().min(-180).max(180),
@@ -23,16 +24,16 @@ export const createRequestSchema = z.object({
     (data.location === null && data.radius === null),
   {
     message:
-      "Either both location and radius must be provided, or both must be null",
+      "validation_request_location_radius",
   },
 );
 
 export const editRequestSchema = z.object({
   content: z
     .string()
-    .min(4, "Content must be at least 4 characters long")
-    .max(512, "Content must be at most 512 characters long"),
-  budget: z.number().max(2147483647, "Budget must be at most 2147483647"),
+    .min(4, "validation_request_content_min_length")
+    .max(512, "validation_request_content_max_length"),
+  budget: z.number().max(2147483647, "validation_request_budget_max_length"),
   location: z.object({
     x: z.number().min(-180).max(180),
     y: z.number().min(-90).max(90),
@@ -44,18 +45,19 @@ export const editRequestSchema = z.object({
     (data.location === null && data.radius === null),
   {
     message:
-      "Either both location and radius must be provided, or both must be null",
+      "validation_request_location_radius",
   },
 );
 
 export const createAndEditOfferSchema = z.object({
   content: z
     .string()
-    .min(4, "Content must be at least 4 characters long")
-    .max(512, "Content must be at most 512 characters long"),
+    .min(4, "validation_offer_content_min_length")
+    .max(512, "validation_offer_content_max_length"),
   price: z
     .number()
-    .max(2147483647, "Price must be at most 2147483647"),
+    .min(0, "validation_offer_price_min_length")
+    .max(2147483647, "validation_offer_price_max_length"),
   negotiation: z.boolean().default(false),
 });
 

@@ -5,12 +5,11 @@ import '../utils/global.dart';
 final createAndEditRequestSchema =
     object({
       'content': string()
-          .min(4, message: "Content must be at least 4 characters long")
-          .max(512, message: "Content must be at most 512 characters long"),
-      'budget': number().lte(
-        2147483647,
-        message: "Budget must be at most 2147483647",
-      ),
+          .min(4, message: "validation_request_content_min_length")
+          .max(512, message: "validation_request_content_max_length"),
+      'budget': number()
+          .lte(2147483647, message: "validation_request_budget_max_length")
+          .gte(0, message: "validation_request_budget_min_length"),
       'location': object({
         'x': number().gte(-180).lte(180),
         'y': number().gte(-90).lte(90),
@@ -25,17 +24,16 @@ final createAndEditRequestSchema =
         }
         return false;
       },
-      error: "Location and radius must be either both null or both not null",
+      error: "validation_request_location_radius",
       name: 'message',
     );
 
 final createAndEditOfferSchema = object({
   'content': string()
-      .min(4, message: "Content must be at least 4 characters long")
-      .max(512, message: "Content must be at most 512 characters long"),
-  'price': number().lte(
-    2147483647,
-    message: "Price must be at most 2147483647",
-  ),
+      .min(4, message: "validation_offer_content_min_length")
+      .max(512, message: "validation_offer_content_max_length"),
+  'price': number()
+      .lte(2147483647, message: "validation_offer_price_max_length")
+      .gte(0, message: "validation_offer_price_min_length"),
   'negotiation': boolean().nullable(defaultValue: false),
 });

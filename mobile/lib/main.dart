@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:mobile/l10n/app_localizations.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:flutter_i18n/loaders/file_translation_loader.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/providers/locale_provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
@@ -13,7 +14,7 @@ import 'package:mobile/widgets/deep_link_handler.dart';
 import 'package:provider/provider.dart';
 import 'stores/pusher.dart';
 
-void main() async {
+Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initCookieJar();
   useApi().interceptors.add(
@@ -28,6 +29,20 @@ void main() async {
   if (!pusherInitialized) {
     print('Warning: Failed to initialize Pusher client');
   }
+  final _flutterI18nDelegate = FlutterI18nDelegate(
+    translationLoader: FileTranslationLoader(
+      useCountryCode: false,
+      fallbackFile: 'en',
+      basePath: 'assets/i18n',
+    ),
+    missingTranslationHandler: (key, locale) {
+      print("--- Missing Key: $key, languageCode: ${locale?.languageCode}");
+    },
+  );
+
+  // Load translations initially
+  _flutterI18nDelegate.load(const Locale('en'));
+
   runApp(
     MultiProvider(
       providers: [
@@ -38,16 +53,18 @@ void main() async {
         ChangeNotifierProvider<UserProvider>.value(value: userProvider),
         ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
       ],
-      child: const MyApp(),
+      child: MyApp(flutterI18nDelegate: _flutterI18nDelegate),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+  final FlutterI18nDelegate flutterI18nDelegate;
+  const MyApp({super.key, required this.flutterI18nDelegate});
   @override
   Widget build(BuildContext context) {
+    final localeProvider = context.watch<LocaleProvider>();
+
     return MaterialApp(
       title: 'WantIt',
       themeMode: ThemeMode.system,
@@ -87,12 +104,38 @@ class MyApp extends StatelessWidget {
       },
       supportedLocales: const [Locale('en'), Locale('pl')],
       localizationsDelegates: [
-        AppLocalizations.delegate,
+        flutterI18nDelegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      locale: context.watch<LocaleProvider>().locale,
+      locale: localeProvider.locale,
     );
   }
 }
+
+// class _MyAppState extends State<MyApp> {
+//   late FlutterI18nDelegate _flutterI18nDelegate;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//
+//     // _flutterI18nDelegate = FlutterI18nDelegate(
+//     //   translationLoader: FileTranslationLoader(
+//     //     useCountryCode: false,
+//     //     fallbackFile: 'en',
+//     //     basePath: 'assets/i18n',
+//     //   ),
+//     //   missingTranslationHandler: (key, locale) {
+//     //     print("--- Missing Key: $key, languageCode: ${locale?.languageCode}");
+//     //   },
+//     // );
+//     //
+//     // // Load translations initially
+//     // _flutterI18nDelegate.load(const Locale('en'));
+//   }
+//
+//   @override
+//
+// }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/schemas/auth.dart';
 
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -25,7 +25,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   Future<void> _validateAndSubmit() async {
-    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       _emailError = null;
       _loading = true;
@@ -48,21 +47,25 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         if (response.statusCode == 200 && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(appLocalizations.reset_link_sent),
+              content: Text(context.translate("reset_link_sent")),
               backgroundColor: Colors.green,
             ),
           );
           Navigator.of(context).pop();
         } else {
           setState(() {
-            _emailError = appLocalizations.unknown_error;
+            _emailError = (response.data is Map<String, dynamic>)
+                ? context.translate(response.data['message'] ?? 'unknown_error')
+                : context.translate('network_error');
           });
         }
       } on DioException catch (e) {
         setState(() {
           _emailError = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? appLocalizations.unknown_error)
-              : appLocalizations.network_error;
+              ? context.translate(
+                  e.response?.data['message'] ?? 'unknown_error',
+                )
+              : context.translate('network_error');
         });
       }
     } else {
@@ -80,11 +83,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(appLocalizations.reset_password),
+        title: Text(context.translate("reset_password")),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
@@ -97,12 +99,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             child: Column(
               children: [
                 Text(
-                  appLocalizations.reset_password,
+                  context.translate("reset_password"),
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  appLocalizations.reset_password_desc,
+                  context.translate("reset_password_desc"),
                   style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
                 const SizedBox(height: 32),
@@ -137,7 +139,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               color: Colors.black,
                             ),
                           )
-                        : Text(appLocalizations.send_reset_link),
+                        : Text(context.translate("send_reset_link")),
                   ),
                 ),
               ],

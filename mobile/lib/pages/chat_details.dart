@@ -10,7 +10,7 @@ import 'package:pusher_client_socket/channels/channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 import '../providers/message_provider.dart';
 import '../schemas/chat.dart';
 import '../types/messages.dart';
@@ -50,19 +50,11 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     } catch (e) {
       setState(() {
         isLoading = false;
-        errorMessage = 'Failed to load chat. Please try again';
+        errorMessage = context.translate('failed_to_load_chat');
       });
     }
   }
 
-  Future<void> _loadProfileSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentName = prefs.getString('name');
-      _currentUsername = prefs.getString('username');
-      _currentId = prefs.getInt('userId');
-    });
-  }
 
   void scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -84,15 +76,14 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
 
     final result = await sendChatMessageSchema.tryParseAsync(value);
     if (!result.success) {
-      for (final err in result.errors.entries) {
-        final errorValue = err.value;
-        if (errorValue is Map && errorValue.isNotEmpty) {
-          errorFormMessage =
-              errorValue.values.first?.toString() ?? 'Validation error';
-        } else {
-          errorFormMessage = 'Invalid ${err.key}';
+      setState(() {
+        for (final err in result.errors.entries) {
+          errorFormMessage = context.translate(
+            Map<String, String>.from(err.value).values.first,
+          );
         }
-      }
+      });
+
       return;
     }
 
@@ -140,7 +131,6 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   }
 
   Future<void> _initialize() async {
-    await _loadProfileSettings();
     _subscribeToPusher();
   }
 
@@ -178,7 +168,6 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -212,7 +201,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                   : errorMessage != null
                   ? Center(child: Text(errorMessage!))
                   : chat == null || chat!.messages.isEmpty
-                  ? const Center(child: Text('No messages yet'))
+                  ? Center(child: Text(context.translate('no_messages_yet')))
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -251,7 +240,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                                 ),
                                 if (msg.edited)
                                   Text(
-                                    'Edited',
+                                    context.translate('edited'),
                                     style: TextStyle(
                                       color: isMe
                                           ? Colors.white70
@@ -291,7 +280,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                       child: TextField(
                         controller: _messageController,
                         decoration: InputDecoration(
-                          hintText: 'Type your message...',
+                          hintText: context.translate('type_a_message'),
                           border: InputBorder.none,
                           errorText: errorFormMessage,
                         ),
@@ -307,7 +296,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                       _onSend();
                     },
                     icon: const Icon(Icons.send),
-                    label: const Text('Send'),
+                    label: Text(context.translate('send')),
                   ),
                 ],
               ),

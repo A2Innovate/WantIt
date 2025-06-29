@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/schemas/auth.dart';
-
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -60,20 +61,26 @@ class _SignUpPageState extends State<SignUpPage> {
           }
         } else {
           setState(() {
-            fieldErrors['login'] = response.data['message'] ?? 'Sign up failed';
+            fieldErrors['login'] = context.translate(
+              response.data['message'] ?? 'sign_up_failed',
+            );
           });
         }
       } on DioException catch (e) {
         setState(() {
           fieldErrors['login'] = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? 'Unknown error')
-              : 'Network error. Please check your connection';
+              ? context.translate(
+                  e.response?.data['message'] ?? 'unknown_error',
+                )
+              : context.translate('network_error');
         });
       }
     } else {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        errors[err.key] = Map<String, String>.from(
+          err.value,
+        ).values.first; // You can translate if needed here
       }
       setState(() {
         fieldErrors = errors;
@@ -96,14 +103,15 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    final localizedStrings = AppLocalizations.of(context)!;
+    final t = (String key) => FlutterI18n.translate(context, key);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
-        title: Text(localizedStrings.sign_up),
+        title: Text(t('sign_up')),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -114,7 +122,7 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 const SizedBox(height: 32),
                 Text(
-                  localizedStrings.create_an_account,
+                  t('create_an_account'),
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -126,7 +134,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   controller: _nameCtrl,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
-                    labelText: 'Name',
+                    labelText: t('name'),
                     prefixIcon: const Icon(Icons.account_box_outlined),
                     errorText: fieldErrors['name'],
                   ),
@@ -135,7 +143,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 TextFormField(
                   controller: _usernameCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Username',
+                    labelText: t('username'),
                     prefixIcon: const Icon(Icons.account_circle_outlined),
                     errorText: fieldErrors['username'],
                   ),
@@ -144,7 +152,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: t('email'),
                     prefixIcon: const Icon(Icons.email_outlined),
                     errorText: fieldErrors['email'],
                   ),
@@ -155,7 +163,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   controller: _passCtrl,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: t('password'),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -185,7 +193,6 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      // backgroundColor: const Color(0xFFFFC107),
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -202,7 +209,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               color: Colors.black,
                             ),
                           )
-                        : Text(localizedStrings.sign_up),
+                        : Text(t('sign_up')),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -211,16 +218,16 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text(localizedStrings.back_to_home),
+                      child: Text(t('back_to_home')),
                     ),
                     TextButton(
                       onPressed: () async {
                         await Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (_) => SignInPage()),
+                          MaterialPageRoute(builder: (_) => const SignInPage()),
                         );
                       },
-                      child: Text(localizedStrings.already_have_an_account),
+                      child: Text(t('already_have_an_account')),
                     ),
                   ],
                 ),

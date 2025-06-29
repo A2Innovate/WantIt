@@ -7,7 +7,7 @@ import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 import 'package:provider/provider.dart';
 
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../types/request.dart';
@@ -37,14 +37,13 @@ class _EditRequestModalState extends State<EditRequestModal> {
   Currency selectedCurrency = Currency.USD;
 
   Future<void> _editRequest() async {
-    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       fieldErrors = {};
     });
-    final budget = int.tryParse(budgetController.text);
+    final budget = int.tryParse(budgetController.text) ?? 0;
     final formData = {
       'content': contentController.text.trim(),
-      if (budget != null) 'budget': budget,
+      'budget': budget,
       if (!isGlobal)
         'location': {
           'x': pickedLocation.longitude,
@@ -57,7 +56,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
       }
       setState(() {
         fieldErrors = errors;
@@ -88,15 +87,17 @@ class _EditRequestModalState extends State<EditRequestModal> {
         } else {
           setState(() {
             fieldErrors['error'] = (response.data is Map<String, dynamic>)
-                ? (response.data['message'] ?? appLocalizations.unknown_error)
-                : appLocalizations.network_error;
+                ? (response.data['message'] ??
+                      context.translate("unknown_error"))
+                : context.translate("network_error");
           });
         }
       } on DioException catch (e) {
         setState(() {
           fieldErrors['error'] = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? appLocalizations.unknown_error)
-              : appLocalizations.network_error;
+              ? (e.response?.data['message'] ??
+                    context.translate("unknown_error"))
+              : context.translate("network_error");
         });
       }
     }
@@ -145,7 +146,6 @@ class _EditRequestModalState extends State<EditRequestModal> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -160,14 +160,14 @@ class _EditRequestModalState extends State<EditRequestModal> {
             children: [
               Center(
                 child: Text(
-                  appLocalizations.edit_request,
+                  context.translate("edit_request"),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 16),
 
               Text(
-                appLocalizations.location,
+                context.translate("location"),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -212,8 +212,9 @@ class _EditRequestModalState extends State<EditRequestModal> {
                         errorTileCallback: (title, error, stackTrace) {
                           setState(() {
                             isGlobal = true;
-                            fieldErrors['errorLocation'] =
-                                appLocalizations.unable_to_load_map;
+                            fieldErrors['errorLocation'] = context.translate(
+                              "unable_to_load_map",
+                            );
                           });
                         },
                       ),
@@ -277,7 +278,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
               const SizedBox(height: 16),
 
               Text(
-                appLocalizations.request_details,
+                context.translate("request_details"),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -316,7 +317,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _editRequest,
-                  child: Text(appLocalizations.edit_request),
+                  child: Text(context.translate("edit_request")),
                 ),
               ),
               if (fieldErrors.containsKey('error'))

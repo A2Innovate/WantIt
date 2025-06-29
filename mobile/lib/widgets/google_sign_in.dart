@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../l10n/app_localizations.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -9,7 +8,11 @@ class GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizedStrings = AppLocalizations.of(context)!;
+    final continueWithGoogle = FlutterI18n.translate(
+      context,
+      'continue_with_google',
+    );
+
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
@@ -22,19 +25,18 @@ class GoogleSignInButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Google Icon SVG-like
           SizedBox(
             height: 18,
             width: 18,
             child: Image.asset(
-              'assets/icons/google.png', // Make sure this exists
+              'assets/icons/google.png', // Ensure this asset exists in your project
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 12),
           Text(
-            localizedStrings.continue_with_google,
-            style: TextStyle(
+            continueWithGoogle,
+            style: const TextStyle(
               color: Color(0xFF3c4043),
               fontSize: 14,
               fontWeight: FontWeight.w500,

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/pages/chat_details.dart';
 import 'package:provider/provider.dart';
-import '../l10n/app_localizations.dart';
 import '../providers/message_provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'dart:async';
-
 import '../providers/user_provider.dart';
+import 'dart:async';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -19,37 +18,36 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => {
-        if (mounted)
-          {
-            if (Provider.of<UserProvider>(context, listen: false).current !=
-                null)
-              {
-                Provider.of<MessagesProvider>(
-                  context,
-                  listen: false,
-                ).fetchRefreshMessages(),
-              },
-          },
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    Future.microtask(() {
+      if (mounted) {
+        if (Provider.of<UserProvider>(context, listen: false).current != null) {
+          Provider.of<MessagesProvider>(
+            context,
+            listen: false,
+          ).fetchRefreshMessages();
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessagesProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
-    final appLocalizations = AppLocalizations.of(context)!;
+
+    final authRequiredText = FlutterI18n.translate(
+      context,
+      'auth_required_for_chat',
+    );
+    final signInLabel = FlutterI18n.translate(context, 'sign_in');
+    final chatTitle = FlutterI18n.translate(context, 'chat');
+    final chatsLabel = FlutterI18n.translate(context, 'chat');
+    final noMessagesText =
+        FlutterI18n.translate(context, 'no_messages_yet') ?? 'No messages yet.';
 
     if (userProvider.current == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Chat')),
+        appBar: AppBar(title: Text(chatTitle)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -57,16 +55,16 @@ class _ChatPageState extends State<ChatPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  appLocalizations.auth_required_for_chat,
+                  authRequiredText,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/signin');
                   },
-                  child: const Text('Sign In'),
+                  child: Text(signInLabel),
                 ),
               ],
             ),
@@ -74,11 +72,12 @@ class _ChatPageState extends State<ChatPage> {
         ),
       );
     }
+
     final lastMessages = messageProvider.messages;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: Text(chatTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -90,16 +89,19 @@ class _ChatPageState extends State<ChatPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Chats',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                chatsLabel,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             Expanded(
               child: lastMessages.isEmpty
-                  ? const Center(child: Text('No messages yet.'))
+                  ? Center(child: Text(noMessagesText))
                   : ListView.builder(
                       itemCount: lastMessages.length,
                       itemBuilder: (context, index) {
@@ -127,7 +129,11 @@ class _ChatPageState extends State<ChatPage> {
                                 children: [
                                   CircleAvatar(
                                     child: Text(
-                                      message.person.username[1].toUpperCase(),
+                                      message.person.username.length > 1
+                                          ? message.person.username[1]
+                                                .toUpperCase()
+                                          : message.person.username[0]
+                                                .toUpperCase(),
                                     ),
                                   ),
                                   const SizedBox(width: 12),

@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/comment.dart';
+import 'package:mobile/utils/extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../l10n/app_localizations.dart';
 import '../providers/user_provider.dart';
 import '../stores/client.dart';
 
@@ -25,7 +25,6 @@ class _CommentCardState extends State<CommentCard> {
 
   Future<void> _onDelete() async {
     final current = Provider.of<UserProvider>(context, listen: false).current;
-    final appLocalizations = AppLocalizations.of(context)!;
     bool isAdmin =
         ((current?.isAdmin ?? false) &&
         (widget.comment.user.id != current?.id));
@@ -34,16 +33,19 @@ class _CommentCardState extends State<CommentCard> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(appLocalizations.confirm_deletion),
-          content: Text(appLocalizations.deletion_confirmation_comment),
+          title: Text(context.translate('confirm_deletion')),
+          content: Text(context.translate("deletion_confirmation_comment")),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(appLocalizations.cancel),
+              child: Text(context.translate("cancel")),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(appLocalizations.delete, style: TextStyle(color: Colors.red)),
+              child: Text(
+                context.translate("delete"),
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -67,7 +69,13 @@ class _CommentCardState extends State<CommentCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.response?.data['message'] ?? 'Network error'),
+            content: Text(
+              (e.response?.data is Map<String, dynamic>)
+                  ? context.translate(
+                      e.response?.data['message'] ?? 'unknown_error',
+                    )
+                  : context.translate('network_error'),
+            ),
           ),
         );
       }
@@ -88,7 +96,9 @@ class _CommentCardState extends State<CommentCard> {
       if (!result.success) {
         final errors = <String, String?>{};
         for (final err in result.errors.entries) {
-          errors[err.key] = Map<String, String>.from(err.value).values.first;
+          errors[err.key] = context.translate(
+            Map<String, String>.from(err.value).values.first,
+          );
         }
         setState(() {
           fieldErrors = errors;
@@ -112,7 +122,13 @@ class _CommentCardState extends State<CommentCard> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(e.response?.data['message'] ?? 'Network error'),
+                content: Text(
+                  (e.response?.data is Map<String, dynamic>)
+                      ? context.translate(
+                          e.response?.data['message'] ?? 'unknown_error',
+                        )
+                      : context.translate('network_error'),
+                ),
               ),
             );
             return;
@@ -142,7 +158,6 @@ class _CommentCardState extends State<CommentCard> {
   @override
   Widget build(BuildContext context) {
     final current = Provider.of<UserProvider>(context).current;
-    final appLocalizations = AppLocalizations.of(context)!;
     bool isCommentOwnerOrAdmin =
         (current != null && current.id == widget.comment.user.id) ||
         ((current?.isAdmin ?? false));
@@ -193,7 +208,7 @@ class _CommentCardState extends State<CommentCard> {
 
             if (widget.comment.edited != null && widget.comment.edited!)
               Text(
-                appLocalizations.edited,
+                context.translate("edited"),
                 style: TextStyle(color: Colors.grey[600], fontSize: 12),
               ),
 
@@ -206,7 +221,11 @@ class _CommentCardState extends State<CommentCard> {
                   OutlinedButton.icon(
                     onPressed: _onEdit,
                     icon: const Icon(Icons.edit, size: 16),
-                    label: Text(isEditing ? appLocalizations.save : appLocalizations.edit),
+                    label: Text(
+                      isEditing
+                          ? context.translate("save")
+                          : context.translate("edit"),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.black87,
                       side: const BorderSide(color: Colors.black26),
@@ -224,7 +243,7 @@ class _CommentCardState extends State<CommentCard> {
                   OutlinedButton.icon(
                     onPressed: _onDelete,
                     icon: const Icon(Icons.delete, size: 16),
-                    label: Text(appLocalizations.delete),
+                    label: Text(context.translate("delete")),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.black87,
                       side: const BorderSide(color: Colors.black26),

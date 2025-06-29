@@ -6,7 +6,7 @@ import 'package:mobile/types/offer.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 import '../providers/user_provider.dart';
 import '../stores/client.dart';
 import '../stores/currencies.dart';
@@ -77,23 +77,23 @@ class _OfferCardState extends State<OfferCard> {
   }
 
   Future<void> _onDelete() async {
-    final appLocalizations = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(appLocalizations.confirm_deletion),
-          content: Text(
-            appLocalizations.deletion_confirmation_offer,
-          ),
+          title: Text(context.translate("confirm_deletion")),
+          content: Text(context.translate("deletion_confirmation_offer")),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(context.translate("cancel")),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Text(
+                context.translate("delete"),
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -119,7 +119,11 @@ class _OfferCardState extends State<OfferCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              e.response?.data['message'] ?? 'Error deleting offer',
+              (e.response?.data is Map<String, dynamic>)
+                  ? context.translate(
+                      e.response?.data['message'] ?? 'unknown_error',
+                    )
+                  : context.translate('network_error'),
             ),
           ),
         );
@@ -162,7 +166,13 @@ class _OfferCardState extends State<OfferCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.response?.data['message'] ?? 'Network error'),
+            content: Text(
+              (e.response?.data is Map<String, dynamic>)
+                  ? context.translate(
+                      e.response?.data['message'] ?? 'unknown_error',
+                    )
+                  : context.translate('network_error'),
+            ),
           ),
         );
       }
@@ -182,7 +192,9 @@ class _OfferCardState extends State<OfferCard> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        errors[err.key] = context.translate(
+          Map<String, String>.from(err.value).values.first,
+        );
       }
       setState(() {
         fieldErrors = errors;
@@ -199,7 +211,13 @@ class _OfferCardState extends State<OfferCard> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.response?.data['message'] ?? 'Network error'),
+              content: Text(
+                (e.response?.data is Map<String, dynamic>)
+                    ? context.translate(
+                        e.response?.data['message'] ?? 'unknown_error',
+                      )
+                    : context.translate('network_error'),
+              ),
             ),
           );
         }
@@ -215,6 +233,7 @@ class _OfferCardState extends State<OfferCard> {
     final isOfferOwnerOrAdmin =
         current != null &&
         (current.id == widget.offer.user.id || (current.isAdmin ?? false));
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -247,7 +266,7 @@ class _OfferCardState extends State<OfferCard> {
                 if (offer.negotiation)
                   Chip(
                     label: Text(
-                      'NEGOTIABLE',
+                      context.translate('negotiation'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.green,
@@ -256,7 +275,7 @@ class _OfferCardState extends State<OfferCard> {
                     backgroundColor: Colors.green.shade100,
                   )
                 else
-                  const Chip(label: Text('FIXED')),
+                  Chip(label: Text(context.translate('no_negotiation'))),
               ],
             ),
 
@@ -326,31 +345,31 @@ class _OfferCardState extends State<OfferCard> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (widget.request.id == _currentUserId &&
+                if (widget.request.user.id == _currentUserId &&
                     widget.request.acceptedOffer?.offerId == offer.id)
                   ElevatedButton.icon(
                     onPressed: _onAcceptOrRevert,
                     icon: const Icon(Icons.cancel),
-                    label: const Text('Revert acceptance'),
+                    label: Text(context.translate('revert_acceptance')),
                   )
-                else if (widget.request.id == _currentUserId &&
+                else if (widget.request.user.id == _currentUserId &&
                     widget.request.acceptedOffer == null)
                   ElevatedButton.icon(
                     onPressed: _onAcceptOrRevert,
                     icon: const Icon(Icons.check),
-                    label: const Text('Accept'),
+                    label: Text(context.translate('accept')),
                   ),
 
                 if (isOfferOwnerOrAdmin) ...[
                   ElevatedButton.icon(
                     onPressed: _onEdit,
                     icon: const Icon(Icons.edit),
-                    label: const Text('Edit'),
+                    label: Text(context.translate('edit')),
                   ),
                   ElevatedButton.icon(
                     onPressed: _onDelete,
                     icon: const Icon(Icons.delete),
-                    label: const Text('Delete'),
+                    label: Text(context.translate('delete')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red[100],
                       foregroundColor: Colors.red[800],
@@ -376,7 +395,7 @@ class _OfferCardState extends State<OfferCard> {
                   child: TextField(
                     controller: _commentController,
                     decoration: InputDecoration(
-                      hintText: 'Add comment...',
+                      hintText: context.translate('add_comment'),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -396,7 +415,7 @@ class _OfferCardState extends State<OfferCard> {
                   ),
                   child: ElevatedButton(
                     onPressed: _onPost,
-                    child: const Text('Send'),
+                    child: Text(context.translate('send')),
                   ),
                 ),
               ],

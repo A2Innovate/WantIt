@@ -3,14 +3,15 @@ import 'package:mobile/utils/global.dart';
 
 final updateProfileSchema = object({
   'name': string()
-      .min(2, message: 'Name must be at least 2 characters')
-      .max(256, message: 'Name must be at most 256 characters long'),
+      .min(2, message: 'validation_name_min_length')
+      .max(256, message: 'validation_name_max_length'),
   'username': string()
-      .min(2, message: 'Username must be at least 2 characters')
+      .min(2, message: 'validation_username_min_length')
+      .max(32, message: 'validation_username_max_length')
       .pattern(
         RegExp(r'^[a-zA-Z0-9]+$'),
-        message: 'Username must only contain letters and numbers',
+        message: 'validation_username_regex',
       ),
-  'email': string().email(message: 'Invalid email'),
+  'email': string().email(message: 'validation_email'),
   'preferredCurrency': string().enumerated(Currency.values),
 });

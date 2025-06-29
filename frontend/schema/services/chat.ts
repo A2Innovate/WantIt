@@ -10,6 +10,6 @@ export const paramPersonIdSchema = z.object({
 export const sendChatMessageSchema = z.object({
   content: z
     .string()
-    .min(1, 'Content must not be empty')
-    .max(4096, 'Content must be at most 4096 characters long')
+    .min(1, 'validation_chat_content_min_length')
+    .max(4096, 'validation_chat_content_max_length')
 });

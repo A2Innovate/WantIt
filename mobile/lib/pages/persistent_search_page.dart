@@ -1,14 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/l10n/app_localizations.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/request_detail_page.dart';
 import 'package:mobile/widgets/user_menu_button.dart'; // Your user menu widget
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../providers/user_provider.dart';
 import '../types/request.dart';
 import '../utils/global.dart';
-import '../widgets/create_request_modal.dart';
+import '../widgets/new_request_modal.dart';
 
 class PersistentSearchPage extends StatefulWidget {
   const PersistentSearchPage({super.key});
@@ -25,14 +27,11 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => {
-        setState(() {
-          futureItems = fetchItems(query);
-        }),
-      },
-    );
-    // futureItems = fetchItems(query);
+    Future.microtask(() {
+      setState(() {
+        futureItems = fetchItems(query);
+      });
+    });
   }
 
   Future<void> _openRequestDetails(Request item) async {
@@ -57,7 +56,6 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   }
 
   Future<List<Request>> fetchItems(String query) async {
-    var localizedStrings = AppLocalizations.of(context)!;
     try {
       final dio = useApi();
       final response = await dio.get(
@@ -76,13 +74,17 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
               .map((item) => Request.fromJson(item as Map<String, dynamic>))
               .toList();
         } else {
-          throw Exception(localizedStrings.invalid_response_format);
+          throw Exception(
+            FlutterI18n.translate(context, 'invalid_response_format'),
+          );
         }
       } else {
-        throw Exception(localizedStrings.failed_to_fetch_items);
+        throw Exception(
+          FlutterI18n.translate(context, 'failed_to_fetch_items'),
+        );
       }
     } on DioException {
-      throw Exception(localizedStrings.network_error);
+      throw Exception(FlutterI18n.translate(context, 'network_error'));
     }
   }
 
@@ -95,7 +97,10 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    var localizedStrings = AppLocalizations.of(context)!;
+    final current = Provider.of<UserProvider>(context).current;
+    final searchHint = FlutterI18n.translate(context, 'search_items');
+    final noResultsText = FlutterI18n.translate(context, 'no_results');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('WantIt'),
@@ -108,7 +113,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: localizedStrings.search_items,
+                hintText: searchHint,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -159,9 +164,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                       children: [
                         SizedBox(
                           height: 300,
-                          child: Center(
-                            child: Text(localizedStrings.no_results),
-                          ),
+                          child: Center(child: Text(noResultsText)),
                         ),
                       ],
                     ),
@@ -242,25 +245,29 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      floatingActionButton: current == null
+          ? null
+          : FloatingActionButton(
+              onPressed: () async {
+                final result = await showModalBottomSheet(
+                  context: context,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  isScrollControlled: true,
+                  builder: (context) => const CreateRequestModal(),
+                );
+                if (result == true) {
+                  setState(() {
+                    futureItems = fetchItems(query);
+                  });
+                }
+              },
+              tooltip: FlutterI18n.translate(context, 'new_request'),
+              child: const Icon(Icons.add),
             ),
-            isScrollControlled: true,
-            builder: (context) => const CreateRequestModal(),
-          );
-          if (result == true) {
-            setState(() {
-              futureItems = fetchItems(query);
-            });
-          }
-        },
-        tooltip: 'Create Request',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

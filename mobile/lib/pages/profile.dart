@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/utils/extensions.dart';
 
-import '../l10n/app_localizations.dart';
 import '../providers/user_provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -15,7 +15,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final current = Provider.of<UserProvider>(context).current;
-    final appLocalizations = AppLocalizations.of(context)!;
 
     if (current == null) {
       if (mounted) {
@@ -25,7 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(appLocalizations.profile)),
+      appBar: AppBar(title: Text(context.translate("profile"))),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -3,10 +3,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/utils/extensions.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 import 'package:mobile/widgets/local_global_toggle.dart';
 
-import '../l10n/app_localizations.dart';
 import '../stores/client.dart';
 import '../schemas/request.dart';
 import '../utils/global.dart';
@@ -37,10 +37,10 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
     setState(() {
       fieldErrors = {};
     });
-    final budget = int.tryParse(budgetController.text);
+    final budget = int.tryParse(budgetController.text) ?? 0;
     final formData = {
       'content': contentController.text.trim(),
-      if (budget != null) 'budget': budget,
+      'budget': budget,
       if (!isGlobal)
         'location': {
           'x': pickedLocation.longitude,
@@ -53,7 +53,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
       }
       setState(() {
         fieldErrors = errors;
@@ -74,14 +74,18 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
           }
         } else {
           setState(() {
-            fieldErrors['error'] = response.data['message'];
+            fieldErrors['error'] = (response.data is Map<String, dynamic>)
+                ? context.translate(response.data['message'] ?? 'unknown_error')
+                : context.translate('network_error');
           });
         }
       } on DioException catch (e) {
         setState(() {
           fieldErrors['error'] = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? 'Unknown error')
-              : 'Network error. Please check your connection';
+              ? context.translate(
+                  e.response?.data['message'] ?? 'unknown_error',
+                )
+              : context.translate('network_error');
         });
       }
     }
@@ -121,7 +125,6 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -136,14 +139,14 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
             children: [
               Center(
                 child: Text(
-                  appLocalizations.new_request,
+                  context.translate("new_request"),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 16),
 
               Text(
-                appLocalizations.location,
+                context.translate("location"),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -188,7 +191,9 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                         errorTileCallback: (title, error, stackTrace) {
                           setState(() {
                             isGlobal = true;
-                            fieldErrors['errorLocation'] = appLocalizations.unable_to_load_map;
+                            fieldErrors['errorLocation'] = context.translate(
+                              "unable_to_load_map",
+                            );
                           });
                         },
                       ),
@@ -252,7 +257,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
               const SizedBox(height: 16),
 
               Text(
-                appLocalizations.request_details,
+                context.translate("request_details"),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -260,7 +265,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
               TextField(
                 controller: contentController,
                 decoration: InputDecoration(
-                  labelText: 'What do you want?',
+                  labelText: context.translate("what_is_your_offer"),
                   border: OutlineInputBorder(),
                   errorText: fieldErrors['content'],
                 ),
@@ -271,7 +276,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
               TextField(
                 controller: budgetController,
                 decoration: InputDecoration(
-                  labelText: 'Budget',
+                  labelText: context.translate("budget"),
                   border: OutlineInputBorder(),
                   errorText: fieldErrors['budget'],
                 ),
@@ -296,8 +301,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _createRequest,
-                  child: Text(
-                    appLocalizations.new_request),
+                  child: Text(context.translate("new_request")),
                 ),
               ),
               if (fieldErrors.containsKey('error'))

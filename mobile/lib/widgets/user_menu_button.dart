@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';
 import 'package:provider/provider.dart';
 
-import '../l10n/app_localizations.dart';
 import '../pages/settings.dart';
 import '../providers/user_provider.dart';
 
@@ -17,16 +17,18 @@ class UserMenuButton extends StatefulWidget {
 
 class _UserMenuButtonState extends State<UserMenuButton> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<UserProvider>(context);
-    var localizedStrings = AppLocalizations.of(context)!;
     final user = provider.current;
     final loggedIn = user != null;
+
+    // Fetch translations using flutter_i18n
+    final signInText = FlutterI18n.translate(context, 'sign_in');
+    final signUpText = FlutterI18n.translate(context, 'sign_up');
+    final profileText = FlutterI18n.translate(context, 'profile');
+    final settingsText = FlutterI18n.translate(context, 'settings');
+    final logoutText = FlutterI18n.translate(context, 'logout');
+    final loggedOutMsg = FlutterI18n.translate(context, 'logged_out');
 
     if (!loggedIn) {
       return Row(
@@ -40,7 +42,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
               );
             },
             child: Text(
-              localizedStrings.sign_in,
+              signInText,
               style: const TextStyle(color: Colors.black),
             ),
           ),
@@ -52,7 +54,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
               );
             },
             child: Text(
-              localizedStrings.sign_up,
+              signUpText,
               style: const TextStyle(color: Colors.black),
             ),
           ),
@@ -77,31 +79,26 @@ class _UserMenuButtonState extends State<UserMenuButton> {
         if (value == 0) {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => ProfilePage()),
+            MaterialPageRoute(builder: (_) => const ProfilePage()),
           );
         } else if (value == 1) {
-          // TODO: Navigate to Settings page
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Go to Settings')));
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SettingsPage()),
           );
         } else if (value == 2) {
-          // Logout
           await provider.logout();
           if (context.mounted) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Logged out')));
+            ).showSnackBar(SnackBar(content: Text(loggedOutMsg)));
           }
         }
       },
       itemBuilder: (context) => [
-        PopupMenuItem(value: 0, child: Text(localizedStrings.profile)),
-        PopupMenuItem(value: 1, child: Text(localizedStrings.settings)),
-        PopupMenuItem(value: 2, child: Text(localizedStrings.logout)),
+        PopupMenuItem(value: 0, child: Text(profileText)),
+        PopupMenuItem(value: 1, child: Text(settingsText)),
+        PopupMenuItem(value: 2, child: Text(logoutText)),
       ],
     );
   }

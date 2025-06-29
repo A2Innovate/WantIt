@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/stores/pusher.dart';
@@ -6,12 +7,12 @@ import 'package:mobile/pages/main_page.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/reset_password.dart';
 import 'package:mobile/schemas/auth.dart';
+import 'package:mobile/utils/extensions.dart';
 import 'package:mobile/widgets/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../l10n/app_localizations.dart';
 import '../providers/message_provider.dart';
 import '../providers/user_provider.dart';
 
@@ -48,7 +49,6 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<void> _onLogin() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       fieldErrors = {};
       _loading = true;
@@ -88,21 +88,25 @@ class _SignInPageState extends State<SignInPage> {
         } else {
           setState(() {
             fieldErrors['login'] = (response.data is Map<String, dynamic>)
-                ? (response.data['message'] ?? appLocalizations.unknown_error)
-                : appLocalizations.network_error;
+                ? context.translate(response.data['message'] ?? 'unknown_error')
+                : context.translate('network_error');
           });
         }
       } on DioException catch (e) {
         setState(() {
           fieldErrors['login'] = (e.response?.data is Map<String, dynamic>)
-              ? (e.response?.data['message'] ?? appLocalizations.unknown_error)
-              : appLocalizations.network_error;
+              ? context.translate(
+                  e.response?.data['message'] ?? 'unknown_error',
+                )
+              : context.translate('network_error');
         });
       }
     } else {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        errors[err.key] = context.translate(
+          Map<String, String>.from(err.value).values.first,
+        );
       }
       setState(() {
         fieldErrors = errors;
@@ -135,7 +139,6 @@ class _SignInPageState extends State<SignInPage> {
         Navigator.pop(context);
       }
     } else {
-      final appLocalizations = AppLocalizations.of(context)!;
       try {
         final pkceCodeVerifier = sharedPrefs.getString('pkceCodeVerifier');
         final state = sharedPrefs.getString('oauth_state');
@@ -180,9 +183,10 @@ class _SignInPageState extends State<SignInPage> {
             SnackBar(
               content: Text(
                 (e.response?.data is Map<String, dynamic>)
-                    ? (e.response?.data['message'] ??
-                          appLocalizations.unknown_error)
-                    : appLocalizations.network_error,
+                    ? context.translate(
+                        e.response?.data['message'] ?? 'unknown_error',
+                      )
+                    : context.translate('network_error'),
               ),
             ),
           );
@@ -193,14 +197,24 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
-    final localizedStrings = AppLocalizations.of(context)!;
+    final localizedStrings = {
+      'sign_in': FlutterI18n.translate(context, 'sign_in'),
+      'email': FlutterI18n.translate(context, 'email') ?? 'Email',
+      'password': FlutterI18n.translate(context, 'password') ?? 'Password',
+      'dont_have_an_account': FlutterI18n.translate(
+        context,
+        'dont_have_an_account',
+      ),
+      'forgot_password': FlutterI18n.translate(context, 'forgot_password'),
+    };
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
-        title: Text(localizedStrings.sign_in),
+        title: Text(localizedStrings['sign_in']!),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -211,7 +225,7 @@ class _SignInPageState extends State<SignInPage> {
               children: [
                 const SizedBox(height: 32),
                 Text(
-                  localizedStrings.sign_in,
+                  localizedStrings['sign_in']!,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -222,7 +236,7 @@ class _SignInPageState extends State<SignInPage> {
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: localizedStrings['email'],
                     prefixIcon: const Icon(Icons.email_outlined),
                     errorText: fieldErrors['email'],
                   ),
@@ -233,7 +247,7 @@ class _SignInPageState extends State<SignInPage> {
                   controller: _passCtrl,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: localizedStrings['password'],
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -259,7 +273,6 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                 const SizedBox(height: 40),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -279,11 +292,10 @@ class _SignInPageState extends State<SignInPage> {
                               color: Colors.black,
                             ),
                           )
-                        : Text(localizedStrings.sign_in),
+                        : Text(localizedStrings['sign_in']!),
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 GoogleSignInButton(onPressed: () => _onGoogleSignIn(false)),
                 const SizedBox(height: 20),
                 Row(
@@ -296,7 +308,7 @@ class _SignInPageState extends State<SignInPage> {
                           MaterialPageRoute(builder: (_) => const SignUpPage()),
                         );
                       },
-                      child: Text(localizedStrings.dont_have_an_account),
+                      child: Text(localizedStrings['dont_have_an_account']!),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -307,7 +319,7 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                         );
                       },
-                      child: Text(localizedStrings.forgot_password),
+                      child: Text(localizedStrings['forgot_password']!),
                     ),
                   ],
                 ),

@@ -9,7 +9,7 @@ import 'package:mobile/stores/client.dart';
 import 'package:mobile/widgets/password_field.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 
-import '../l10n/app_localizations.dart';
+import 'package:mobile/utils/extensions.dart';
 import '../providers/user_provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -82,7 +82,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
       }
       setState(() {
         _profileErrors = errors;
@@ -129,7 +129,6 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _onChangePassword() async {
-    final appLocalizations = AppLocalizations.of(context)!;
     setState(() {
       _passwordErrors = {};
       _isChangingPassword = true;
@@ -137,7 +136,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (_newPassCtrl.text.trim() != _repeatPassCtrl.text.trim()) {
       setState(() {
-        _passwordErrors['repeatPassword'] = appLocalizations.passwords_dont_match;
+        _passwordErrors['repeatPassword'] = context.translate(
+          "passwords_dont_match",
+        );
         _isChangingPassword = false;
       });
       return;
@@ -153,7 +154,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = Map<String, String>.from(err.value).values.first;
+        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
       }
       setState(() {
         _passwordErrors = errors;
@@ -191,7 +192,9 @@ class _SettingsPageState extends State<SettingsPage> {
     } on DioException catch (e) {
       setState(() {
         _passwordErrors['error'] =
-            e.response?.data['message'] ?? 'Network error';
+        (e.response?.data is Map<String, dynamic>)
+            ? context.translate(e.response?.data['message'] ?? 'unknown_error')
+            : context.translate('network_error');
         _isChangingPassword = false;
       });
     }
@@ -214,13 +217,13 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Settings',
+              Text(
+                context.translate("settings"),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
 
-              const Text('Name'),
+              Text(context.translate('name')),
               TextFormField(
                 controller: _nameCtrl,
                 decoration: InputDecoration(errorText: _profileErrors['name']),
@@ -228,7 +231,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const SizedBox(height: 12),
 
-              const Text('Username'),
+              Text(context.translate('username')),
               Row(
                 children: [
                   const Text('@'),
@@ -246,7 +249,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const SizedBox(height: 12),
 
-              const Text('Email'),
+              Text(context.translate('email')),
               TextFormField(
                 controller: _emailCtrl,
                 decoration: InputDecoration(errorText: _profileErrors['email']),
@@ -254,7 +257,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const SizedBox(height: 12),
 
-              const Text('Preferred currency'),
+              Text(context.translate('preferred_currency')),
               CurrencyDropdown(
                 selectedCurrency: _selectedCurrency,
                 errorText: _profileErrors['preferredCurrency'],
@@ -284,20 +287,20 @@ class _SettingsPageState extends State<SettingsPage> {
                         width: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Save'),
+                    : Text(context.translate('save')),
               ),
 
               const SizedBox(height: 32),
 
-              const Text(
-                'Change password',
+              Text(
+                context.translate('change_password'),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
 
               PasswordField(
                 controller: _oldPassCtrl,
-                label: 'Old password',
+                label: context.translate('old_password'),
                 errorText: _passwordErrors['oldPassword'],
                 obscureText: _obscurePassword,
                 onToggleObscure: () =>
@@ -307,7 +310,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
               PasswordField(
                 controller: _newPassCtrl,
-                label: 'New password',
+                label: context.translate('new_password'),
                 errorText: _passwordErrors['newPassword'],
                 obscureText: _obscurePassword,
                 onToggleObscure: () =>
@@ -317,7 +320,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
               PasswordField(
                 controller: _repeatPassCtrl,
-                label: 'Repeat new password',
+                label: context.translate('repeat_new_password'),
                 errorText: _passwordErrors['repeatPassword'],
                 obscureText: _obscurePassword,
                 onToggleObscure: () =>
@@ -343,7 +346,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         width: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Change password'),
+                    : Text(context.translate('change_password')),
               ),
             ],
           ),

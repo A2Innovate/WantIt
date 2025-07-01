@@ -299,8 +299,7 @@ app.post(
 
     if (!user.password) {
       return c.json({
-        message:
-          "validation_no_password",
+        message: "validation_no_password",
       }, 400);
     }
 
@@ -439,7 +438,9 @@ app.post(
       passwordResetToken: resetPasswordToken,
     }).where(eq(usersTable.id, user.id));
 
-    return c.json({ message: "validation_password_reset_email_sent_successfully" }, 200);
+    return c.json({
+      message: "validation_password_reset_email_sent_successfully",
+    }, 200);
   },
 );
 
@@ -489,8 +490,7 @@ app.post(
 
     if (!session.user.password) {
       return c.json({
-        message:
-          "validation_no_password",
+        message: "validation_no_password",
       }, 400);
     }
 

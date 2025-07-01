@@ -1,9 +1,9 @@
 <template>
   <UiModal card-class="w-md m-4" :is-open="isOpen" @close="emit('close')">
-    <h2 class="text-2xl font-semibold">Edit offer</h2>
+    <h2 class="text-2xl font-semibold">{{ t('edit_offer') }}</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="editOffer">
       <UiLabel v-if="props.offer.images.length" for="images"
-        >Current images</UiLabel
+        >{{ t('current_images') }}</UiLabel
       >
       <div v-if="props.offer.images.length" class="grid grid-cols-3 gap-2 mt-2">
         <div
@@ -29,11 +29,11 @@
           </UiButton>
         </div>
       </div>
-      <UiLabel for="newImages">New images</UiLabel>
+      <UiLabel for="newImages">{{ t('new_images') }}</UiLabel>
       <UiImageSelect @update="newImages = $event" />
-      <UiLabel for="content">What is your offer?</UiLabel>
+      <UiLabel for="content">{{ t('what_is_your_offer') }}</UiLabel>
       <UiInput id="content" v-model="content" placeholder="An iPhone..." />
-      <UiLabel for="price">Price</UiLabel>
+      <UiLabel for="price">{{ t('price') }}</UiLabel>
       <div class="flex">
         <DropdownCurrency :model-value="currency" readonly />
         <UiInput
@@ -49,7 +49,7 @@
         class="text-xs"
       />
       <UiLabel for="negotiation">
-        Negotiable
+        {{ t('negotiable') }}
         <UiCheckbox id="negotiation" v-model="negotiation" />
       </UiLabel>
       <UiButton type="submit" class="mt-2" :loading="isLoading">Save</UiButton>
@@ -62,6 +62,8 @@
 import { createAndEditOfferSchema } from '@/schema/services/request';
 import { AxiosError } from 'axios';
 import type { Offer } from '~/types/offer';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   isOpen: boolean;
@@ -94,7 +96,7 @@ async function editOffer() {
     const validation = validate(createAndEditOfferSchema, mainPayload);
 
     if (validation) {
-      error.value = validation;
+      error.value = t(validation);
       return;
     }
 
@@ -105,15 +107,14 @@ async function editOffer() {
         newImages.value.length >
         10
     ) {
-      error.value = 'One offer can have up to 10 images.';
+      error.value = t('max_offer_images');
       return;
     }
 
     if (newImages.value) {
       for (const image of newImages.value) {
         if (image.size > 1024 * 1024 * 5) {
-          error.value =
-            'At least one of your new images is too large, max size is 5MB.';
+          error.value = t('max_image_size');
           return;
         }
       }
@@ -198,9 +199,9 @@ async function editOffer() {
     error.value = '';
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
-      error.value = e.response.data.message;
+      error.value = t(e.response.data.message);
     } else {
-      error.value = 'Something went wrong';
+      error.value = t('unknown_error');
     }
   } finally {
     isLoading.value = false;

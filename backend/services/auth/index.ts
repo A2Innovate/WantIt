@@ -294,13 +294,13 @@ app.post(
 
     if (!user) {
       // Intentional, user should not know which one is wrong
-      return c.json({ message: "Incorrect email or password" }, 401);
+      return c.json({ message: "validation_incorrect_email_or_password" }, 401);
     }
 
     if (!user.password) {
       return c.json({
         message:
-          "This account has no password, it was likely created with OAuth, please use OAuth to login or reset your password.",
+          "validation_no_password",
       }, 400);
     }
 
@@ -311,15 +311,15 @@ app.post(
         content: email,
       });
 
-      return c.json({ message: "Incorrect email or password" }, 401);
+      return c.json({ message: "validation_incorrect_email_or_password" }, 401);
     }
 
     if (!user.isEmailVerified) {
-      return c.json({ message: "Email is not verified" }, 401);
+      return c.json({ message: "validation_email_not_verified" }, 401);
     }
 
     if (user.isBlocked) {
-      return c.json({ message: "You are blocked" }, 401);
+      return c.json({ message: "validation_user_is_blocked" }, 401);
     }
 
     const sessionToken = await generateSessionToken();
@@ -372,7 +372,7 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "Invalid token" }, 400);
+      return c.json({ message: "validation_invalid_token" }, 400);
     }
 
     await db.update(usersTable).set({
@@ -380,7 +380,7 @@ app.post(
       emailVerificationToken: null,
     }).where(eq(usersTable.id, user.id));
 
-    return c.json({ message: "Email verified successfully" }, 200);
+    return c.json({ message: "validation_email_verified_successfully" }, 200);
   },
 );
 
@@ -398,7 +398,7 @@ app.post("/logout", authRequired, async (c) => {
     userId: session.user.id,
   });
 
-  return c.json({ message: "Logged out successfully" }, 200);
+  return c.json({ message: "validation_logged_out_successfully" }, 200);
 });
 
 app.post(
@@ -416,7 +416,7 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "User not found" }, 404);
+      return c.json({ message: "validation_user_not_found" }, 404);
     }
 
     const resetPasswordToken = await generateResetPasswordToken();
@@ -439,7 +439,7 @@ app.post(
       passwordResetToken: resetPasswordToken,
     }).where(eq(usersTable.id, user.id));
 
-    return c.json({ message: "Reset password email sent successfully" }, 200);
+    return c.json({ message: "validation_password_reset_email_sent_successfully" }, 200);
   },
 );
 
@@ -458,7 +458,7 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "Invalid token" }, 400);
+      return c.json({ message: "validation_invalid_token" }, 400);
     }
 
     await db.update(usersTable).set({
@@ -471,7 +471,7 @@ app.post(
       eq(userSessionsTable.userId, user.id),
     );
 
-    return c.json({ message: "Password reset successfully" }, 200);
+    return c.json({ message: "validation_password_reset_successfully" }, 200);
   },
 );
 app.post(
@@ -490,19 +490,19 @@ app.post(
     if (!session.user.password) {
       return c.json({
         message:
-          "This account has no password, it was likely created using OAuth, please reset your password.",
+          "validation_no_password",
       }, 400);
     }
 
     if (!(await argon2.verify(session.user.password, oldPassword))) {
-      return c.json({ message: "Incorrect old password" }, 401);
+      return c.json({ message: "validation_incorrect_old_password" }, 401);
     }
 
     await db.update(usersTable).set({
       password: await argon2.hash(newPassword),
     }).where(eq(usersTable.id, session.user.id));
 
-    return c.json({ message: "Password changed successfully" }, 200);
+    return c.json({ message: "validation_password_changed_successfully" }, 200);
   },
 );
 

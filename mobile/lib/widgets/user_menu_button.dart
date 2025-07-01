@@ -27,8 +27,8 @@ class _UserMenuButtonState extends State<UserMenuButton> {
     final signUpText = FlutterI18n.translate(context, 'sign_up');
     final profileText = FlutterI18n.translate(context, 'profile');
     final settingsText = FlutterI18n.translate(context, 'settings');
-    final logoutText = FlutterI18n.translate(context, 'logout');
-    final loggedOutMsg = FlutterI18n.translate(context, 'logged_out');
+    final logoutText = FlutterI18n.translate(context, 'sign_out');
+    final loggedOutMsg = FlutterI18n.translate(context, 'validation_logged_out_successfully');
 
     if (!loggedIn) {
       return Row(

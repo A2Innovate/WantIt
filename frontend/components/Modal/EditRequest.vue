@@ -1,6 +1,6 @@
 <template>
   <UiModal card-class="sm:min-w-md" :is-open="isOpen" @close="emit('close')">
-    <h2 class="text-2xl font-semibold">Edit request</h2>
+    <h2 class="text-2xl font-semibold">{{ t('edit_request') }}</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="editRequest">
       <div class="flex items-center gap-2 self-center">
         <div
@@ -24,9 +24,9 @@
         </div>
       </div>
       <UiMapRadiusPicker v-if="!locationGlobal" v-model="location" />
-      <UiLabel for="content">What do you want?</UiLabel>
+      <UiLabel for="content">{{ t('what_do_you_want') }}</UiLabel>
       <UiInput id="content" v-model="content" />
-      <UiLabel for="budget">Budget</UiLabel>
+      <UiLabel for="budget">{{ t('budget') }}</UiLabel>
       <div class="flex">
         <DropdownCurrency :model-value="request.currency" readonly />
         <UiInput
@@ -37,7 +37,7 @@
         />
       </div>
       <UiButton type="submit" class="mt-2" :loading="isLoading"
-        >Edit request</UiButton
+        >{{ t('edit') }}</UiButton
       >
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
@@ -48,6 +48,8 @@
 import { AxiosError } from 'axios';
 import { editRequestSchema } from '~/schema/services/request';
 import type { Request } from '~/types/request';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   isOpen: boolean;
@@ -88,7 +90,7 @@ async function editRequest() {
     const validation = validate(editRequestSchema, payload);
 
     if (validation) {
-      error.value = validation;
+      error.value = t(validation);
       return;
     }
 
@@ -111,7 +113,7 @@ async function editRequest() {
     if (e instanceof AxiosError && e.response?.data.message) {
       error.value = e.response.data.message;
     } else {
-      error.value = 'Something went wrong';
+      error.value = t('unknown_error');
     }
   } finally {
     isLoading.value = false;

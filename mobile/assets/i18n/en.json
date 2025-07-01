@@ -1,9 +1,11 @@
 {
   "sign_in": "Sign In",
   "sign_up": "Sign Up",
-  "logout": "Logout",
+  "sign_out": "Sign Out",
   "profile": "Profile",
   "settings": "Settings",
+  "alerts": "Alerts",
+  "admin": "Admin",
   "dont_have_an_account": "Don't have an account?",
   "already_have_an_account": "Already have an account?",
   "create_an_account": "Create an account",
@@ -23,7 +25,6 @@
   "auth_required_for_chat": "You must be signed in to view your chats.",
   "failed_to_load_chats": "Failed to load chats. Please try again.",
   "no_messages_yet": "No messages yet",
-  "logged_out": "Logged out",
   "type_a_message": "Type your message...",
   "save": "Save",
   "cancel": "Cancel",
@@ -143,6 +144,27 @@
   "validation_review_rating_min_length": "Rating must be at least 1",
   "validation_review_rating_max_length": "Rating must be at most 5",
 
+
+  "validation_session_token_missing": "Session token missing.",
+  "validation_session_token_invalid": "Incorrect session token.",
+  "validation_user_is_blocked": "You are blocked.",
+  "validation_admin_required": "You do not have permission to perform this action.",
+  "validation_pretend_user_id_invalid": "Invalid pretend user ID.",
+  "validation_pretend_user_not_found": "Pretend user not found.",
+  "validation_pretend_user_cannot_be_yourself": "You cannot pretend to be yourself.",
+  "validation_pretend_user_cannot_be_another_admin": "You cannot pretend to be another admin.",
+  "validation_incorrect_email_or_password": "Incorrect email or password",
+  "validation_no_password": "This account has no password, it was likely created with OAuth, please use OAuth to login or reset your password.",
+  "validation_email_not_verified": "Email is not verified",
+  "validation_email_verified_successfully": "Email verified successfully",
+  "validation_invalid_token": "Invalid token",
+  "validation_logged_out_successfully": "Logged out successfully",
+  "validation_user_not_found": "User not found",
+  "validation_password_reset_email_sent_successfully": "Password reset email sent successfully",
+  "validation_password_reset_successfully": "Password reset successfully",
+  "validation_incorrect_old_password": "Incorrect old password",
+  "validation_password_changed_successfully": "Password changed successfully",
+
   "email": "Email",
   "password": "Password",
   "name": "Name",
@@ -151,8 +173,11 @@
   "change_password": "Change password",
   "old_password": "Old password",
   "new_password": "New password",
-  "repeat_new_password": "Repeat new password"
+  "repeat_new_password": "Repeat new password",
+  "budget": "Budget",
+  "add": "Add",
 
 
-
+  "or_maybe_you_want_to_sell": "Or maybe you want to sell?",
+  "you_got_something_you_dont_need": "You got something you don't need?"
 }

@@ -5,7 +5,8 @@
 </template>
 
 <script setup lang="ts">
-const text = ref('What do you want to buy?');
+const { t } = useI18n();
+const text = ref(t('what_do_you_want_to_buy'));
 let step = 0;
 
 onMounted(() => {
@@ -13,13 +14,13 @@ onMounted(() => {
     step++;
     switch (step) {
       case 1:
-        text.value = 'Or maybe you want to sell?';
+        text.value = t('or_maybe_you_want_to_sell');
         break;
       case 2:
-        text.value = "You got something you don't need?";
+        text.value = t('you_got_something_you_dont_need');
         break;
       case 3:
-        text.value = 'What do you want to buy?';
+        text.value = t('what_do_you_want_to_buy');
         step = 0;
         break;
     }

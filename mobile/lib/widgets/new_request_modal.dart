@@ -301,7 +301,7 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _createRequest,
-                  child: Text(context.translate("new_request")),
+                  child: Text(context.translate("add")),
                 ),
               ),
               if (fieldErrors.containsKey('error'))

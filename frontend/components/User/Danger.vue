@@ -9,7 +9,7 @@
     >
       {{ t('delete_account') }}
     </UiButton>
-    <p v-if="message" class="mt-2 text-center">{{ message }}</p>  
+    <p v-if="message" class="mt-2 text-center">{{ message }}</p>
     <Teleport to="body">
       <ModalConfirm
         :is-open="deleteModalOpen"

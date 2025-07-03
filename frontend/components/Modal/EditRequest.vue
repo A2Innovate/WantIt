@@ -36,9 +36,9 @@
           type="number"
         />
       </div>
-      <UiButton type="submit" class="mt-2" :loading="isLoading"
-        >{{ t('edit') }}</UiButton
-      >
+      <UiButton type="submit" class="mt-2" :loading="isLoading">{{
+        t('edit')
+      }}</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>

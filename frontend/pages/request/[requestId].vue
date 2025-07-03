@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="max-w-3xl mx-auto min-h-[calc(100vh-8.5rem)]">
-      <h1 v-if="request" class="text-xl font-semibold my-4 px-4">{{ t('request') }}</h1>
+      <h1 v-if="request" class="text-xl font-semibold my-4 px-4">
+        {{ t('request') }}
+      </h1>
       <UiSkeleton v-else class="h-6 w-20 my-4 mx-4" />
       <UiCard v-if="!error" class="m-4">
         <div
@@ -149,9 +151,9 @@
       <p class="text-center">
         {{ t('deletion_confirmation_request') }}
         <br />
-        <span class="text-red-500 text-xs"
-          >{{ t('deletion_confirmation_request_desc') }}</span
-        >
+        <span class="text-red-500 text-xs">{{
+          t('deletion_confirmation_request_desc')
+        }}</span>
       </p>
     </ModalConfirm>
   </div>

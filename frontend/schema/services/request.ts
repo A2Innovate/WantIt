@@ -35,9 +35,10 @@ export const editRequestSchema = z
       .string()
       .min(4, 'validation_request_content_min_length')
       .max(512, 'validation_request_content_max_length'),
-    budget: z.number()
-    .min(0, 'validation_request_budget_min_length')
-    .max(2147483647, 'validation_request_budget_max_length'),
+    budget: z
+      .number()
+      .min(0, 'validation_request_budget_min_length')
+      .max(2147483647, 'validation_request_budget_max_length'),
     location: z
       .object({
         x: z.number().min(-180).max(180),

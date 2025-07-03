@@ -1,5 +1,4 @@
 {
-
   "sign_in": "Sign In",
   "sign_up": "Sign Up",
   "sign_out": "Sign Out",
@@ -45,7 +44,6 @@
   "no_users_found": "No users found",
   "passwords_dont_match": "Passwords don't match",
 
-
   "chat": "Chat",
   "auth_required_for_chat": "You must be signed in to view your chats.",
   "failed_to_load_chats": "Failed to load chats. Please try again.",
@@ -76,7 +74,6 @@
   "validation_request_budget_max_length": "Budget must be at most 2147483647",
   "validation_request_location_radius": "Either both location and radius must be provided, or both must be null",
 
-
   "offers": "Offers",
   "new_offer": "New offer",
   "edit_offer": "Edit offer",
@@ -93,7 +90,6 @@
   "validation_offer_content_max_length": "Content must be at most 512 characters long",
   "validation_offer_price_min_length": "Price must be at least 0",
   "validation_offer_price_max_length": "Price must be at most 2147483647",
-
 
   "current_images": "Current Images",
   "no_images": "No current images",
@@ -116,7 +112,6 @@
   "validation_review_rating_min_length": "Rating must be at least 1",
   "validation_review_rating_max_length": "Rating must be at most 5",
 
-
   "home": "Home",
   "back_to_home": "Back to Home",
   "search_items": "Search items...",
@@ -127,12 +122,10 @@
   "cheapest_first": "Cheapest first",
   "expensive_first": "Expensive first",
 
-
   "network_error": "Network error. Please check your connection",
   "unknown_error": "Unknown error. Please try again later",
   "invalid_response_format": "Invalid response format",
   "failed_to_fetch_items": "Failed to fetch items",
-
 
   "validation_name_min_length": "Name must be at least 2 characters long",
   "validation_name_max_length": "Name must be at most 256 characters long",
@@ -145,7 +138,6 @@
   "validation_incorrect_old_password": "Incorrect old password",
   "validation_password_changed_successfully": "Password changed successfully",
 
-
   "admin": "Admin",
   "options": "Options",
   "integrity_check": "S3/DB Integrity check",
@@ -153,7 +145,6 @@
   "created_in_last_days": "{type} created in the last {count} days",
   "ratelimits_hit_in_last_24_hours": "Ratelimits hit in the last 24 hours",
   "no_ratelimits_hit": "No ratelimits hit in the last 24 hours",
-
 
   "validation_session_token_missing": "Session token missing.",
   "validation_session_token_invalid": "Incorrect session token.",
@@ -165,7 +156,6 @@
   "validation_pretend_user_cannot_be_another_admin": "You cannot pretend to be another admin.",
   "validation_user_not_found": "User not found",
 
-  
   "session_label": "Session {id}",
   "expires_at": "Expires at",
   "current_session": "Current session",
@@ -183,7 +173,6 @@
 
   "alerts": "Alerts",
   "no_alerts_found": "No alerts found",
-
 
   "currency_usd_name": "United States dollar",
   "currency_pln_name": "Polish złoty",
@@ -229,4 +218,3 @@
   "danger_zone": "Danger Zone",
   "offered_by": "Offered by"
 }
-

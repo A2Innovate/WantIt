@@ -16,7 +16,9 @@
         type="password"
         autocomplete="new-password"
       />
-      <UiLabel for="repeat_new_password">{{ t('repeat_new_password') }}</UiLabel>
+      <UiLabel for="repeat_new_password">{{
+        t('repeat_new_password')
+      }}</UiLabel>
       <UiInput
         id="repeat_new_password"
         v-model="repeatNewPassword"

@@ -22,7 +22,8 @@
             <NuxtLink
               :to="`/user/${userStore.current?.id}`"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:account-circle" /> {{ t('profile') }}
+              ><Icon name="material-symbols:account-circle" />
+              {{ t('profile') }}
             </NuxtLink>
           </li>
           <li>
@@ -30,13 +31,14 @@
               to="/user/chat"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
               ><Icon name="material-symbols:chat" /> {{ t('chat') }}
-            </NuxtLink> 
+            </NuxtLink>
           </li>
           <li>
             <NuxtLink
               to="/user/alerts"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:release-alert-rounded" /> {{ t('alerts') }}
+              ><Icon name="material-symbols:release-alert-rounded" />
+              {{ t('alerts') }}
             </NuxtLink>
           </li>
           <li v-if="userStore.current?.isAdmin">

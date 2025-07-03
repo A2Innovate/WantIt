@@ -27,7 +27,7 @@
             v-if="requestStore.requests?.length"
             class="text-center text-neutral-500"
           >
-          {{ t('loaded_requests', { count: requestStore.requests?.length }) }}
+            {{ t('loaded_requests', { count: requestStore.requests?.length }) }}
           </p>
           <p
             v-if="

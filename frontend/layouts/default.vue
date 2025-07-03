@@ -29,8 +29,12 @@
           </AccountDropdown>
         </div>
         <div v-else class="flex items-center gap-2">
-          <NuxtLink class="text-sm" to="/auth/sign-in">{{ t('sign_in') }}</NuxtLink>
-          <NuxtLink class="text-sm" to="/auth/sign-up">{{ t('sign_up') }}</NuxtLink>
+          <NuxtLink class="text-sm" to="/auth/sign-in">{{
+            t('sign_in')
+          }}</NuxtLink>
+          <NuxtLink class="text-sm" to="/auth/sign-up">{{
+            t('sign_up')
+          }}</NuxtLink>
         </div>
       </div>
     </div>

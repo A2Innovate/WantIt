@@ -13,11 +13,14 @@
       >
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
-            <p class="font-medium">{{ t('session_label', { id: session.id }) }}</p>
+            <p class="font-medium">
+              {{ t('session_label', { id: session.id }) }}
+            </p>
             <span class="text-sm text-neutral-400">•</span>
             <ClientOnly>
               <p class="text-sm text-neutral-400">
-                {{ t('expires_at') }} {{ formatTime(new Date(session.expiresAt)) }}
+                {{ t('expires_at') }}
+                {{ formatTime(new Date(session.expiresAt)) }}
               </p>
             </ClientOnly>
           </div>
@@ -34,7 +37,9 @@
         >
           {{ t('revoke') }}
         </UiButton>
-        <p v-else class="ml-2 text-sm text-neutral-400">{{ t('current_session') }}</p>
+        <p v-else class="ml-2 text-sm text-neutral-400">
+          {{ t('current_session') }}
+        </p>
       </UiCard>
     </div>
   </UiCard>

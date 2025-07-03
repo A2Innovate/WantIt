@@ -1,7 +1,9 @@
 <template>
   <div class="max-w-6xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
-      <h1 class="text-xl font-semibold">{{ $t('admin') + '/' + $t('options') }}</h1>
+      <h1 class="text-xl font-semibold">
+        {{ $t('admin') + '/' + $t('options') }}
+      </h1>
       <UiCard class="flex flex-col gap-2">
         <UiButton
           class="w-full"

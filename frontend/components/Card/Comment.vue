@@ -23,7 +23,9 @@
       v-model="editedCommentContent"
       class="bg-neutral-950 w-full"
     />
-    <span v-if="comment.edited" class="text-xs text-neutral-500">{{ t('edited') }}</span>
+    <span v-if="comment.edited" class="text-xs text-neutral-500">{{
+      t('edited')
+    }}</span>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
     <div
       v-if="
@@ -66,7 +68,7 @@
 <script setup lang="ts">
 import type { Comment } from '@/types/comment';
 import { AxiosError } from 'axios';
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = defineProps<{
   comment: Comment;

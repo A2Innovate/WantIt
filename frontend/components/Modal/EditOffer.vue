@@ -2,9 +2,9 @@
   <UiModal card-class="w-md m-4" :is-open="isOpen" @close="emit('close')">
     <h2 class="text-2xl font-semibold">{{ t('edit_offer') }}</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="editOffer">
-      <UiLabel v-if="props.offer.images.length" for="images"
-        >{{ t('current_images') }}</UiLabel
-      >
+      <UiLabel v-if="props.offer.images.length" for="images">{{
+        t('current_images')
+      }}</UiLabel>
       <div v-if="props.offer.images.length" class="grid grid-cols-3 gap-2 mt-2">
         <div
           v-for="image in props.offer.images"

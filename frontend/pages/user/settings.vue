@@ -24,7 +24,9 @@
             <UiInput id="email" v-model="email" class="w-full" />
           </div>
           <div>
-            <UiLabel for="preferredCurrency">{{ t('preferred_currency') }}</UiLabel>
+            <UiLabel for="preferredCurrency">{{
+              t('preferred_currency')
+            }}</UiLabel>
             <DropdownCurrency
               id="preferredCurrency"
               v-model="preferredCurrency"
@@ -33,28 +35,29 @@
             />
           </div>
           <div>
-          <UiLabel for="language">{{ t('language') }}</UiLabel>
-          <select
-  v-model="language"
-  class="w-32 h-8 rounded-lg border border-neutral-600 bg-neutral-900 text-neutral-300 text-sm px-2 pr-6 appearance-none cursor-pointer transition-colors hover:bg-neutral-800 focus:outline-none focus:ring-1 focus:ring-neutral-500"
->
-  <option
-    v-for="localeOption in locales"
-    :key="localeOption.code"
-    :value="localeOption.code"
-    class="bg-neutral-900 text-neutral-300"
-  >
-    {{ localeOption.name }}
-  </option>
-</select>
-
-        </div>
+            <UiLabel for="language">{{ t('language') }}</UiLabel>
+            <select
+              v-model="language"
+              class="w-32 h-8 rounded-lg border border-neutral-600 bg-neutral-900 text-neutral-300 text-sm px-2 pr-6 appearance-none cursor-pointer transition-colors hover:bg-neutral-800 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+            >
+              <option
+                v-for="localeOption in locales"
+                :key="localeOption.code"
+                :value="localeOption.code"
+                class="bg-neutral-900 text-neutral-300"
+              >
+                {{ localeOption.name }}
+              </option>
+            </select>
+          </div>
 
           <UiButton type="submit">{{ t('save') }}</UiButton>
           <p v-if="submitted && !error" class="text-green-500 text-center mt-2">
             {{ t('profile_updated_successfully') }}
           </p>
-          <p v-if="error" class="text-red-500 text-center mt-2">{{ t(error) }}</p>
+          <p v-if="error" class="text-red-500 text-center mt-2">
+            {{ t(error) }}
+          </p>
         </form>
       </UiCard>
       <UserChangePassword />

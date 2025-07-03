@@ -58,9 +58,9 @@
       >
       <div class="flex flex-col">
         <NuxtLink to="/" class="text-center">{{ t('back_to_home') }}</NuxtLink>
-        <NuxtLink to="/auth/sign-in" class="text-center"
-          >{{ t('have_an_account') }}</NuxtLink
-        >
+        <NuxtLink to="/auth/sign-in" class="text-center">{{
+          t('have_an_account')
+        }}</NuxtLink>
       </div>
     </form>
   </div>

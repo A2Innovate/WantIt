@@ -31,12 +31,12 @@
         ><Icon name="devicon:google" /> {{ t('sign_in_with_google') }}</UiButton
       >
       <div class="flex justify-between sm:flex-row flex-col">
-        <NuxtLink to="/auth/sign-up" class="sm:text-left text-center"
-          >{{ t('dont_have_an_account') }}</NuxtLink
-        >
-        <NuxtLink to="/auth/reset-password" class="sm:text-right text-center"
-          >{{ t('forgot_password') }}</NuxtLink
-        >
+        <NuxtLink to="/auth/sign-up" class="sm:text-left text-center">{{
+          t('dont_have_an_account')
+        }}</NuxtLink>
+        <NuxtLink to="/auth/reset-password" class="sm:text-right text-center">{{
+          t('forgot_password')
+        }}</NuxtLink>
       </div>
       <p v-if="error" class="text-red-500 text-sm mt-2 text-center">
         {{ t(error) }}

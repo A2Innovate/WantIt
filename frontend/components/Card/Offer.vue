@@ -104,7 +104,9 @@
         v-if="offer.comments.length > 0"
         class="pt-4 border-t border-neutral-800/80 mt-4"
       >
-        <h4 class="text-md font-semibold mb-2 text-neutral-200">{{ t('comments') }}</h4>
+        <h4 class="text-md font-semibold mb-2 text-neutral-200">
+          {{ t('comments') }}
+        </h4>
         <div class="flex flex-col gap-2">
           <CardComment
             v-for="comment in offer.comments"

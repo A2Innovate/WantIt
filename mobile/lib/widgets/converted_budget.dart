@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 
 import '../utils/global.dart';
 
@@ -16,10 +17,11 @@ class ConvertedBudgetText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = FlutterI18n.currentLocale(context);
     return FutureBuilder<(Currency, double)?>(
       future: future,
       builder: (context, snapshot) {
-        final baseText = formatCurrency(budget, baseCurrency);
+        final baseText = formatCurrency(budget, baseCurrency, locale: locale!.languageCode);
         if (snapshot.connectionState != ConnectionState.done ||
             snapshot.hasError ||
             !snapshot.hasData) {

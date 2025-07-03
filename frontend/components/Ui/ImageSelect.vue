@@ -6,8 +6,8 @@
         class="cursor-pointer text-center text-neutral-200 flex flex-col items-center justify-center gap-2"
       >
         <Icon name="material-symbols:photo" size="3em" />
-        <p class="text-sm">Choose images</p>
-        <small class="text-xs text-neutral-400">(Max 5 MB each)</small>
+        <p class="text-sm">{{ t('choose_images') }}</p>
+        <small class="text-xs text-neutral-400">{{ t('max_5_mb_each') }}</small>
       </label>
       <input
         id="file"
@@ -30,6 +30,8 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n();
+
 const emit = defineEmits<{ update: [FileList | null] }>();
 
 const files = ref<FileList | null>(null);

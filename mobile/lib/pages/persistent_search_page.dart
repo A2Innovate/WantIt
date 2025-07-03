@@ -99,8 +99,9 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
   Widget build(BuildContext context) {
     final current = Provider.of<UserProvider>(context).current;
     final searchHint = FlutterI18n.translate(context, 'search_items');
-    final noResultsText = FlutterI18n.translate(context, 'no_results');
+    final noResultsText = FlutterI18n.translate(context, 'no_requests_found');
 
+    final currentLocale = FlutterI18n.currentLocale(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('WantIt'),
@@ -207,6 +208,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                                   formatCurrency(
                                     (item.budget as num).toDouble(),
                                     item.currency,
+                                    locale: currentLocale!.languageCode,
                                   ),
                                 ),
                                 Row(
@@ -224,7 +226,7 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      timeago.format(item.createdAt!),
+                                      timeago.format(item.createdAt!, locale: currentLocale?.languageCode),
                                       style: Theme.of(
                                         context,
                                       ).textTheme.bodySmall,

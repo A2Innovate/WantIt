@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:flutter_i18n/loaders/file_translation_loader.dart';
 import 'package:mobile/pages/request_detail_page.dart';
-import 'package:mobile/providers/locale_provider.dart';
 import 'package:mobile/providers/notification_provider.dart';
 import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/stores/client.dart';
@@ -12,6 +10,8 @@ import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/providers/message_provider.dart';
 import 'package:mobile/widgets/deep_link_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'stores/pusher.dart';
 
 Future main() async {
@@ -24,6 +24,15 @@ Future main() async {
   final notificationProvider = NotificationProvider();
   final userProvider = UserProvider();
   await userProvider.fetchUser();
+
+  final prefs = await SharedPreferences.getInstance();
+  var languageCode = "en";
+  if (prefs.containsKey('language_code')) {
+    languageCode = prefs.getString('language_code')!;
+ }
+  timeago.setLocaleMessages('pl', timeago.PlMessages());
+
+
   final int userId = userProvider.current?.id ?? -1;
   final pusherInitialized = await initPusher(userId, messagesProvider);
   if (!pusherInitialized) {
@@ -34,6 +43,7 @@ Future main() async {
       useCountryCode: false,
       fallbackFile: 'en',
       basePath: 'assets/i18n',
+      forcedLocale: Locale(languageCode),
     ),
     missingTranslationHandler: (key, locale) {
       print("--- Missing Key: $key, languageCode: ${locale?.languageCode}");
@@ -51,10 +61,9 @@ Future main() async {
           value: notificationProvider,
         ),
         ChangeNotifierProvider<UserProvider>.value(value: userProvider),
-        ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
+        // ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
       ],
-      child: MyApp(flutterI18nDelegate: _flutterI18nDelegate),
-    ),
+      child: MyApp(flutterI18nDelegate: _flutterI18nDelegate)),
   );
 }
 
@@ -63,8 +72,6 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.flutterI18nDelegate});
   @override
   Widget build(BuildContext context) {
-    final localeProvider = context.watch<LocaleProvider>();
-
     return MaterialApp(
       title: 'WantIt',
       themeMode: ThemeMode.system,
@@ -109,7 +116,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      locale: localeProvider.locale,
+      // locale: localeProvider.locale,
     );
   }
 }

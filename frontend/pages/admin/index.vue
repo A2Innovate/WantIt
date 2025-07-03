@@ -2,10 +2,14 @@
   <div class="max-w-6xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
       <div class="flex justify-between items-center">
-        <h1 class="text-xl font-semibold">Admin</h1>
+        <h1 class="text-xl font-semibold">{{ t('admin') }}</h1>
         <div class="flex gap-2">
-          <UiButton :as="NuxtLink" to="/admin/users">Users</UiButton>
-          <UiButton :as="NuxtLink" to="/admin/options">Options</UiButton>
+          <UiButton :as="NuxtLink" to="/admin/users">
+            {{ t('users') }}
+          </UiButton>
+          <UiButton :as="NuxtLink" to="/admin/options">
+            {{ t('options') }}
+          </UiButton>
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
@@ -16,7 +20,7 @@
             </p>
             <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
           </Transition>
-          <p>Users</p>
+          <p>{{ t('users') }}</p>
         </UiCard>
         <UiCard>
           <Transition name="slide-up-blur" mode="out-in">
@@ -29,7 +33,7 @@
             </p>
             <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
           </Transition>
-          <p>Requests</p>
+          <p>{{ t('requests') }}</p>
         </UiCard>
         <UiCard>
           <Transition name="slide-up-blur" mode="out-in">
@@ -38,7 +42,7 @@
             </p>
             <UiSkeletonLoader v-else :loader-size="2" class="h-15 w-full" />
           </Transition>
-          <p>Offers</p>
+          <p>{{ t('offers') }}</p>
         </UiCard>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -55,6 +59,7 @@
 <script setup lang="ts">
 import type { Channel } from 'pusher-js';
 import { NuxtLink } from '#components';
+const { t } = useI18n();
 
 definePageMeta({
   middleware: ['auth', 'admin']

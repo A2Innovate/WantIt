@@ -107,7 +107,7 @@ async function addOffer() {
     error.value = '';
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
-      error.value = e.response.data.message;
+      error.value = t(e.response.data.message);
     } else {
       error.value = t('unknown_error');
     }

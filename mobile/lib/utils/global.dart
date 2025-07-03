@@ -47,7 +47,7 @@ extension CurrencyExtension on Currency {
   String get symbol => toString().split('.').last;
 }
 
-String formatCurrency(double budget, Currency currency) {
+String formatCurrency(double budget, Currency currency, {String locale = 'en_US'}) {
   try {
     final format = NumberFormat.simpleCurrency(
       locale: 'en_US',

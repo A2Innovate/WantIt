@@ -2,8 +2,7 @@
   <UiCard>
     <div class="flex items-center justify-between mb-2">
       <h2 class="sm:text-xl">
-        Ratelimits hit in the last
-        <span class="font-semibold">24</span> hours
+        {{ t('ratelimits_hit_in_last_24_hours') }}
       </h2>
       <UiButton
         icon="material-symbols:refresh"
@@ -25,7 +24,7 @@
         v-else-if="status !== 'pending'"
         class="h-60 text-neutral-400 flex items-center justify-center"
       >
-        <p>No ratelimits hit in the last 24 hours</p>
+        <p>{{ t('no_ratelimits_hit') }}</p>
       </div>
       <UiSkeletonLoader v-else class="h-60" />
     </Transition>
@@ -35,6 +34,7 @@
 <script setup lang="ts">
 const cache = ref(true);
 const isLoading = ref(false);
+const { t } = useI18n();
 
 const requestFetch = useRequestFetch();
 const { data, refresh, status } = useAsyncData(

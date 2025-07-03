@@ -23,7 +23,7 @@
       v-model="editedCommentContent"
       class="bg-neutral-950 w-full"
     />
-    <span v-if="comment.edited" class="text-xs text-neutral-500">Edited</span>
+    <span v-if="comment.edited" class="text-xs text-neutral-500">{{ t('edited') }}</span>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
     <div
       v-if="
@@ -39,15 +39,15 @@
         "
         @click="handleEdit"
       >
-        <span v-if="!isEditing" class="hidden sm:block">Edit</span>
-        <span v-else class="hidden sm:block">Save</span>
+        <span v-if="!isEditing" class="hidden sm:block">{{ t('edit') }}</span>
+        <span v-else class="hidden sm:block">{{ t('save') }}</span>
       </UiButton>
       <UiButton
         icon="material-symbols:delete-rounded"
         variant="outline"
         @click="isDeleteModalOpen = true"
       >
-        <span class="hidden sm:block">Delete</span>
+        <span class="hidden sm:block">{{ t('delete') }}</span>
       </UiButton>
     </div>
     <Teleport to="body">
@@ -57,7 +57,7 @@
         @cancel="isDeleteModalOpen = false"
         @confirm="deleteComment()"
       >
-        Are you sure you want to delete this comment?
+        {{ t('deletion_confirmation_comment') }}
       </ModalConfirm>
     </Teleport>
   </div>
@@ -66,6 +66,7 @@
 <script setup lang="ts">
 import type { Comment } from '@/types/comment';
 import { AxiosError } from 'axios';
+const {t} = useI18n();
 
 const props = defineProps<{
   comment: Comment;

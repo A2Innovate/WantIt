@@ -9,13 +9,13 @@
             <span
               v-if="user.isAdmin"
               class="text-xs text-green-600 bg-green-200 px-1 rounded"
-              >Admin</span
+              >{{ t('admin') }}</span
             >
             <Transition name="slide-down-blur">
               <span
                 v-if="user.isBlocked"
                 class="text-xs text-red-600 bg-red-200 px-1 rounded"
-                >Blocked</span
+                >{{ t('blocked') }}</span
               >
             </Transition>
           </p>
@@ -34,8 +34,8 @@
         :variant="user.isBlocked ? 'outline' : 'danger'"
         @click="switchBlock"
       >
-        <p v-if="user.isBlocked">Unblock</p>
-        <p v-else>Block</p>
+        <p v-if="user.isBlocked">{{ t('unblock') }}</p>
+        <p v-else>{{ t('block') }}</p>
       </UiButton>
     </div>
     <hr v-if="!isLast" class="border-neutral-700" />
@@ -44,6 +44,7 @@
 
 <script setup lang="ts">
 import type { User } from '~/types/user';
+const { t } = useI18n();
 
 const props = defineProps<{ user: User; isLast?: boolean }>();
 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/schemas/user.dart';
 import 'package:mobile/schemas/auth.dart';
@@ -10,6 +11,7 @@ import 'package:mobile/widgets/password_field.dart';
 import 'package:mobile/widgets/currency_dropdown.dart';
 
 import 'package:mobile/utils/extensions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/user_provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -60,7 +62,6 @@ class _SettingsPageState extends State<SettingsPage> {
     _usernameCtrl.text = current?.username ?? '';
     _emailCtrl.text = current?.email ?? '';
     _selectedCurrency = current?.preferredCurrency ?? Currency.USD;
-    setState(() {});
   }
 
   Future<void> _onSaveProfile() async {
@@ -82,7 +83,9 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
+        errors[err.key] = context.translate(
+          Map<String, String>.from(err.value).values.first,
+        );
       }
       setState(() {
         _profileErrors = errors;
@@ -110,8 +113,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ).showSnackBar(const SnackBar(content: Text('Profile updated!')));
           Navigator.of(context).pop(true);
         }
-
-        // If email changed, log out user
       } else {
         setState(() {
           _profileErrors['error'] =
@@ -154,7 +155,9 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
+        errors[err.key] = context.translate(
+          Map<String, String>.from(err.value).values.first,
+        );
       }
       setState(() {
         _passwordErrors = errors;
@@ -191,8 +194,7 @@ class _SettingsPageState extends State<SettingsPage> {
       }
     } on DioException catch (e) {
       setState(() {
-        _passwordErrors['error'] =
-        (e.response?.data is Map<String, dynamic>)
+        _passwordErrors['error'] = (e.response?.data is Map<String, dynamic>)
             ? context.translate(e.response?.data['message'] ?? 'unknown_error')
             : context.translate('network_error');
         _isChangingPassword = false;
@@ -205,7 +207,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text((context.translate('settings')))),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
@@ -276,6 +278,32 @@ class _SettingsPageState extends State<SettingsPage> {
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
+
+              const SizedBox(height: 16),
+
+              Text(context.translate('language')),
+              DropdownButtonFormField<Locale>(
+                value: FlutterI18n.currentLocale(context), // Set the initial value
+                items: [
+                  DropdownMenuItem<Locale>(
+                    value: Locale('en'),
+                    child: Text('English'),
+                  ),
+                  DropdownMenuItem<Locale>(
+                    value: Locale('pl'),
+                    child: Text('Polski'),
+                  ),
+                ],
+                onChanged: (Locale? newLocale) async {
+                  if (newLocale != null){
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('language_code', newLocale.languageCode);
+                    await FlutterI18n.refresh(context, newLocale);
+                  }
+
+                },
+              ),
+
 
               const SizedBox(height: 16),
 

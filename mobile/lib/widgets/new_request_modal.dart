@@ -53,7 +53,9 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
+        errors[err.key] = context.translate(
+          Map<String, String>.from(err.value).values.first,
+        );
       }
       setState(() {
         fieldErrors = errors;

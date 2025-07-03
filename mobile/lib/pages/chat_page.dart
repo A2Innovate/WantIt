@@ -147,7 +147,7 @@ class _ChatPageState extends State<ChatPage> {
                                       ],
                                     ),
                                   ),
-                                  Text(timeago.format(message.createdAt)),
+                                  Text(timeago.format(message.createdAt, locale: FlutterI18n.currentLocale(context)!.languageCode)),
                                 ],
                               ),
                             ),

@@ -8,7 +8,7 @@
           :class="locationGlobal ? 'text-neutral-400' : 'text-sky-400'"
         >
           <Icon name="material-symbols:location-on" />
-          <span class="font-medium text-sm">Local</span>
+          <span class="font-medium text-sm">{{ t('location_local') }}</span>
         </div>
         <UiToggle
           id="locationGlobal"
@@ -19,7 +19,7 @@
           class="flex items-center gap-1 transition-colors"
           :class="locationGlobal ? 'text-sky-400' : 'text-neutral-400'"
         >
-          <span class="font-medium text-sm">Global</span>
+          <span class="font-medium text-sm">{{ t('location_global') }}</span>
           <Icon name="material-symbols:globe" />
         </div>
       </div>
@@ -111,7 +111,7 @@ async function editRequest() {
     emit('close');
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
-      error.value = e.response.data.message;
+      error.value = t(e.response.data.message);
     } else {
       error.value = t('unknown_error');
     }

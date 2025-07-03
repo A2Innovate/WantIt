@@ -1,29 +1,29 @@
 <template>
   <UiCard card-class="sm:min-w-md">
-    <h2 class="text-2xl font-semibold">Change password</h2>
+    <h2 class="text-2xl font-semibold">{{ t('change_password') }}</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="changePassword">
-      <UiLabel for="old_password">Old password</UiLabel>
+      <UiLabel for="old_password">{{ t('old_password') }}</UiLabel>
       <UiInput
         id="old_password"
         v-model="oldPassword"
         type="password"
         autocomplete="current-password"
       />
-      <UiLabel for="new_password">New password</UiLabel>
+      <UiLabel for="new_password">{{ t('new_password') }}</UiLabel>
       <UiInput
         id="new_password"
         v-model="newPassword"
         type="password"
         autocomplete="new-password"
       />
-      <UiLabel for="repeat_new_password">Repeat new password</UiLabel>
+      <UiLabel for="repeat_new_password">{{ t('repeat_new_password') }}</UiLabel>
       <UiInput
         id="repeat_new_password"
         v-model="repeatNewPassword"
         type="password"
         autocomplete="new-password"
       />
-      <UiButton type="submit" class="mt-2">Change password</UiButton>
+      <UiButton type="submit" class="mt-2">{{ t('change_password') }}</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiCard>
@@ -35,6 +35,7 @@ import { changePasswordSchema } from '~/schema/services/auth';
 
 const emit = defineEmits(['close']);
 const api = useApi();
+const { t } = useI18n();
 
 const oldPassword = ref('');
 const newPassword = ref('');
@@ -49,11 +50,11 @@ async function changePassword() {
     });
 
     if (validation) {
-      error.value = validation;
+      error.value = t(validation);
       return;
     }
     if (newPassword.value !== repeatNewPassword.value) {
-      error.value = 'Passwords do not match';
+      error.value = t('passwords_dont_match');
       return;
     }
 
@@ -65,9 +66,9 @@ async function changePassword() {
     emit('close');
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
-      error.value = e.response.data.message;
+      error.value = t(e.response.data.message);
     } else {
-      error.value = 'Something went wrong';
+      error.value = t('unknown_error');
     }
   }
 }

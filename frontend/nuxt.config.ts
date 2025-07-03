@@ -29,7 +29,13 @@ export default defineNuxtConfig({
       { code: 'en', iso: 'en-US', file: 'en.json', name: 'English' },
       { code: 'pl', iso: 'pl-PL', file: 'pl.json', name: 'Polski' }
     ],
+    strategy: 'no_prefix',
     defaultLocale: 'en',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      alwaysRedirect: false
+    }
   },
   echarts: {
     charts: ['LineChart', 'BarChart'],

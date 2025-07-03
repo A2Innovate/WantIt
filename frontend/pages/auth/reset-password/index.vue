@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h1 class="text-xl font-semibold mb-4">Reset password</h1>
+    <h1 class="text-xl font-semibold mb-4">{{ t('reset_password') }}</h1>
     <form class="flex flex-col gap-2" @submit.prevent="resetPassword">
       <div>
-        <UiLabel for="email">Email</UiLabel>
+        <UiLabel for="email">{{ t('email') }}</UiLabel>
         <UiInput
           id="email"
           v-model="email"
@@ -13,10 +13,10 @@
           class="w-full"
         />
       </div>
-      <UiButton class="mt-2">Reset password</UiButton>
+      <UiButton class="mt-2">{{ t('reset_password') }}</UiButton>
       <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
       <p v-if="success" class="text-green-500 mt-2 text-center">
-        Check your email for the reset password link
+        {{ t('reset_link_sent') }}
       </p>
     </form>
   </div>
@@ -24,6 +24,7 @@
 <script setup lang="ts">
 import { AxiosError } from 'axios';
 import { requestPasswordResetSchema } from '~/schema/services/auth';
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'auth'
@@ -49,7 +50,7 @@ async function resetPassword() {
     });
 
     if (validation) {
-      error.value = validation;
+      error.value = t(validation);
       return;
     }
     await api.post('/auth/request-password-reset', {
@@ -58,9 +59,9 @@ async function resetPassword() {
     success.value = true;
   } catch (e) {
     if (e instanceof AxiosError) {
-      error.value = e.response?.data.message;
+      error.value = t(e.response?.data.message);
     } else {
-      error.value = 'Something went wrong';
+      error.value = t('unknown_error');
     }
   }
 }

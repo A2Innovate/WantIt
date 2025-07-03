@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h1 class="text-xl font-semibold mb-4">Sign up</h1>
+    <h1 class="text-xl font-semibold mb-4">{{ t('sign_up') }}</h1>
     <form class="flex flex-col gap-2" @submit.prevent="signUp">
       <div>
-        <UiLabel for="name">Name</UiLabel>
+        <UiLabel for="name">{{ t('name') }}</UiLabel>
         <UiInput
           id="name"
           v-model="name"
@@ -13,7 +13,7 @@
         />
       </div>
       <div>
-        <UiLabel for="username">Username</UiLabel>
+        <UiLabel for="username">{{ t('username') }}</UiLabel>
         <div class="flex">
           <UiInputIcon> @ </UiInputIcon>
           <UiInput
@@ -26,7 +26,7 @@
         </div>
       </div>
       <div>
-        <UiLabel for="email">Email</UiLabel>
+        <UiLabel for="email">{{ t('email') }}</UiLabel>
         <UiInput
           id="email"
           v-model="email"
@@ -36,17 +36,17 @@
         />
       </div>
       <div>
-        <UiLabel for="password">Password</UiLabel>
+        <UiLabel for="password">{{ t('password') }}</UiLabel>
         <UiInput
           id="password"
           v-model="password"
-          placeholder="Password..."
+          :placeholder="t('password') + '...'"
           autocomplete="new-password"
           type="password"
           class="w-full"
         />
       </div>
-      <UiButton class="mt-2">Sign up</UiButton>
+      <UiButton class="mt-2">{{ t('sign_up') }}</UiButton>
       <p v-if="error" class="text-red-500 text-sm mt-2 text-center">
         {{ error }}
       </p>
@@ -54,12 +54,12 @@
         class="mt-2 flex gap-2 items-center justify-center"
         type="button"
         @click="signUpWithGoogle"
-        ><Icon name="devicon:google" /> Sign up with Google</UiButton
+        ><Icon name="devicon:google" /> {{ t('sign_up_with_google') }}</UiButton
       >
       <div class="flex flex-col">
-        <NuxtLink to="/" class="text-center">Back to Home</NuxtLink>
+        <NuxtLink to="/" class="text-center">{{ t('back_to_home') }}</NuxtLink>
         <NuxtLink to="/auth/sign-in" class="text-center"
-          >Have an account?</NuxtLink
+          >{{ t('have_an_account') }}</NuxtLink
         >
       </div>
     </form>
@@ -69,6 +69,7 @@
 <script setup lang="ts">
 import { signUpSchema } from '@/schema/services/auth';
 import { AxiosError } from 'axios';
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'auth'

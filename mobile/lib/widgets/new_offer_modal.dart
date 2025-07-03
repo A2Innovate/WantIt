@@ -53,7 +53,9 @@ class _NewOfferModalState extends State<NewOfferModal> {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
         print(err.value);
-        errors[err.key] = context.translate(Map<String, String>.from(err.value).values.first);
+        errors[err.key] = context.translate(
+          Map<String, String>.from(err.value).values.first,
+        );
       }
       setState(() {
         fieldErrors = errors;
@@ -200,7 +202,11 @@ class _NewOfferModalState extends State<NewOfferModal> {
                               )
                               .toList(),
                         )
-                      : Center(child: Text(context.translate('tap_to_select_images'))),
+                      : Center(
+                          child: Text(
+                            context.translate('tap_to_select_images'),
+                          ),
+                        ),
                 ),
               ),
               if (fieldErrors.containsKey('image'))

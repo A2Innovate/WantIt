@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/comment.dart';
 import 'package:mobile/utils/extensions.dart';
@@ -161,6 +162,8 @@ class _CommentCardState extends State<CommentCard> {
     bool isCommentOwnerOrAdmin =
         (current != null && current.id == widget.comment.user.id) ||
         ((current?.isAdmin ?? false));
+    final currentLocale = FlutterI18n.currentLocale(context);
+
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -187,7 +190,7 @@ class _CommentCardState extends State<CommentCard> {
                   ),
                 ),
                 Text(
-                  timeago.format(widget.comment.createdAt),
+                  timeago.format(widget.comment.createdAt, locale: currentLocale!.languageCode),
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],

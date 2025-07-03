@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/stores/pusher.dart';
 import 'package:mobile/types/chat.dart';
@@ -54,7 +55,6 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       });
     }
   }
-
 
   void scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -250,7 +250,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                                   ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  timeago.format(msg.createdAt),
+                                  timeago.format(msg.createdAt, locale: FlutterI18n.currentLocale(context)!.languageCode),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isMe

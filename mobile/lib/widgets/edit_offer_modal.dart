@@ -329,7 +329,9 @@ class _EditOfferModalState extends State<EditOfferModal> {
                               .toList(),
                         )
                       : Center(
-                          child: Text(context.translate("tap_to_select_images")),
+                          child: Text(
+                            context.translate("tap_to_select_images"),
+                          ),
                         ),
                 ),
               ),

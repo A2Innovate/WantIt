@@ -8,10 +8,7 @@ final updateProfileSchema = object({
   'username': string()
       .min(2, message: 'validation_username_min_length')
       .max(32, message: 'validation_username_max_length')
-      .pattern(
-        RegExp(r'^[a-zA-Z0-9]+$'),
-        message: 'validation_username_regex',
-      ),
+      .pattern(RegExp(r'^[a-zA-Z0-9]+$'), message: 'validation_username_regex'),
   'email': string().email(message: 'validation_email'),
   'preferredCurrency': string().enumerated(Currency.values),
 });

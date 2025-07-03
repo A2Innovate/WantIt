@@ -5,9 +5,9 @@
         v-model="content"
         rows="1"
         class="w-full"
-        placeholder="Add comment..."
+        :placeholder="t('add_comment')"
       />
-      <UiButton :loading="isSending" class="h-10">Send</UiButton>
+      <UiButton :loading="isSending" class="h-10">{{ t('send') }}</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">
       {{ error }}
@@ -18,6 +18,7 @@
 <script setup lang="ts">
 import { addCommentSchema } from '~/schema/services/comment';
 import { AxiosError } from 'axios';
+const { t } = useI18n();
 
 const props = defineProps<{
   offerId: number;
@@ -53,9 +54,9 @@ async function handleSubmit() {
     content.value = '';
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
-      error.value = e.response.data.message;
+      error.value = t(e.response.data.message);
     } else {
-      error.value = 'Something went wrong';
+      error.value = t('unknown_error');
     }
   } finally {
     isSending.value = false;

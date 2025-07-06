@@ -43,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
     final chatTitle = FlutterI18n.translate(context, 'chat');
     final chatsLabel = FlutterI18n.translate(context, 'chat');
     final noMessagesText =
-        FlutterI18n.translate(context, 'no_messages_yet') ?? 'No messages yet.';
+        FlutterI18n.translate(context, 'no_messages_yet');
 
     if (userProvider.current == null) {
       return Scaffold(

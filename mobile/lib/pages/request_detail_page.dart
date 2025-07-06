@@ -319,7 +319,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     _pusherChannel?.bind(
       'delete-request',
       (requestId) => {
-        if (mounted && !_closed) {Navigator.of(context).pop(true)},
+        if (mounted && !_closed)
+          Navigator.of(context).pop(true),
       },
     );
     _mapSub = _mapController.mapEventStream.listen((event) {

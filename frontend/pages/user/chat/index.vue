@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-2xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
-      <h1 class="text-xl font-semibold">Chat</h1>
+      <h1 class="text-xl font-semibold">{{ t('chat') }}</h1>
       <UiCard>
         <div
           v-if="messageStore.lastMessages.length > 0"
@@ -38,7 +38,7 @@
             </div>
           </UiCard>
         </div>
-        <p v-else class="text-center text-neutral-400">No messages</p>
+        <p v-else class="text-center text-neutral-400">{{ t('no_messages') }}</p>
       </UiCard>
     </div>
   </div>
@@ -47,6 +47,7 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 
+const { t } = useI18n();
 definePageMeta({
   middleware: 'auth'
 });

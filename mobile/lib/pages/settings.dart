@@ -12,6 +12,7 @@ import 'package:mobile/widgets/currency_dropdown.dart';
 
 import 'package:mobile/utils/extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/locale_provider.dart';
 import '../providers/user_provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -297,12 +298,16 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ],
                 onChanged: (Locale? newLocale) async {
-                  if (newLocale != null){
+                  if (newLocale != null) {
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.setString('language_code', newLocale.languageCode);
-                    await FlutterI18n.refresh(context, newLocale);
-                  }
+                    if (context.mounted) {
+                      final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+                      localeProvider.setLocale(newLocale);
+                      await FlutterI18n.refresh(context, newLocale);
+                    }
 
+                  }
                 },
               ),
 

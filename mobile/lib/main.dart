@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/pages/request_detail_page.dart';
-import 'package:mobile/providers/notification_provider.dart';
+import 'package:mobile/providers/locale_provider.dart';
 import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/pages/main_page.dart';
@@ -21,7 +21,6 @@ Future main() async {
     DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
   );
   final messagesProvider = MessagesProvider();
-  final notificationProvider = NotificationProvider();
   final userProvider = UserProvider();
   await userProvider.fetchUser();
 
@@ -60,11 +59,8 @@ Future main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<MessagesProvider>.value(value: messagesProvider),
-        ChangeNotifierProvider<NotificationProvider>.value(
-          value: notificationProvider,
-        ),
         ChangeNotifierProvider<UserProvider>.value(value: userProvider),
-        // ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
       ],
       child: MyApp(flutterI18nDelegate: _flutterI18nDelegate)),
   );
@@ -75,6 +71,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.flutterI18nDelegate});
   @override
   Widget build(BuildContext context) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
     return MaterialApp(
       title: 'WantIt',
       themeMode: ThemeMode.system,
@@ -119,33 +116,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      // locale: localeProvider.locale,
+      locale: localeProvider.locale,
     );
   }
 }
-
-// class _MyAppState extends State<MyApp> {
-//   late FlutterI18nDelegate _flutterI18nDelegate;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//
-//     // _flutterI18nDelegate = FlutterI18nDelegate(
-//     //   translationLoader: FileTranslationLoader(
-//     //     useCountryCode: false,
-//     //     fallbackFile: 'en',
-//     //     basePath: 'assets/i18n',
-//     //   ),
-//     //   missingTranslationHandler: (key, locale) {
-//     //     print("--- Missing Key: $key, languageCode: ${locale?.languageCode}");
-//     //   },
-//     // );
-//     //
-//     // // Load translations initially
-//     // _flutterI18nDelegate.load(const Locale('en'));
-//   }
-//
-//   @override
-//
-// }

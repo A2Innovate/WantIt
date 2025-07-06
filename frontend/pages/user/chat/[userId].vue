@@ -43,7 +43,7 @@
       <form class="flex gap-2 mt-2" @submit.prevent="handleSend">
         <UiInput
           v-model="content"
-          placeholder="Type your message..."
+          :placeholder="t('type_a_message')"
           :disabled="isSending"
           class="w-full"
         />
@@ -52,7 +52,7 @@
           :loading="isSending"
           icon="material-symbols:send-rounded"
         >
-          Send
+          {{ t('send') }}
         </UiButton>
       </form>
       <p
@@ -78,6 +78,7 @@ import { AxiosError } from 'axios';
 import { sendChatMessageSchema } from '~/schema/services/chat';
 import type { Message } from '~/types/message';
 import type { Channel } from 'pusher-js';
+const { t } = useI18n();
 
 definePageMeta({
   middleware: 'auth'

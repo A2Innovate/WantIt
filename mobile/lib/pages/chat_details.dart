@@ -8,7 +8,6 @@ import 'package:mobile/stores/pusher.dart';
 import 'package:mobile/types/chat.dart';
 import 'package:provider/provider.dart';
 import 'package:pusher_client_socket/channels/channel.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:mobile/utils/extensions.dart';

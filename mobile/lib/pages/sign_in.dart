@@ -199,8 +199,8 @@ class _SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     final localizedStrings = {
       'sign_in': FlutterI18n.translate(context, 'sign_in'),
-      'email': FlutterI18n.translate(context, 'email') ?? 'Email',
-      'password': FlutterI18n.translate(context, 'password') ?? 'Password',
+      'email': FlutterI18n.translate(context, 'email'),
+      'password': FlutterI18n.translate(context, 'password'),
       'dont_have_an_account': FlutterI18n.translate(
         context,
         'dont_have_an_account',

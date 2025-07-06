@@ -425,7 +425,10 @@ app.post(
     }
 
     if (offer.images.length + images.length > 10) {
-      return c.json({ message: "validation_offer_can_have_up_to_10_images" }, 400);
+      return c.json(
+        { message: "validation_offer_can_have_up_to_10_images" },
+        400,
+      );
     }
     const imageNames: string[] = [];
     let offerImages;
@@ -467,7 +470,10 @@ app.post(
         );
       }
 
-      if (e instanceof Error && e.message === "validation_image_contains_nsfw_content") {
+      if (
+        e instanceof Error &&
+        e.message === "validation_image_contains_nsfw_content"
+      ) {
         return c.json(
           { message: e.message },
           400,
@@ -685,7 +691,9 @@ app.post(
     }
 
     if (request.userId !== session.user.id) {
-      return c.json({ message: "validation_you_are_not_the_owner_of_this_request" }, 403);
+      return c.json({
+        message: "validation_you_are_not_the_owner_of_this_request",
+      }, 403);
     }
 
     const offerAcceptation = await db.query.acceptedOffersTable.findFirst({

@@ -127,7 +127,10 @@ app.post(
     const { content } = c.req.valid("json");
 
     if (personId === session.user.id) {
-      return c.json({ message: "validation_cannot_send_message_to_yourself" }, 400);
+      return c.json(
+        { message: "validation_cannot_send_message_to_yourself" },
+        400,
+      );
     }
 
     const person = await db.query.usersTable.findFirst({

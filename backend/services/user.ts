@@ -477,7 +477,9 @@ app.post(
     });
 
     if (existingReview) {
-      return c.json({ message: "validation_you_have_already_reviewed_this_user" }, 400);
+      return c.json({
+        message: "validation_you_have_already_reviewed_this_user",
+      }, 400);
     }
 
     const [review] = await db.insert(userReviewsTable).values({
@@ -669,8 +671,7 @@ app.delete(
     }).where(eq(usersTable.id, session.user.id));
 
     return c.json({
-      message:
-        "validation_account_deletion_token_sent_successfully",
+      message: "validation_account_deletion_token_sent_successfully",
     }, 200);
   },
 );

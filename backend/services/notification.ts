@@ -83,7 +83,7 @@ app.post(
     });
 
     return c.json({
-      message: "Notification marked as read",
+      message: "validation_notification_marked_as_read",
     });
   },
 );
@@ -121,7 +121,7 @@ app.delete(
     });
 
     return c.json({
-      message: "Notification deleted",
+      message: "validation_notification_deleted_successfully",
     });
   },
 );
@@ -149,7 +149,7 @@ app.post(
     });
 
     return c.json({
-      message: "Notifications cleared",
+      message: "validation_notifications_cleared_successfully",
     });
   },
 );

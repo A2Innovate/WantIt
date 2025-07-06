@@ -205,7 +205,7 @@ app.post(
       console.error("Async Pusher trigger error: ", error);
     });
 
-    return c.json({ message: "Alert created successfully" }, 201);
+    return c.json({ message: "validation_alert_created_successfully" }, 201);
   },
 );
 
@@ -248,7 +248,7 @@ app.delete(
       console.error("Async Pusher trigger error: ", error);
     });
 
-    return c.json({ message: "Alert deleted successfully" }, 200);
+    return c.json({ message: "validation_alert_deleted_successfully" }, 200);
   },
 );
 
@@ -312,7 +312,7 @@ app.put(
       console.error("Async Pusher trigger error: ", error);
     });
 
-    return c.json({ message: "Alert updated successfully" }, 200);
+    return c.json({ message: "validation_alert_updated_successfully" }, 200);
   },
 );
 
@@ -343,7 +343,7 @@ app.put(
       });
 
       if (existingUser) {
-        return c.json({ message: "User with this email already exists" }, 409);
+        return c.json({ message: "validation_email_already_exists" }, 409);
       }
 
       const emailVerificationToken = await generateEmailVerificationToken();
@@ -363,7 +363,7 @@ app.put(
       } catch (error) {
         console.error("Failed to send email:", error);
         return c.json({
-          message: "Sending verification email failed, please try again later.",
+          message: "validation_sending_verification_email_failed",
         }, 500);
       }
 
@@ -397,12 +397,12 @@ app.put(
           error.message ===
             'duplicate key value violates unique constraint "users_username_unique"'
         ) {
-          return c.json({ message: "Username already exists" }, 409);
+          return c.json({ message: "validation_username_already_exists" }, 409);
         }
       }
     }
 
-    return c.json({ message: "Updated successfully" }, 200);
+    return c.json({ message: "validation_profile_updated_successfully" }, 200);
   },
 );
 
@@ -436,7 +436,7 @@ app.get(
     });
 
     if (!user) {
-      return c.json({ message: "User not found" }, 404);
+      return c.json({ message: "validation_user_not_found" }, 404);
     }
 
     return c.json(user);
@@ -462,11 +462,11 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "User not found" }, 404);
+      return c.json({ message: "validation_user_not_found" }, 404);
     }
 
     if (session.user.id === userId) {
-      return c.json({ message: "You cannot review yourself" }, 400);
+      return c.json({ message: "validation_you_cannot_review_yourself" }, 400);
     }
 
     const existingReview = await db.query.userReviewsTable.findFirst({
@@ -477,7 +477,7 @@ app.post(
     });
 
     if (existingReview) {
-      return c.json({ message: "You have already reviewed this user" }, 400);
+      return c.json({ message: "validation_you_have_already_reviewed_this_user" }, 400);
     }
 
     const [review] = await db.insert(userReviewsTable).values({
@@ -509,7 +509,7 @@ app.post(
     });
 
     return c.json({
-      message: "Review added successfully",
+      message: "validation_review_added_successfully",
     });
   },
 );
@@ -545,7 +545,7 @@ app.put(
     });
 
     if (!review) {
-      return c.json({ message: "Review not found" }, 404);
+      return c.json({ message: "validation_review_not_found" }, 404);
     }
 
     pusher.trigger(
@@ -557,7 +557,7 @@ app.put(
     });
 
     return c.json({
-      message: "Review edited successfully",
+      message: "validation_review_edited_successfully",
     });
   },
 );
@@ -618,7 +618,7 @@ app.delete(
     });
 
     if (!deletedReview) {
-      return c.json({ message: "Review not found" }, 404);
+      return c.json({ message: "validation_review_not_found" }, 404);
     }
 
     pusher.trigger(
@@ -631,7 +631,7 @@ app.delete(
       console.error("Async Pusher trigger error: ", error);
     });
 
-    return c.json({ message: "Review deleted successfully" }, 200);
+    return c.json({ message: "validation_review_deleted_successfully" }, 200);
   },
 );
 
@@ -670,7 +670,7 @@ app.delete(
 
     return c.json({
       message:
-        "Please check your email to confirm the deletion of your account",
+        "validation_account_deletion_token_sent_successfully",
     }, 200);
   },
 );
@@ -700,7 +700,7 @@ app.post(
       !user.accountDeletionTokenExpiresAt ||
       user.accountDeletionTokenExpiresAt < new Date()
     ) {
-      return c.json({ message: "Invalid token" }, 400);
+      return c.json({ message: "validation_invalid_token" }, 400);
     }
 
     await db.update(usersTable).set({
@@ -726,7 +726,7 @@ app.post(
       );
     } catch (error) {
       console.error("Error deleting offer files:", error);
-      return c.json({ message: "Account deletion failed" }, 500);
+      return c.json({ message: "validation_account_deletion_failed" }, 500);
     }
 
     await db.delete(usersTable).where(
@@ -737,7 +737,7 @@ app.post(
       console.error(`Async Pusher trigger error: ${e}`);
     });
 
-    return c.json({ message: "Account deleted successfully" }, 200);
+    return c.json({ message: "validation_account_deleted_successfully" }, 200);
   },
 );
 

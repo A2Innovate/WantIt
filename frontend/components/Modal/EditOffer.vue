@@ -196,6 +196,7 @@ async function editOffer() {
 
     emit('close');
     newImages.value = null;
+    imagesMarkedForDeletion.value = [];
     error.value = '';
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {

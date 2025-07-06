@@ -31,7 +31,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Currency? _selectedCurrency = Currency.USD;
 
-  bool _obscurePassword = true;
+  bool _obscureOldPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureRepeatPassword = true;
   bool _isSavingProfile = false;
   bool _isChangingPassword = false;
 
@@ -330,9 +332,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 controller: _oldPassCtrl,
                 label: context.translate('old_password'),
                 errorText: _passwordErrors['oldPassword'],
-                obscureText: _obscurePassword,
+                obscureText: _obscureOldPassword,
                 onToggleObscure: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                    setState(() => _obscureOldPassword = !_obscureOldPassword),
               ),
               const SizedBox(height: 12),
 
@@ -340,9 +342,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 controller: _newPassCtrl,
                 label: context.translate('new_password'),
                 errorText: _passwordErrors['newPassword'],
-                obscureText: _obscurePassword,
+                obscureText: _obscureNewPassword,
                 onToggleObscure: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                    setState(() => _obscureNewPassword = !_obscureNewPassword),
               ),
               const SizedBox(height: 12),
 
@@ -350,9 +352,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 controller: _repeatPassCtrl,
                 label: context.translate('repeat_new_password'),
                 errorText: _passwordErrors['repeatPassword'],
-                obscureText: _obscurePassword,
+                obscureText: _obscureRepeatPassword,
                 onToggleObscure: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                    setState(() => _obscureRepeatPassword = !_obscureRepeatPassword),
               ),
 
               if (_passwordErrors['error'] != null)

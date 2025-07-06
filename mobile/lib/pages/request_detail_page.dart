@@ -36,7 +36,7 @@ class RequestDetailPage extends StatefulWidget {
 class _RequestDetailPageState extends State<RequestDetailPage> {
   late Future<(Currency, double)?> _conversionFuture;
   final MapController _mapController = MapController();
-  late final StreamSubscription<MapEvent> _mapSub;
+  StreamSubscription<MapEvent>? _mapSub;
   Request? _request;
   Channel? _pusherChannel;
   bool _loadFailed = false;
@@ -334,7 +334,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
   @override
   void dispose() {
-    _mapSub.cancel();
+    _mapSub?.cancel();
     _pusherChannel?.unsubscribe();
     super.dispose();
   }

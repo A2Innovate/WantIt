@@ -115,7 +115,7 @@
           />
         </div>
       </div>
-      <BlockAddCAddomment v-if="userStore.current" :offer-id="offer.id" />
+      <BlockAddComment v-if="userStore.current" :offer-id="offer.id" />
     </div>
     <Teleport to="body">
       <ModalConfirm

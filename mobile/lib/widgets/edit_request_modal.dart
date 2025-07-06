@@ -50,7 +50,7 @@ class _EditRequestModalState extends State<EditRequestModal> {
           'y': pickedLocation.latitude,
         },
       if (!isGlobal) 'radius': sliderValue,
-      'currency': selectedCurrency.symbol.toString(),
+      'currency': selectedCurrency.symbol,
     };
     final result = await createAndEditRequestSchema.tryParseAsync(formData);
     if (!result.success) {

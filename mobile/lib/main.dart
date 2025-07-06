@@ -50,8 +50,11 @@ Future main() async {
     },
   );
 
-  // Load translations initially
-  _flutterI18nDelegate.load(const Locale('en'));
+  try {
+    await _flutterI18nDelegate.load(const Locale('en'));
+  } catch (e) {
+    print('Warning: Failed to load initial translations:  $e');
+  }
 
   runApp(
     MultiProvider(

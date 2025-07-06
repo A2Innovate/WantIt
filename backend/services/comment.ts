@@ -35,7 +35,7 @@ app.post(
     });
 
     if (!offer) {
-      return c.json({ message: "Offer not found" }, 404);
+      return c.json({ message: "validation_offer_not_found" }, 404);
     }
 
     try {
@@ -93,13 +93,13 @@ app.post(
       }
 
       return c.json({
-        message: "Comment added successfully",
+        message: "validation_comment_added_successfully",
       });
     } catch (e) {
       console.error(e);
 
       return c.json(
-        { message: "Something went wrong while saving the comment" },
+        { message: "validation_something_went_wrong_while_saving_the_comment" },
         500,
       );
     }
@@ -150,7 +150,7 @@ app.put(
     });
 
     if (!comment) {
-      return c.json({ message: "Comment not found" }, 404);
+      return c.json({ message: "validation_comment_not_found" }, 404);
     }
 
     await db.update(commentsTable)
@@ -178,7 +178,7 @@ app.put(
     }
 
     return c.json({
-      message: "Comment updated successfully",
+      message: "validation_comment_updated_successfully",
     });
   },
 );
@@ -222,7 +222,7 @@ app.delete(
     });
 
     if (!comment) {
-      return c.json({ message: "Comment not found" }, 404);
+      return c.json({ message: "validation_comment_not_found" }, 404);
     }
 
     await db.delete(commentsTable)
@@ -245,7 +245,7 @@ app.delete(
     }
 
     return c.json({
-      message: "Comment deleted successfully",
+      message: "validation_comment_deleted_successfully",
     });
   },
 );

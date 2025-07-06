@@ -38,7 +38,9 @@
             </div>
           </UiCard>
         </div>
-        <p v-else class="text-center text-neutral-400">{{ t('no_messages') }}</p>
+        <p v-else class="text-center text-neutral-400">
+          {{ t('no_messages') }}
+        </p>
       </UiCard>
     </div>
   </div>

@@ -203,7 +203,7 @@
   "session_label": "Sesja {id}",
   "expires_at": "Wygasa w",
   "current_session": "Aktualna sesja",
-  "revoke": "Odrzuć",
+  "revoke": "Unieważnij",
   "unknown_ip": "Nieznany adres IP",
   "sessions": "Sesje",
   "alerts": "Alerty",

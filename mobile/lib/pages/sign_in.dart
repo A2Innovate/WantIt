@@ -65,25 +65,15 @@ class _SignInPageState extends State<SignInPage> {
       try {
         final response = await dio.post('/auth/login', data: formData);
         if (response.statusCode == 200) {
-          userProvider.fetchFromData(response.data);
           if (mounted) {
-            await Provider.of<MessagesProvider>(
+            userProvider.fetchFromData(response.data);
+            final messageProvider = Provider.of<MessagesProvider>(
               context,
               listen: false,
-            ).fetchRefreshMessages();
-          }
-
-          if (mounted) {
-            await bindPrivateChannel(
-              userProvider.current?.id ?? -1,
-              Provider.of<MessagesProvider>(context, listen: false),
             );
-            if (mounted) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const MainPage()),
-              );
-            }
+
+            await initPusher(response.data['id'], messageProvider);
+            messageProvider.fetchRefreshMessages();
           }
         } else {
           setState(() {
@@ -164,13 +154,16 @@ class _SignInPageState extends State<SignInPage> {
               listen: false,
             );
             userProvider.fetchFromData(response.data);
-
-            await initPusher(
-              response.data['id'],
-              Provider.of<MessagesProvider>(context, listen: false),
+            final messageProvider = Provider.of<MessagesProvider>(
+              context,
+              listen: false,
             );
+
+            await initPusher(response.data['id'], messageProvider);
+            messageProvider.fetchRefreshMessages();
+
             if (mounted) {
-              Navigator.pushReplacement(
+              Navigator.pop(
                 context,
                 MaterialPageRoute(builder: (_) => const MainPage()),
               );

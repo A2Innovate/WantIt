@@ -42,8 +42,7 @@ class _ChatPageState extends State<ChatPage> {
     final signInLabel = FlutterI18n.translate(context, 'sign_in');
     final chatTitle = FlutterI18n.translate(context, 'chat');
     final chatsLabel = FlutterI18n.translate(context, 'chat');
-    final noMessagesText =
-        FlutterI18n.translate(context, 'no_messages_yet');
+    final noMessagesText = FlutterI18n.translate(context, 'no_messages_yet');
 
     if (userProvider.current == null) {
       return Scaffold(
@@ -112,8 +111,9 @@ class _ChatPageState extends State<ChatPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      ChatDetailsPage(userId: message.person.id),
+                                  builder: (_) => ChatDetailsPage(
+                                    userId: message.person.id,
+                                  ),
                                 ),
                               );
                             }
@@ -147,7 +147,14 @@ class _ChatPageState extends State<ChatPage> {
                                       ],
                                     ),
                                   ),
-                                  Text(timeago.format(message.createdAt, locale: FlutterI18n.currentLocale(context)!.languageCode)),
+                                  Text(
+                                    timeago.format(
+                                      message.createdAt,
+                                      locale: FlutterI18n.currentLocale(
+                                        context,
+                                      )!.languageCode,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

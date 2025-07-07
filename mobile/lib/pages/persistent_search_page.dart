@@ -226,7 +226,10 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      timeago.format(item.createdAt!, locale: currentLocale.languageCode),
+                                      timeago.format(
+                                        item.createdAt!,
+                                        locale: currentLocale.languageCode,
+                                      ),
                                       style: Theme.of(
                                         context,
                                       ).textTheme.bodySmall,

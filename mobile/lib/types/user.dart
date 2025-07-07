@@ -53,21 +53,29 @@ class UserSession {
     );
   }
 }
+
 class ProfileData {
   final String name;
   final String username;
   final List<RequestData> requests;
 
-  ProfileData({required this.name, required this.username, required this.requests});
+  ProfileData({
+    required this.name,
+    required this.username,
+    required this.requests,
+  });
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
     return ProfileData(
       name: json['name'],
       username: json['username'],
-      requests: List<RequestData>.from(json['requests'].map((request) => RequestData.fromJson(request))),
+      requests: List<RequestData>.from(
+        json['requests'].map((request) => RequestData.fromJson(request)),
+      ),
     );
   }
 }
+
 class RequestData {
   final int id;
   final String content;

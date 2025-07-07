@@ -5,7 +5,6 @@ import 'package:mobile/pages/profile.dart';
 import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/offer.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:mobile/utils/extensions.dart';
 import '../providers/user_provider.dart';
@@ -35,7 +34,6 @@ class OfferCard extends StatefulWidget {
 }
 
 class _OfferCardState extends State<OfferCard> {
-  int? _currentUserId;
   int _current = 0;
   late Future<(Currency, double)?> _conversionFuture;
   Map<String, String?> fieldErrors = {};
@@ -46,7 +44,6 @@ class _OfferCardState extends State<OfferCard> {
   void initState() {
     super.initState();
     _conversionFuture = _loadCurrencyAndConvert(widget.request);
-    _loadCurrentUserId();
   }
 
   @override
@@ -56,25 +53,16 @@ class _OfferCardState extends State<OfferCard> {
   }
 
   Future<(Currency, double)?> _loadCurrencyAndConvert(Request request) async {
-    final prefs = await SharedPreferences.getInstance();
-    final currencyStr = prefs.getString('preferredCurrency');
-    if (currencyStr == null) return null;
+    final current = Provider.of<UserProvider>(context, listen: false).current;
+    if (current == null) return null;
 
-    final currency = Currency.values.byName(currencyStr);
     final result = await convertCurrency(
       request.currency,
-      currency,
+      current.preferredCurrency,
       widget.offer.price,
     );
 
-    return (currency, result);
-  }
-
-  Future<void> _loadCurrentUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentUserId = prefs.getInt('userId');
-    });
+    return (current.preferredCurrency, result);
   }
 
   Future<void> _onDelete() async {
@@ -261,15 +249,15 @@ class _OfferCardState extends State<OfferCard> {
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => ProfilePage(userId: offer.user.id),
-                    ));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ProfilePage(userId: offer.user.id),
+                      ),
+                    );
                   },
                   child: Text(
                     '@${offer.user.username}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
                 const Spacer(),
@@ -355,14 +343,14 @@ class _OfferCardState extends State<OfferCard> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (widget.request.user.id == _currentUserId &&
+                if (widget.request.user.id == current?.id &&
                     widget.request.acceptedOffer?.offerId == offer.id)
                   ElevatedButton.icon(
                     onPressed: _onAcceptOrRevert,
                     icon: const Icon(Icons.cancel),
                     label: Text(context.translate('revert_acceptance')),
                   )
-                else if (widget.request.user.id == _currentUserId &&
+                else if (widget.request.user.id == current?.id &&
                     widget.request.acceptedOffer == null)
                   ElevatedButton.icon(
                     onPressed: _onAcceptOrRevert,
@@ -399,37 +387,38 @@ class _OfferCardState extends State<OfferCard> {
 
             const SizedBox(height: 12),
 
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _commentController,
-                    decoration: InputDecoration(
-                      hintText: context.translate('add_comment'),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+            if (current != null)
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      decoration: InputDecoration(
+                        hintText: context.translate('add_comment'),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        errorText: fieldErrors['content'],
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      errorText: fieldErrors['content'],
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: 80,
-                    minHeight: 36,
+                  const SizedBox(width: 8),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: 80,
+                      minHeight: 36,
+                    ),
+                    child: ElevatedButton(
+                      onPressed: _onPost,
+                      child: Text(context.translate('send')),
+                    ),
                   ),
-                  child: ElevatedButton(
-                    onPressed: _onPost,
-                    child: Text(context.translate('send')),
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
             const SizedBox(height: 12),
             ...offer.comments.map(
               (comment) => CommentCard(

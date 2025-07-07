@@ -6,11 +6,24 @@ import '../types/user.dart';
 
 class UserProvider extends ChangeNotifier {
   User? current;
+  List<UserSession>? sessions;
 
   Future<void> fetchUser() async {
     try {
       final response = await useApi().get('/auth');
       current = User.fromJson(response.data);
+    } on DioException {
+      // ignore
+    }
+    notifyListeners();
+  }
+
+  Future<void> fetchSessions() async {
+    try {
+      final response = await useApi().get('/auth/sessions');
+      sessions = (response.data as List)
+          .map((e) => UserSession.fromJson(e))
+          .toList();
     } on DioException {
       // ignore
     }

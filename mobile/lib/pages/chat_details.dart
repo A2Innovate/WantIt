@@ -85,23 +85,20 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     }
 
     // try {
-      final response = await useApi().post(
-        '/chat/${widget.userId}',
-        data: value,
-      );
+    final response = await useApi().post('/chat/${widget.userId}', data: value);
 
-      _messageController.clear();
-      await getChatResponse();
-      final message = Message.fromJson(response.data);
-      if (mounted) {
-        Provider.of<MessagesProvider>(context, listen: false).upsertLastMessage(
-          widget.userId,
-          chat!.person.name,
-          chat!.person.username,
-          message.createdAt,
-          message.content,
-        );
-      }
+    _messageController.clear();
+    await getChatResponse();
+    final message = Message.fromJson(response.data);
+    if (mounted) {
+      Provider.of<MessagesProvider>(context, listen: false).upsertLastMessage(
+        widget.userId,
+        chat!.person.name,
+        chat!.person.username,
+        message.createdAt,
+        message.content,
+      );
+    }
     // } catch (e) {
     //   print(e.stackTrace);
     //   setState(() {
@@ -254,7 +251,12 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                                   ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  timeago.format(msg.createdAt, locale: FlutterI18n.currentLocale(context)!.languageCode),
+                                  timeago.format(
+                                    msg.createdAt,
+                                    locale: FlutterI18n.currentLocale(
+                                      context,
+                                    )!.languageCode,
+                                  ),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isMe

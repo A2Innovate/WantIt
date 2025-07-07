@@ -9,7 +9,6 @@ import 'package:mobile/utils/extensions.dart';
 import 'package:mobile/stores/pusher.dart';
 import 'package:provider/provider.dart';
 import 'package:pusher_client_socket/channels/channel.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/user_provider.dart';
 import '../stores/client.dart';
@@ -318,10 +317,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     });
     _pusherChannel?.bind(
       'delete-request',
-      (requestId) => {
-        if (mounted && !_closed)
-          Navigator.of(context).pop(true),
-      },
+      (requestId) => {if (mounted && !_closed) Navigator.of(context).pop(true)},
     );
     _mapSub = _mapController.mapEventStream.listen((event) {
       final newZoom = event.camera.zoom;
@@ -341,18 +337,15 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   }
 
   Future<(Currency, double)?> _loadCurrencyAndConvert(Request request) async {
-    final prefs = await SharedPreferences.getInstance();
-    final currencyStr = prefs.getString('preferredCurrency');
-    if (currencyStr == null) return null;
-
-    final currency = Currency.values.byName(currencyStr);
+    final current = Provider.of<UserProvider>(context, listen: false).current;
+    if (current == null) return null;
     final result = await convertCurrency(
       request.currency,
-      currency,
+      current.preferredCurrency,
       request.budget,
     );
 
-    return (currency, result);
+    return (current.preferredCurrency, result);
   }
 
   List<Offer> _getSortedOffers() {

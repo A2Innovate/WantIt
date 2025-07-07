@@ -21,7 +21,11 @@ class ConvertedBudgetText extends StatelessWidget {
     return FutureBuilder<(Currency, double)?>(
       future: future,
       builder: (context, snapshot) {
-        final baseText = formatCurrency(budget, baseCurrency, locale: locale!.languageCode);
+        final baseText = formatCurrency(
+          budget,
+          baseCurrency,
+          locale: locale!.languageCode,
+        );
         if (snapshot.connectionState != ConnectionState.done ||
             snapshot.hasError ||
             !snapshot.hasData) {

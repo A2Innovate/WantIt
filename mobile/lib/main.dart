@@ -23,21 +23,22 @@ Future main() async {
   final messagesProvider = MessagesProvider();
   final userProvider = UserProvider();
   await userProvider.fetchUser();
+  final localeProvider = LocaleProvider();
 
   final prefs = await SharedPreferences.getInstance();
   var languageCode = "en";
   if (prefs.containsKey('language_code')) {
     languageCode = prefs.getString('language_code')!;
- }
+  }
+  localeProvider.setLocale(Locale(languageCode));
   timeago.setLocaleMessages('pl', timeago.PlMessages());
-
 
   final int userId = userProvider.current?.id ?? -1;
   final pusherInitialized = await initPusher(userId, messagesProvider);
   if (!pusherInitialized) {
     print('Warning: Failed to initialize Pusher client');
   }
-  final _flutterI18nDelegate = FlutterI18nDelegate(
+  final flutterI18nDelegate = FlutterI18nDelegate(
     translationLoader: FileTranslationLoader(
       useCountryCode: false,
       fallbackFile: 'en',
@@ -50,7 +51,7 @@ Future main() async {
   );
 
   try {
-    await _flutterI18nDelegate.load(const Locale('en'));
+    await flutterI18nDelegate.load(const Locale('en'));
   } catch (e) {
     print('Warning: Failed to load initial translations:  $e');
   }
@@ -60,9 +61,10 @@ Future main() async {
       providers: [
         ChangeNotifierProvider<MessagesProvider>.value(value: messagesProvider),
         ChangeNotifierProvider<UserProvider>.value(value: userProvider),
-        ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider<LocaleProvider>.value(value: localeProvider),
       ],
-      child: MyApp(flutterI18nDelegate: _flutterI18nDelegate)),
+      child: MyApp(flutterI18nDelegate: flutterI18nDelegate),
+    ),
   );
 }
 

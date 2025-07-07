@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:mobile/widgets/session_card.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/schemas/user.dart';
 import 'package:mobile/schemas/auth.dart';
@@ -45,6 +46,9 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     _loadProfileData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserProvider>(context, listen: false).fetchSessions();
+    });
   }
 
   @override
@@ -208,7 +212,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
+    final userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(title: Text((context.translate('settings')))),
       body: SafeArea(
@@ -286,7 +290,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
               Text(context.translate('language')),
               DropdownButtonFormField<Locale>(
-                value: FlutterI18n.currentLocale(context), // Set the initial value
+                value: FlutterI18n.currentLocale(
+                  context,
+                ), // Set the initial value
                 items: [
                   DropdownMenuItem<Locale>(
                     value: Locale('en'),
@@ -300,17 +306,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (Locale? newLocale) async {
                   if (newLocale != null) {
                     final prefs = await SharedPreferences.getInstance();
-                    await prefs.setString('language_code', newLocale.languageCode);
+                    await prefs.setString(
+                      'language_code',
+                      newLocale.languageCode,
+                    );
                     if (context.mounted) {
-                      final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+                      final localeProvider = Provider.of<LocaleProvider>(
+                        context,
+                        listen: false,
+                      );
                       localeProvider.setLocale(newLocale);
                       await FlutterI18n.refresh(context, newLocale);
                     }
-
                   }
                 },
               ),
-
 
               const SizedBox(height: 16),
 
@@ -358,8 +368,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 label: context.translate('repeat_new_password'),
                 errorText: _passwordErrors['repeatPassword'],
                 obscureText: _obscureRepeatPassword,
-                onToggleObscure: () =>
-                    setState(() => _obscureRepeatPassword = !_obscureRepeatPassword),
+                onToggleObscure: () => setState(
+                  () => _obscureRepeatPassword = !_obscureRepeatPassword,
+                ),
               ),
 
               if (_passwordErrors['error'] != null)
@@ -383,6 +394,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       )
                     : Text(context.translate('change_password')),
               ),
+              const SizedBox(height: 32),
+              ...?userProvider.sessions?.map((e) => SessionCard(session: e)),
             ],
           ),
         ),

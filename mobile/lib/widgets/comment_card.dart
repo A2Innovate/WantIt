@@ -164,7 +164,6 @@ class _CommentCardState extends State<CommentCard> {
         ((current?.isAdmin ?? false));
     final currentLocale = FlutterI18n.currentLocale(context);
 
-
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       elevation: 2,
@@ -190,7 +189,10 @@ class _CommentCardState extends State<CommentCard> {
                   ),
                 ),
                 Text(
-                  timeago.format(widget.comment.createdAt, locale: currentLocale!.languageCode),
+                  timeago.format(
+                    widget.comment.createdAt,
+                    locale: currentLocale!.languageCode,
+                  ),
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],

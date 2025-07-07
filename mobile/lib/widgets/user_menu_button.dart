@@ -3,6 +3,7 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/pages/sign_in.dart';
 import 'package:mobile/pages/sign_up.dart';
 import 'package:mobile/pages/profile.dart';
+import 'package:mobile/utils/extensions.dart';
 import 'package:provider/provider.dart';
 
 import '../pages/settings.dart';
@@ -44,10 +45,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 MaterialPageRoute(builder: (_) => const SignInPage()),
               );
             },
-            child: Text(
-              signInText,
-              style: const TextStyle(color: Colors.black),
-            ),
+            child: Text(signInText),
           ),
           TextButton(
             onPressed: () async {
@@ -56,26 +54,19 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 MaterialPageRoute(builder: (_) => const SignUpPage()),
               );
             },
-            child: Text(
-              signUpText,
-              style: const TextStyle(color: Colors.black),
-            ),
+            child: Text(signUpText),
           ),
         ],
       );
     }
 
     return PopupMenuButton<int>(
-      tooltip: 'User menu',
+      tooltip: 'User Menu Button',
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Text(
           user.username.isNotEmpty ? user.username : '?',
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
       onSelected: (value) async {

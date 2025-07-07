@@ -70,20 +70,30 @@ class Request {
     if (json.containsKey('content')) {
       content = json['content'] as String;
     }
+
     if (json.containsKey('budget')) {
       budget = (json['budget'] as num).toInt();
     }
+
     if (json.containsKey('currency')) {
       currency = Currency.values.byName(json['currency']);
     }
+
     if (json.containsKey('location')) {
-      location = LatLng(
-        (json['location']['y'] as num).toDouble(),
-        (json['location']['x'] as num).toDouble(),
-      );
+      final loc = json['location'];
+      if (loc == null) {
+        location = null;
+      } else {
+        location = LatLng(
+          (loc['y'] as num).toDouble(),
+          (loc['x'] as num).toDouble(),
+        );
+      }
     }
+
     if (json.containsKey('radius')) {
-      radius = (json['radius'] as num).toDouble();
+      final r = json['radius'];
+      radius = r == null ? null : (r as num).toDouble();
     }
   }
 

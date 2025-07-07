@@ -40,7 +40,7 @@ class User {
 
 class UserSession {
   final int id;
-  final String ip;
+  final String? ip;
   final DateTime expiresAt;
 
   UserSession({required this.id, required this.ip, required this.expiresAt});

@@ -41,13 +41,11 @@ class _CreateRequestModalState extends State<CreateRequestModal> {
     final formData = {
       'content': contentController.text.trim(),
       'budget': budget,
-      if (!isGlobal)
-        'location': {
-          'x': pickedLocation.longitude,
-          'y': pickedLocation.latitude,
-        },
-      if (!isGlobal) 'radius': sliderValue,
-      'currency': selectedCurrency.symbol.toString(),
+      'location': isGlobal
+          ? null
+          : {'x': pickedLocation.longitude, 'y': pickedLocation.latitude},
+      'radius': isGlobal ? null : sliderValue,
+      'currency': selectedCurrency.symbol,
     };
     final result = await createAndEditRequestSchema.tryParseAsync(formData);
     if (!result.success) {

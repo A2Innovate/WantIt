@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:mobile/pages/chat_details.dart';
+import 'package:mobile/utils/extensions.dart';
 import 'package:provider/provider.dart';
 import '../providers/message_provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -35,18 +36,9 @@ class _ChatPageState extends State<ChatPage> {
     final messageProvider = Provider.of<MessagesProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
 
-    final authRequiredText = FlutterI18n.translate(
-      context,
-      'auth_required_for_chat',
-    );
-    final signInLabel = FlutterI18n.translate(context, 'sign_in');
-    final chatTitle = FlutterI18n.translate(context, 'chat');
-    final chatsLabel = FlutterI18n.translate(context, 'chat');
-    final noMessagesText = FlutterI18n.translate(context, 'no_messages_yet');
-
     if (userProvider.current == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(chatTitle)),
+        appBar: AppBar(title: Text(context.translate("chat"))),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -54,7 +46,7 @@ class _ChatPageState extends State<ChatPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  authRequiredText,
+                  context.translate("auth_required_for_chat"),
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 16),
                 ),
@@ -63,7 +55,7 @@ class _ChatPageState extends State<ChatPage> {
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/signin');
                   },
-                  child: Text(signInLabel),
+                  child: Text(context.translate("sign_in")),
                 ),
               ],
             ),
@@ -76,7 +68,7 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(chatTitle),
+        title: Text(context.translate("chat")),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -91,7 +83,7 @@ class _ChatPageState extends State<ChatPage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                chatsLabel,
+                context.translate("chat"),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -100,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
             Expanded(
               child: lastMessages.isEmpty
-                  ? Center(child: Text(noMessagesText))
+                  ? Center(child: Text(context.translate("no_messages_yet")))
                   : ListView.builder(
                       itemCount: lastMessages.length,
                       itemBuilder: (context, index) {

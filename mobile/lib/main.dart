@@ -81,13 +81,41 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         useMaterial3: true,
         colorSchemeSeed: Colors.amberAccent,
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: Color(0xFFFFF7EF),
+        cardColor: Color(0xFFFFF2DD),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFFFF7EF),
+          foregroundColor: Colors.black,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Colors.amberAccent,
+          foregroundColor: Colors.black,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFFFFF2DD),
+          selectedItemColor: Colors.black,
+          unselectedItemColor: Colors.black54,
+        ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
         colorSchemeSeed: Colors.amberAccent,
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: Color(0xFF121212),
+        cardColor: Color(0xFF1E1E1E),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFF121212),
+          foregroundColor: Colors.white,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.amberAccent,
+          foregroundColor: Colors.black,
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF1C1C1C),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+        ),
       ),
       home: const DeepLinkHandler(),
       debugShowCheckedModeBanner: false,

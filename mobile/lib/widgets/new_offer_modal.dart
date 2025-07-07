@@ -150,119 +150,131 @@ class _NewOfferModalState extends State<NewOfferModal> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Text(
-                  context.translate('new_offer'),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Add Image Picker UI
-              Text(
-                context.translate('images'),
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: _pickImages,
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
+      child: Card(
+        color: Theme.of(context).cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    context.translate('new_offer'),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  child: _selectedImages.isNotEmpty
-                      ? ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: _selectedImages
-                              .map(
-                                (file) => Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Image.file(
-                                    file,
-                                    width: 100,
-                                    height: 100,
-                                    fit: BoxFit.cover,
+                ),
+                const SizedBox(height: 16),
+
+                // Add Image Picker UI
+                Text(
+                  context.translate('images'),
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _pickImages,
+                  child: Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _selectedImages.isNotEmpty
+                        ? ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: _selectedImages
+                                .map(
+                                  (file) => Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Image.file(
+                                      file,
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
-                                ),
-                              )
-                              .toList(),
-                        )
-                      : Center(
-                          child: Text(
-                            context.translate('tap_to_select_images'),
+                                )
+                                .toList(),
+                          )
+                        : Center(
+                            child: Text(
+                              context.translate('tap_to_select_images'),
+                            ),
                           ),
-                        ),
-                ),
-              ),
-              if (fieldErrors.containsKey('image'))
-                Text(
-                  fieldErrors['image']!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: contentController,
-                decoration: InputDecoration(
-                  labelText: context.translate('what_is_your_offer'),
-                  errorText: fieldErrors['content'],
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: priceController,
-                decoration: InputDecoration(
-                  labelText: context.translate('price'),
-                  errorText: fieldErrors['price'],
-                ),
-                keyboardType: TextInputType.number,
-              ),
-
-              Row(
-                children: [
-                  Text(context.translate('negotiable')),
-                  const Spacer(),
-                  Checkbox(
-                    value: isNegotiable,
-                    onChanged: (value) {
-                      setState(() {
-                        isNegotiable = value;
-                      });
-                    },
                   ),
-                ],
-              ),
+                ),
+                if (fieldErrors.containsKey('image'))
+                  Text(
+                    fieldErrors['image']!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
 
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _createOffer,
-                  child: Text(context.translate('add_offer')),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: contentController,
+                  decoration: InputDecoration(
+                    labelText: context.translate('what_is_your_offer'),
+                    errorText: fieldErrors['content'],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              if (fieldErrors.containsKey('error'))
-                Text(
-                  fieldErrors['error']!,
-                  style: const TextStyle(color: Colors.red),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: priceController,
+                  decoration: InputDecoration(
+                    labelText: context.translate('price'),
+                    errorText: fieldErrors['price'],
+                  ),
+                  keyboardType: TextInputType.number,
                 ),
-            ],
+
+                Row(
+                  children: [
+                    Text(context.translate('negotiable')),
+                    const Spacer(),
+                    Checkbox(
+                      value: isNegotiable,
+                      onChanged: (value) {
+                        setState(() {
+                          isNegotiable = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _createOffer,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
+                    child: Text(context.translate('add_offer')),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (fieldErrors.containsKey('error'))
+                  Text(
+                    fieldErrors['error']!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

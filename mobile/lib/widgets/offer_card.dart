@@ -225,6 +225,7 @@ class _OfferCardState extends State<OfferCard> {
 
     return Card(
       elevation: 4,
+      color: Theme.of(context).scaffoldBackgroundColor,
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -323,8 +324,8 @@ class _OfferCardState extends State<OfferCard> {
                           height: 8,
                           decoration: BoxDecoration(
                             color: _current == index
-                                ? Colors.black87
-                                : Colors.grey[400],
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.outlineVariant,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         );
@@ -349,6 +350,14 @@ class _OfferCardState extends State<OfferCard> {
                     onPressed: _onAcceptOrRevert,
                     icon: const Icon(Icons.cancel),
                     label: Text(context.translate('revert_acceptance')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
                   )
                 else if (widget.request.user.id == current?.id &&
                     widget.request.acceptedOffer == null)
@@ -356,6 +365,14 @@ class _OfferCardState extends State<OfferCard> {
                     onPressed: _onAcceptOrRevert,
                     icon: const Icon(Icons.check),
                     label: Text(context.translate('accept')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
                   ),
 
                 if (isOfferOwnerOrAdmin) ...[
@@ -363,6 +380,14 @@ class _OfferCardState extends State<OfferCard> {
                     onPressed: _onEdit,
                     icon: const Icon(Icons.edit),
                     label: Text(context.translate('edit')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   ElevatedButton.icon(
                     onPressed: _onDelete,
@@ -414,6 +439,14 @@ class _OfferCardState extends State<OfferCard> {
                     ),
                     child: ElevatedButton(
                       onPressed: _onPost,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant,
+                      ),
                       child: Text(context.translate('send')),
                     ),
                   ),

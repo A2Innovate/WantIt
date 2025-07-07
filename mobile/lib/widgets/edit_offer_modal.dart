@@ -180,216 +180,228 @@ class _EditOfferModalState extends State<EditOfferModal> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Text(
-                  context.translate("edit_offer"),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Text(
-                context.translate("current_images"),
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              GestureDetector(
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
+      child: Card(
+        color: Theme.of(context).cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    context.translate("edit_offer"),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  child: widget.offer.images.isNotEmpty
-                      ? ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: widget.offer.images.map((file) {
-                            final isMarked = _imagesToDelete.contains(
-                              file.name,
-                            );
-                            return Stack(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: isMarked
-                                            ? Colors.red
-                                            : Colors.transparent,
-                                        width: 3,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: ColorFiltered(
-                                        colorFilter: isMarked
-                                            ? ColorFilter.mode(
-                                                Colors.red.withValues(
-                                                  alpha: 0.2,
-                                                ),
-                                                BlendMode.srcATop,
-                                              )
-                                            : const ColorFilter.mode(
-                                                Colors.transparent,
-                                                BlendMode.multiply,
-                                              ),
-                                        child: Image.network(
-                                          '${ApiConfig.s3Endpoint}/${ApiConfig.s3Bucket}/request/${widget.request.id}/offer/${widget.offer.id}/images/${file.name}',
-                                          width: 100,
-                                          height: 100,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        if (isMarked) {
-                                          _imagesToDelete.remove(file.name);
-                                        } else {
-                                          _imagesToDelete.add(file.name);
-                                        }
-                                      });
-                                    },
+                ),
+                const SizedBox(height: 16),
+
+                Text(
+                  context.translate("current_images"),
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+
+                GestureDetector(
+                  child: Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: widget.offer.images.isNotEmpty
+                        ? ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: widget.offer.images.map((file) {
+                              final isMarked = _imagesToDelete.contains(
+                                file.name,
+                              );
+                              return Stack(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(4.0),
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.2,
+                                        border: Border.all(
+                                          color: isMarked
+                                              ? Colors.red
+                                              : Colors.transparent,
+                                          width: 3,
                                         ),
-                                        shape: BoxShape.circle,
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      padding: const EdgeInsets.all(4),
-                                      child: Icon(
-                                        isMarked ? Icons.undo : Icons.close,
-                                        color: Colors.white,
-                                        size: 16,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: ColorFiltered(
+                                          colorFilter: isMarked
+                                              ? ColorFilter.mode(
+                                                  Colors.red.withValues(
+                                                    alpha: 0.2,
+                                                  ),
+                                                  BlendMode.srcATop,
+                                                )
+                                              : const ColorFilter.mode(
+                                                  Colors.transparent,
+                                                  BlendMode.multiply,
+                                                ),
+                                          child: Image.network(
+                                            '${ApiConfig.s3Endpoint}/${ApiConfig.s3Bucket}/request/${widget.request.id}/offer/${widget.offer.id}/images/${file.name}',
+                                            width: 100,
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        )
-                      : Center(child: Text(context.translate("no_images"))),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                context.translate("new_images"),
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: _pickImages,
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: _selectedImages.isNotEmpty
-                      ? ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: _selectedImages
-                              .map(
-                                (file) => Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Image.file(
-                                    file,
-                                    width: 100,
-                                    height: 100,
-                                    fit: BoxFit.cover,
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (isMarked) {
+                                            _imagesToDelete.remove(file.name);
+                                          } else {
+                                            _imagesToDelete.add(file.name);
+                                          }
+                                        });
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        padding: const EdgeInsets.all(4),
+                                        child: Icon(
+                                          isMarked ? Icons.undo : Icons.close,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              )
-                              .toList(),
-                        )
-                      : Center(
-                          child: Text(
-                            context.translate("tap_to_select_images"),
-                          ),
-                        ),
-                ),
-              ),
-
-              if (fieldErrors.containsKey('image'))
-                Text(
-                  fieldErrors['image']!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: contentController,
-                decoration: InputDecoration(
-                  labelText: context.translate("what_is_your_offer"),
-                  errorText: fieldErrors['content'],
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: priceController,
-                decoration: InputDecoration(
-                  labelText: context.translate("price"),
-                  errorText: fieldErrors['price'],
-                ),
-                keyboardType: TextInputType.number,
-              ),
-
-              Row(
-                children: [
-                  Text(context.translate("negotiable")),
-                  const Spacer(),
-                  Checkbox(
-                    value: isNegotiable,
-                    onChanged: (value) {
-                      setState(() {
-                        isNegotiable = value;
-                      });
-                    },
+                                ],
+                              );
+                            }).toList(),
+                          )
+                        : Center(child: Text(context.translate("no_images"))),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _editOffer,
-                  child: Text(context.translate("save")),
                 ),
-              ),
-              const SizedBox(height: 16),
-              if (fieldErrors.containsKey('error'))
+                const SizedBox(height: 16),
                 Text(
-                  fieldErrors['error']!,
-                  style: const TextStyle(color: Colors.red),
+                  context.translate("new_images"),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-            ],
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _pickImages,
+                  child: Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _selectedImages.isNotEmpty
+                        ? ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: _selectedImages
+                                .map(
+                                  (file) => Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Image.file(
+                                      file,
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          )
+                        : Center(
+                            child: Text(
+                              context.translate("tap_to_select_images"),
+                            ),
+                          ),
+                  ),
+                ),
+
+                if (fieldErrors.containsKey('image'))
+                  Text(
+                    fieldErrors['image']!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: contentController,
+                  decoration: InputDecoration(
+                    labelText: context.translate("what_is_your_offer"),
+                    errorText: fieldErrors['content'],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: priceController,
+                  decoration: InputDecoration(
+                    labelText: context.translate("price"),
+                    errorText: fieldErrors['price'],
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+
+                Row(
+                  children: [
+                    Text(context.translate("negotiable")),
+                    const Spacer(),
+                    Checkbox(
+                      value: isNegotiable,
+                      onChanged: (value) {
+                        setState(() {
+                          isNegotiable = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _editOffer,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
+                    child: Text(context.translate("save")),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (fieldErrors.containsKey('error'))
+                  Text(
+                    fieldErrors['error']!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

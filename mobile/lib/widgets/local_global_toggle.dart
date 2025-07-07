@@ -25,20 +25,24 @@ class _LocalGlobalToggleState extends State<LocalGlobalToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final style =
+        (theme.brightness == Brightness.light
+                ? theme.textTheme.bodySmall
+                : theme.textTheme.bodySmall?.copyWith(color: Colors.white))!
+            .color!
+            .withValues(alpha: 0.45);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           children: [
-            Icon(
-              Icons.location_on,
-              color: isGlobal ? Colors.grey : Colors.blue,
-            ),
+            Icon(Icons.location_on, color: isGlobal ? style : Colors.blue),
             SizedBox(width: 4),
             Text(
               context.translate("location_local"),
               style: TextStyle(
-                color: isGlobal ? Colors.black : Colors.blue,
+                color: isGlobal ? style : Colors.blue,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -64,7 +68,7 @@ class _LocalGlobalToggleState extends State<LocalGlobalToggle> {
             Text(
               context.translate("location_global"),
               style: TextStyle(
-                color: isGlobal ? Colors.blue : Colors.black,
+                color: isGlobal ? Colors.blue : style,
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -71,9 +71,15 @@ class _SignInPageState extends State<SignInPage> {
               context,
               listen: false,
             );
-
             await initPusher(response.data['id'], messageProvider);
             messageProvider.fetchRefreshMessages();
+
+            if (mounted) {
+              Navigator.pop(
+                context,
+                MaterialPageRoute(builder: (_) => const MainPage()),
+              );
+            }
           }
         } else {
           setState(() {
@@ -202,11 +208,10 @@ class _SignInPageState extends State<SignInPage> {
     };
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        foregroundColor: Colors.black,
+        // foregroundColor: Colors.black,
         title: Text(localizedStrings['sign_in']!),
       ),
       body: SafeArea(
@@ -222,7 +227,7 @@ class _SignInPageState extends State<SignInPage> {
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    // color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -280,10 +285,7 @@ class _SignInPageState extends State<SignInPage> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(localizedStrings['sign_in']!),
                   ),

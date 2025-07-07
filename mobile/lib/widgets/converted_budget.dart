@@ -18,6 +18,8 @@ class ConvertedBudgetText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = FlutterI18n.currentLocale(context);
+    final theme = Theme.of(context);
+
     return FutureBuilder<(Currency, double)?>(
       future: future,
       builder: (context, snapshot) {
@@ -26,26 +28,38 @@ class ConvertedBudgetText extends StatelessWidget {
           baseCurrency,
           locale: locale!.languageCode,
         );
+
         if (snapshot.connectionState != ConnectionState.done ||
             snapshot.hasError ||
             !snapshot.hasData) {
-          return Text(baseText);
+          return Text(
+            baseText,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          );
         }
 
         final (convertedCurrency, convertedAmount) = snapshot.data!;
         if (convertedCurrency != baseCurrency) {
           return RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+              style: theme.textTheme.bodyMedium,
               children: [
                 TextSpan(
                   text: baseText,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 TextSpan(
                   text:
                       ' (≈ ${formatCurrency(convertedAmount, convertedCurrency, locale: locale.languageCode)})',
-                  style: const TextStyle(fontSize: 12),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),
@@ -53,7 +67,9 @@ class ConvertedBudgetText extends StatelessWidget {
         } else {
           return Text(
             baseText,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           );
         }
       },

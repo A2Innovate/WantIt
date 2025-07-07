@@ -389,11 +389,11 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       return Scaffold(
         appBar: AppBar(
           title: Text(context.translate("request_details")),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          foregroundColor: Theme.of(context).cardColor,
           elevation: 0,
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: Text(
             FlutterI18n.translate(
@@ -406,20 +406,17 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       );
     }
     if (_request == null) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final request = _request!;
     return Scaffold(
       appBar: AppBar(
         title: Text(context.translate("request_details")),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onBackground,
         elevation: 0,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -428,6 +425,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Card(
+                  color: Theme.of(context).cardColor,
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -515,8 +513,12 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                                 icon: const Icon(Icons.edit),
                                 label: Text(context.translate("edit")),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[200],
-                                  foregroundColor: Colors.black,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -531,7 +533,10 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                               ),
                             ],
                             const Spacer(),
-                            const Icon(Icons.visibility),
+                            Icon(
+                              Icons.visibility,
+                              color: Theme.of(context).iconTheme.color,
+                            ),
                             const SizedBox(width: 4),
                             Text(request.user.username.toString()),
                           ],
@@ -575,6 +580,14 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                         onPressed: _onCreate,
                         icon: const Icon(Icons.add),
                         label: Text(context.translate("new_offer")),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ],
@@ -582,6 +595,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
                 if (request.offers!.isNotEmpty)
                   Card(
+                    color: Theme.of(context).cardColor,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),

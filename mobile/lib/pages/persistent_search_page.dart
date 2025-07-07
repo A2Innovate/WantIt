@@ -144,7 +144,11 @@ class _PersistentSearchPageState extends State<PersistentSearchPage> {
                           height: 300,
                           child: Center(
                             child: Text(
-                              '${snapshot.error}',
+                              snapshot.error?.toString().replaceFirst(
+                                    'Exception: ',
+                                    '',
+                                  ) ??
+                                  'Unknown error',
                               textAlign: TextAlign.center,
                               style: const TextStyle(color: Colors.red),
                             ),

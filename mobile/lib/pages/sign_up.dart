@@ -103,16 +103,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    t(String key) => FlutterI18n.translate(context, key);
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-        title: Text(t('sign_up')),
-      ),
+      appBar: AppBar(elevation: 0, title: Text(context.translate('sign_up'))),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -122,11 +114,10 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 const SizedBox(height: 32),
                 Text(
-                  t('create_an_account'),
+                  context.translate('create_an_account'),
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -134,7 +125,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   controller: _nameCtrl,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
-                    labelText: t('name'),
+                    labelText: context.translate('name'),
                     prefixIcon: const Icon(Icons.account_box_outlined),
                     errorText: fieldErrors['name'],
                   ),
@@ -143,7 +134,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 TextFormField(
                   controller: _usernameCtrl,
                   decoration: InputDecoration(
-                    labelText: t('username'),
+                    labelText: context.translate('username'),
                     prefixIcon: const Icon(Icons.account_circle_outlined),
                     errorText: fieldErrors['username'],
                   ),
@@ -152,7 +143,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: InputDecoration(
-                    labelText: t('email'),
+                    labelText: context.translate('email'),
                     prefixIcon: const Icon(Icons.email_outlined),
                     errorText: fieldErrors['email'],
                   ),
@@ -163,7 +154,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   controller: _passCtrl,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: t('password'),
+                    labelText: context.translate('password'),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -193,7 +184,6 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -204,12 +194,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Text(t('sign_up')),
+                        : Text(context.translate('sign_up')),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -218,7 +205,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text(t('back_to_home')),
+                      child: Text(context.translate('back_to_home')),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -227,7 +214,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           MaterialPageRoute(builder: (_) => const SignInPage()),
                         );
                       },
-                      child: Text(t('already_have_an_account')),
+                      child: Text(context.translate('already_have_an_account')),
                     ),
                   ],
                 ),

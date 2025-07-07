@@ -40,59 +40,65 @@ class _EditRequestModalState extends State<EditRequestModal> {
     setState(() {
       fieldErrors = {};
     });
+    print(isGlobal);
     final budget = int.tryParse(budgetController.text) ?? 0;
     final formData = {
       'content': contentController.text.trim(),
       'budget': budget,
-      if (!isGlobal)
-        'location': {
-          'x': pickedLocation.longitude,
-          'y': pickedLocation.latitude,
-        },
-      if (!isGlobal) 'radius': sliderValue,
+      'location': isGlobal
+          ? null
+          : {'x': pickedLocation.longitude, 'y': pickedLocation.latitude},
+      'radius': isGlobal ? null : sliderValue,
       'currency': selectedCurrency.symbol,
     };
+
     final result = await createAndEditRequestSchema.tryParseAsync(formData);
     if (!result.success) {
       final errors = <String, String?>{};
       for (final err in result.errors.entries) {
-        errors[err.key] = context.translate(
-          Map<String, String>.from(err.value).values.first,
-        );
+        if (mounted) {
+          errors[err.key] = context.translate(
+            Map<String, String>.from(err.value).values.first,
+          );
+        }
       }
       setState(() {
         fieldErrors = errors;
       });
     } else {
       try {
-        final current = Provider.of<UserProvider>(
-          context,
-          listen: false,
-        ).current;
-        bool isAdmin =
-            ((current?.isAdmin ?? false) &&
-            (widget.request.user.id != current?.id));
+        if (mounted) {
+          final current = Provider.of<UserProvider>(
+            context,
+            listen: false,
+          ).current;
+          bool isAdmin =
+              ((current?.isAdmin ?? false) &&
+              (widget.request.user.id != current?.id));
 
-        final response = await useApi().put(
-          '/request/${widget.request.id}',
-          data: formData,
-          queryParameters: {if (isAdmin) 'pretendUser': widget.request.user.id},
-          options: Options(
-            sendTimeout: const Duration(seconds: 30),
-            receiveTimeout: const Duration(seconds: 30),
-          ),
-        );
-        if (response.statusCode == 200) {
-          if (mounted) {
-            Navigator.of(context).pop(true);
+          final response = await useApi().put(
+            '/request/${widget.request.id}',
+            data: formData,
+            queryParameters: {
+              if (isAdmin) 'pretendUser': widget.request.user.id,
+            },
+            options: Options(
+              sendTimeout: const Duration(seconds: 30),
+              receiveTimeout: const Duration(seconds: 30),
+            ),
+          );
+          if (response.statusCode == 200) {
+            if (mounted) {
+              Navigator.of(context).pop(true);
+            }
+          } else {
+            setState(() {
+              fieldErrors['error'] = (response.data is Map<String, dynamic>)
+                  ? (response.data['message'] ??
+                        context.translate("unknown_error"))
+                  : context.translate("network_error");
+            });
           }
-        } else {
-          setState(() {
-            fieldErrors['error'] = (response.data is Map<String, dynamic>)
-                ? (response.data['message'] ??
-                      context.translate("unknown_error"))
-                : context.translate("network_error");
-          });
         }
       } on DioException catch (e) {
         setState(() {
@@ -149,185 +155,197 @@ class _EditRequestModalState extends State<EditRequestModal> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Text(
-                  context.translate("edit_request"),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      child: Card(
+        color: Theme.of(context).cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    context.translate("edit_request"),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              Text(
-                context.translate("location"),
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              Center(
-                child: LocalGlobalToggle(
-                  initialValue: isGlobal,
-                  onChanged: (value) {
-                    setState(() {
-                      isGlobal = value;
-                    });
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              if (fieldErrors.containsKey('errorLocation'))
                 Text(
-                  fieldErrors['errorLocation']!,
-                  style: const TextStyle(color: Colors.red),
+                  context.translate("location"),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-              if (!isGlobal)
-                SizedBox(
-                  height: 200,
-                  child: FlutterMap(
-                    mapController: mapController,
-                    options: MapOptions(
-                      initialCenter: pickedLocation,
-                      initialZoom: mapZoom,
-                      onTap: (tapPosition, point) {
-                        setState(() {
-                          pickedLocation = point;
-                        });
-                      },
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.wantit.mobile',
-                        errorTileCallback: (title, error, stackTrace) {
-                          setState(() {
-                            isGlobal = true;
-                            fieldErrors['errorLocation'] = context.translate(
-                              "unable_to_load_map",
-                            );
-                          });
-                        },
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            key: ValueKey(pickedLocation),
-                            point: pickedLocation,
-                            width: 40,
-                            height: 40,
-                            child: const Icon(
-                              Icons.location_pin,
-                              color: Colors.red,
-                              size: 40,
-                            ),
-                          ),
-                        ],
-                      ),
-                      CircleLayer(
-                        circles: [
-                          CircleMarker(
-                            key: ValueKey(pickedLocation),
-                            point: pickedLocation,
-                            color: Colors.blue.withValues(alpha: (0.2)),
-                            borderStrokeWidth: 2,
-                            borderColor: Colors.blue,
-                            radius: metersToPixels(
-                              sliderValue,
-                              pickedLocation.latitude,
-                              mapZoom,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                const SizedBox(height: 8),
+
+                Center(
+                  child: LocalGlobalToggle(
+                    initialValue: isGlobal,
+                    onChanged: (value) {
+                      setState(() {
+                        isGlobal = value;
+                      });
+                    },
                   ),
                 ),
 
-              if (!isGlobal)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Slider(
-                        min: 3000,
-                        max: 1000000,
-                        divisions: 100,
-                        value: sliderValue,
-                        label: formatRadius(sliderValue),
-                        onChanged: (value) {
+                const SizedBox(height: 8),
+
+                if (fieldErrors.containsKey('errorLocation'))
+                  Text(
+                    fieldErrors['errorLocation']!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                if (!isGlobal)
+                  SizedBox(
+                    height: 200,
+                    child: FlutterMap(
+                      mapController: mapController,
+                      options: MapOptions(
+                        initialCenter: pickedLocation,
+                        initialZoom: mapZoom,
+                        onTap: (tapPosition, point) {
                           setState(() {
-                            sliderValue = value;
+                            pickedLocation = point;
                           });
                         },
                       ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.wantit.mobile',
+                          errorTileCallback: (title, error, stackTrace) {
+                            setState(() {
+                              isGlobal = true;
+                              fieldErrors['errorLocation'] = context.translate(
+                                "unable_to_load_map",
+                              );
+                            });
+                          },
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              key: ValueKey(pickedLocation),
+                              point: pickedLocation,
+                              width: 40,
+                              height: 40,
+                              child: const Icon(
+                                Icons.location_pin,
+                                color: Colors.red,
+                                size: 40,
+                              ),
+                            ),
+                          ],
+                        ),
+                        CircleLayer(
+                          circles: [
+                            CircleMarker(
+                              key: ValueKey(pickedLocation),
+                              point: pickedLocation,
+                              color: Colors.blue.withValues(alpha: (0.2)),
+                              borderStrokeWidth: 2,
+                              borderColor: Colors.blue,
+                              radius: metersToPixels(
+                                sliderValue,
+                                pickedLocation.latitude,
+                                mapZoom,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
+                  ),
 
-                    Text(formatRadius(sliderValue)),
-                  ],
-                ),
+                if (!isGlobal)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          min: 3000,
+                          max: 1000000,
+                          divisions: 100,
+                          value: sliderValue,
+                          label: formatRadius(sliderValue),
+                          onChanged: (value) {
+                            setState(() {
+                              sliderValue = value;
+                            });
+                          },
+                        ),
+                      ),
 
-              const SizedBox(height: 16),
+                      Text(formatRadius(sliderValue)),
+                    ],
+                  ),
 
-              Text(
-                context.translate("request_details"),
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 16),
 
-              TextField(
-                controller: contentController,
-                decoration: InputDecoration(
-                  labelText: 'What do you want?',
-                  border: OutlineInputBorder(),
-                  errorText: fieldErrors['content'],
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: budgetController,
-                decoration: InputDecoration(
-                  labelText: 'Budget',
-                  border: OutlineInputBorder(),
-                  errorText: fieldErrors['budget'],
-                ),
-                keyboardType: TextInputType.number,
-              ),
-
-              const SizedBox(height: 12),
-
-              Text(
-                selectedCurrency.symbol,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 16),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _editRequest,
-                  child: Text(context.translate("edit_request")),
-                ),
-              ),
-              if (fieldErrors.containsKey('error'))
                 Text(
-                  fieldErrors['error']!,
-                  style: const TextStyle(color: Colors.red),
+                  context.translate("request_details"),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-            ],
+                const SizedBox(height: 8),
+
+                TextField(
+                  controller: contentController,
+                  decoration: InputDecoration(
+                    labelText: 'What do you want?',
+                    border: OutlineInputBorder(),
+                    errorText: fieldErrors['content'],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                TextField(
+                  controller: budgetController,
+                  decoration: InputDecoration(
+                    labelText: 'Budget',
+                    border: OutlineInputBorder(),
+                    errorText: fieldErrors['budget'],
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  selectedCurrency.symbol,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _editRequest,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                    ),
+                    child: Text(context.translate("edit_request")),
+                  ),
+                ),
+                if (fieldErrors.containsKey('error'))
+                  Text(
+                    fieldErrors['error']!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

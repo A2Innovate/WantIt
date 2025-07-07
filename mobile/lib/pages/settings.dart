@@ -115,22 +115,31 @@ class _SettingsPageState extends State<SettingsPage> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Profile updated!')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                context.translate(
+                  'Profile validation_profile_updated_successfully!',
+                ),
+              ),
+            ),
+          );
           Navigator.of(context).pop(true);
         }
       } else {
         setState(() {
-          _profileErrors['error'] =
-              response.data['message'] ?? 'Profile update failed';
+          _profileErrors['error'] = context.translate(
+            response.data['message'] ??
+                'validation_profile_updated_successfully',
+          );
           _isSavingProfile = false;
         });
       }
     } on DioException catch (e) {
       setState(() {
-        _profileErrors['error'] =
-            e.response?.data['message'] ?? 'Network error';
+        _profileErrors['error'] = (e.response?.data is Map<String, dynamic>)
+            ? context.translate(e.response?.data['message'] ?? 'unknown_error')
+            : context.translate('network_error');
         _isSavingProfile = false;
       });
     }
@@ -277,15 +286,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
 
-              if (_profileErrors['error'] != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Text(
-                    _profileErrors['error']!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-
               const SizedBox(height: 16),
 
               Text(context.translate('language')),
@@ -321,6 +321,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   }
                 },
               ),
+              if (_profileErrors['error'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    _profileErrors['error']!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
 
               const SizedBox(height: 16),
 
@@ -395,6 +403,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     : Text(context.translate('change_password')),
               ),
               const SizedBox(height: 32),
+
+              Text(
+                context.translate('sessions'),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
               ...?userProvider.sessions?.map((e) => SessionCard(session: e)),
             ],
           ),

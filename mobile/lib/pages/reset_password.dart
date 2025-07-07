@@ -63,7 +63,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         setState(() {
           _emailError = (e.response?.data is Map<String, dynamic>)
               ? context.translate(
-                  e.response?.data['message'] ?? 'unknown_error',
+                  context.translate(
+                    e.response?.data['message'] ?? 'unknown_error',
+                  ),
                 )
               : context.translate('network_error');
         });
@@ -73,6 +75,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         _emailError = Map<String, String>.from(
           result.errors['email'] ?? {},
         ).values.firstOrNull;
+        _emailError = context.translate(_emailError ?? 'unknown_error');
       });
     }
 
@@ -84,12 +87,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(context.translate("reset_password")),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        foregroundColor: Colors.black,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -103,10 +104,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  context.translate("reset_password_desc"),
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
-                ),
+                Text(context.translate("reset_password_desc")),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailCtrl,
@@ -134,10 +132,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(context.translate("send_reset_link")),
                   ),

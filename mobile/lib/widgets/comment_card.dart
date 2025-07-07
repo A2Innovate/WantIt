@@ -158,19 +158,18 @@ class _CommentCardState extends State<CommentCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final current = Provider.of<UserProvider>(context).current;
     bool isCommentOwnerOrAdmin =
         (current != null && current.id == widget.comment.user.id) ||
-        ((current?.isAdmin ?? false));
+        (current?.isAdmin ?? false);
     final currentLocale = FlutterI18n.currentLocale(context);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: const Color(
-        0xFFFDF6E3,
-      ), // Light cream background to match the screenshot
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: theme.scaffoldBackgroundColor,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -182,9 +181,9 @@ class _CommentCardState extends State<CommentCard> {
               children: [
                 Text(
                   '@${widget.comment.user.username}',
-                  style: TextStyle(
-                    color: Colors.grey[800],
-                    fontWeight: FontWeight.w500,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
                     fontSize: 14,
                   ),
                 ),
@@ -193,7 +192,10 @@ class _CommentCardState extends State<CommentCard> {
                     widget.comment.createdAt,
                     locale: currentLocale!.languageCode,
                   ),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -203,18 +205,36 @@ class _CommentCardState extends State<CommentCard> {
             if (isEditing)
               TextField(
                 controller: editCommentController,
-                decoration: InputDecoration(errorText: fieldErrors['content']),
+                decoration: InputDecoration(
+                  errorText: fieldErrors['content'],
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceVariant,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  errorStyle: TextStyle(color: theme.colorScheme.error),
+                ),
+                style: theme.textTheme.bodyMedium,
               ),
             if (!isEditing)
               Text(
                 widget.comment.content,
-                style: const TextStyle(fontSize: 16, color: Colors.black87),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
 
             if (widget.comment.edited != null && widget.comment.edited!)
-              Text(
-                context.translate("edited"),
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  context.translate("edited"),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               ),
 
             const SizedBox(height: 16),
@@ -223,43 +243,31 @@ class _CommentCardState extends State<CommentCard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  OutlinedButton.icon(
+                  ElevatedButton.icon(
                     onPressed: _onEdit,
-                    icon: const Icon(Icons.edit, size: 16),
+                    icon: Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: theme.colorScheme.primary,
+                    ),
                     label: Text(
                       isEditing
                           ? context.translate("save")
                           : context.translate("edit"),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.black87,
-                      side: const BorderSide(color: Colors.black26),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      textStyle: const TextStyle(fontSize: 14),
+                      style: TextStyle(color: theme.colorScheme.primary),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  OutlinedButton.icon(
+                  ElevatedButton.icon(
                     onPressed: _onDelete,
-                    icon: const Icon(Icons.delete, size: 16),
-                    label: Text(context.translate("delete")),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.black87,
-                      side: const BorderSide(color: Colors.black26),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      textStyle: const TextStyle(fontSize: 14),
+                    icon: Icon(
+                      Icons.delete,
+                      size: 16,
+                      color: theme.colorScheme.error,
+                    ),
+                    label: Text(
+                      context.translate("delete"),
+                      style: TextStyle(color: theme.colorScheme.error),
                     ),
                   ),
                 ],

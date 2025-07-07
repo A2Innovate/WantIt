@@ -24,7 +24,6 @@ class _UserMenuButtonState extends State<UserMenuButton> {
     final user = provider.current;
     final loggedIn = user != null;
 
-
     if (!loggedIn) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -66,14 +65,12 @@ class _UserMenuButtonState extends State<UserMenuButton> {
             context,
             MaterialPageRoute(builder: (_) => ProfilePage(userId: user.id)),
           );
-        }
-        else if (value == 1) {
+        } else if (value == 1) {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => AdminPage()),
           );
-        }
-        else if (value == 2) {
+        } else if (value == 2) {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SettingsPage()),
@@ -81,9 +78,13 @@ class _UserMenuButtonState extends State<UserMenuButton> {
         } else if (value == 3) {
           await provider.logout();
           if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(context.translate('validation_logged_out_successfully'))));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  context.translate('validation_logged_out_successfully'),
+                ),
+              ),
+            );
           }
         }
       },

@@ -17,7 +17,6 @@ class AdminPage extends StatefulWidget {
 }
 
 class _AdminPageState extends State<AdminPage> {
-
   final Map<String, String> statTypes = {
     'users': '',
     'requests': '',
@@ -45,8 +44,6 @@ class _AdminPageState extends State<AdminPage> {
       }
     });
     getStat();
-
-
   }
 
   @override
@@ -54,12 +51,8 @@ class _AdminPageState extends State<AdminPage> {
     final current = Provider.of<UserProvider>(context).current;
 
     if (!(current?.isAdmin ?? false)) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-
 
     return Scaffold(
       appBar: AppBar(title: const Text('Admin')),
@@ -91,13 +84,15 @@ class _AdminPageState extends State<AdminPage> {
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Recent Activity', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Recent Activity',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             const RecentActivityListInline(),
           ],
         ),
       ),
-
     );
   }
 }
@@ -110,7 +105,6 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Expanded(
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -118,9 +112,18 @@ class StatCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-             Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
-              Text(context.translate(type), style: const TextStyle(fontSize: 16)),
+              Text(
+                context.translate(type),
+                style: const TextStyle(fontSize: 16),
+              ),
             ],
           ),
         ),
@@ -151,7 +154,6 @@ class _GraphCardState extends State<GraphCard> {
         isLoading = false;
       });
     } else {
-
       // Handle error or set loading false
       setState(() {
         isLoading = false;
@@ -203,9 +205,20 @@ class _GraphCardState extends State<GraphCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(FlutterI18n.translate(context, 'created_in_last_days', translationParams: {"type": context.translate(widget.type), "count": "30"}),
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                FlutterI18n.translate(
+                  context,
+                  'created_in_last_days',
+                  translationParams: {
+                    "type": context.translate(widget.type),
+                    "count": "30",
+                  },
+                ),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               Expanded(
                 child: LineChart(
@@ -223,24 +236,26 @@ class _GraphCardState extends State<GraphCard> {
                         sideTitles: SideTitles(
                           showTitles: true,
                           interval: 3,
-                            getTitlesWidget: (value, meta) {
-                              final index = value.toInt();
-                              if (days != null && index >= 0 && index < days!.length && index % 5 == 0) {
-                                return SideTitleWidget(
-                                  space: 4,
-                                  meta: meta,
-                                  child: Transform.rotate(
-                                    angle: -0.5, // ~ -28 degrees
-                                    child: Text(
-                                      days![index],
-                                      style: const TextStyle(fontSize: 10),
-                                    ),
+                          getTitlesWidget: (value, meta) {
+                            final index = value.toInt();
+                            if (days != null &&
+                                index >= 0 &&
+                                index < days!.length &&
+                                index % 5 == 0) {
+                              return SideTitleWidget(
+                                space: 4,
+                                meta: meta,
+                                child: Transform.rotate(
+                                  angle: -0.5, // ~ -28 degrees
+                                  child: Text(
+                                    days![index],
+                                    style: const TextStyle(fontSize: 10),
                                   ),
-                                );
-                              }
-                              return const SizedBox.shrink();
+                                ),
+                              );
                             }
-
+                            return const SizedBox.shrink();
+                          },
                         ),
                       ),
                       leftTitles: AxisTitles(
@@ -258,7 +273,7 @@ class _GraphCardState extends State<GraphCard> {
                     minY: 0,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -271,9 +286,8 @@ class RecentActivityListInline extends StatefulWidget {
   const RecentActivityListInline({super.key});
 
   @override
-  State<RecentActivityListInline> createState() => _RecentActivityListInlineState();
-
-
+  State<RecentActivityListInline> createState() =>
+      _RecentActivityListInlineState();
 }
 
 class _RecentActivityListInlineState extends State<RecentActivityListInline> {
@@ -342,14 +356,13 @@ class _RecentActivityListInlineState extends State<RecentActivityListInline> {
       return const Center(child: Text('No recent activity found.'));
     }
 
-    return Column(
-      children: logs.map(_buildActivityItem).toList(),
-    );
-
+    return Column(children: logs.map(_buildActivityItem).toList());
   }
+
   Widget _buildActivityItem(Log log) {
     final userName = log.user?.username ?? log.ip ?? 'IP';
-    final avatarLetter = log.user?.username.characters.first.toUpperCase() ?? 'IP';
+    final avatarLetter =
+        log.user?.username.characters.first.toUpperCase() ?? 'IP';
     final actionText = _formatLogMessage(log);
     final timeAgo = timeago.format(log.createdAt);
     return Padding(
@@ -360,10 +373,7 @@ class _RecentActivityListInlineState extends State<RecentActivityListInline> {
           // Avatar
           CircleAvatar(
             radius: 14,
-            child: Text(
-              avatarLetter,
-              style: const TextStyle(fontSize: 12),
-            ),
+            child: Text(avatarLetter, style: const TextStyle(fontSize: 12)),
           ),
           const SizedBox(width: 8),
 
@@ -375,22 +385,16 @@ class _RecentActivityListInlineState extends State<RecentActivityListInline> {
                     text: '$userName ',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  TextSpan(
-                    text: actionText.replaceFirst('$userName ', ''),
-                  ),
+                  TextSpan(text: actionText.replaceFirst('$userName ', '')),
                 ],
               ),
             ),
           ),
 
           // Time
-          Text(
-            timeAgo,
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(timeAgo, style: const TextStyle(fontSize: 12)),
         ],
       ),
-    );  }
-
+    );
+  }
 }
-

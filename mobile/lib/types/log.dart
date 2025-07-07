@@ -19,7 +19,14 @@ class Log {
   final DateTime createdAt;
   final UserAndId? user;
 
-  Log({required this.id, required this.type, required this.content, required this.ip, required this.createdAt, required this.user});
+  Log({
+    required this.id,
+    required this.type,
+    required this.content,
+    required this.ip,
+    required this.createdAt,
+    required this.user,
+  });
 
   factory Log.fromJson(Map<String, dynamic> json) {
     return Log(
@@ -27,7 +34,9 @@ class Log {
       type: json['type'],
       content: json['content'],
       ip: json['ip'],
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.fromMillisecondsSinceEpoch(0)),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.fromMillisecondsSinceEpoch(0),
+      ),
       user: json['user'] != null ? UserAndId.fromJson(json['user']) : null,
     );
   }

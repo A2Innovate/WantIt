@@ -16,7 +16,7 @@ class PersistentSearchPage extends StatefulWidget {
   const PersistentSearchPage({super.key});
 
   @override
-  _PersistentSearchPageState createState() => _PersistentSearchPageState();
+  State<PersistentSearchPage> createState() => _PersistentSearchPageState();
 }
 
 class _PersistentSearchPageState extends State<PersistentSearchPage> {

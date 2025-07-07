@@ -16,7 +16,7 @@ class CommentCard extends StatefulWidget {
 
   const CommentCard({super.key, required this.comment, this.onChanged});
   @override
-  _CommentCardState createState() => _CommentCardState();
+  State<CommentCard> createState() => _CommentCardState();
 }
 
 class _CommentCardState extends State<CommentCard> {
@@ -208,7 +208,7 @@ class _CommentCardState extends State<CommentCard> {
                 decoration: InputDecoration(
                   errorText: fieldErrors['content'],
                   filled: true,
-                  fillColor: theme.colorScheme.surfaceVariant,
+                  fillColor: theme.colorScheme.surfaceContainerHigh,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,

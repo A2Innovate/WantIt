@@ -6,7 +6,7 @@ class LocalGlobalToggle extends StatefulWidget {
   final bool initialValue;
   final ValueChanged<bool> onChanged;
   @override
-  _LocalGlobalToggleState createState() => _LocalGlobalToggleState();
+  State<LocalGlobalToggle> createState() => _LocalGlobalToggleState();
   const LocalGlobalToggle({
     super.key,
     required this.initialValue,

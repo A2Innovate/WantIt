@@ -29,7 +29,7 @@ class RequestDetailPage extends StatefulWidget {
   const RequestDetailPage({super.key, required this.requestId, this.onChanged});
 
   @override
-  _RequestDetailPageState createState() => _RequestDetailPageState();
+  State<RequestDetailPage> createState() => _RequestDetailPageState();
 }
 
 class _RequestDetailPageState extends State<RequestDetailPage> {
@@ -413,7 +413,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       appBar: AppBar(
         title: Text(context.translate("request_details")),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: Theme.of(context).colorScheme.onBackground,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
       ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

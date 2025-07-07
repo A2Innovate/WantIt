@@ -6,6 +6,7 @@ import 'package:mobile/pages/profile.dart';
 import 'package:mobile/utils/extensions.dart';
 import 'package:provider/provider.dart';
 
+import '../pages/admin_page.dart';
 import '../pages/settings.dart';
 import '../providers/user_provider.dart';
 
@@ -23,16 +24,6 @@ class _UserMenuButtonState extends State<UserMenuButton> {
     final user = provider.current;
     final loggedIn = user != null;
 
-    // Fetch translations using flutter_i18n
-    final signInText = FlutterI18n.translate(context, 'sign_in');
-    final signUpText = FlutterI18n.translate(context, 'sign_up');
-    final profileText = FlutterI18n.translate(context, 'profile');
-    final settingsText = FlutterI18n.translate(context, 'settings');
-    final logoutText = FlutterI18n.translate(context, 'sign_out');
-    final loggedOutMsg = FlutterI18n.translate(
-      context,
-      'validation_logged_out_successfully',
-    );
 
     if (!loggedIn) {
       return Row(
@@ -45,7 +36,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 MaterialPageRoute(builder: (_) => const SignInPage()),
               );
             },
-            child: Text(signInText),
+            child: Text(context.translate("sign_in")),
           ),
           TextButton(
             onPressed: () async {
@@ -54,7 +45,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
                 MaterialPageRoute(builder: (_) => const SignUpPage()),
               );
             },
-            child: Text(signUpText),
+            child: Text(context.translate("sign_up")),
           ),
         ],
       );
@@ -75,24 +66,36 @@ class _UserMenuButtonState extends State<UserMenuButton> {
             context,
             MaterialPageRoute(builder: (_) => ProfilePage(userId: user.id)),
           );
-        } else if (value == 1) {
+        }
+        else if (value == 1) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AdminPage()),
+          );
+        }
+        else if (value == 2) {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SettingsPage()),
           );
-        } else if (value == 2) {
+        } else if (value == 3) {
           await provider.logout();
           if (context.mounted) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text(loggedOutMsg)));
+            ).showSnackBar(SnackBar(content: Text(context.translate('validation_logged_out_successfully'))));
           }
         }
       },
       itemBuilder: (context) => [
-        PopupMenuItem(value: 0, child: Text(profileText)),
-        PopupMenuItem(value: 1, child: Text(settingsText)),
-        PopupMenuItem(value: 2, child: Text(logoutText)),
+        PopupMenuItem(value: 0, child: Text(context.translate('profile'))),
+        if (loggedIn && user.isAdmin!)
+          PopupMenuItem(
+            value: 1,
+            child: Text(FlutterI18n.translate(context, 'admin')),
+          ),
+        PopupMenuItem(value: 2, child: Text(context.translate('settings'))),
+        PopupMenuItem(value: 3, child: Text(context.translate('sign_out'))),
       ],
     );
   }

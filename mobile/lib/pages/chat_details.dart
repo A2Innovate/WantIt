@@ -99,12 +99,6 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         message.content,
       );
     }
-    // } catch (e) {
-    //   print(e.stackTrace);
-    //   setState(() {
-    //     errorMessage = 'Failed to send message: $e';
-    //   });
-    // }
   }
 
   @override

@@ -16,12 +16,18 @@ jobs:
       - name: Checkout Git repository
         uses: actions/checkout@v4
 
-      - name: Set up Dart SDK
-        uses: dart-lang/setup-dart@v1
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+
+      - name: Install Flutter dependencies
+        working-directory: ./mobile
+        run: flutter pub get
 
       - name: Run Dart formatter on mobile/lib/*
         working-directory: ./mobile
-        run: dart format lib/*
+        run: dart format lib/
 
       - name: Commit and push changes
         if: github.actor != 'github-actions[bot]'

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:mobile/pages/profile.dart';
 import 'package:mobile/schemas/comments.dart';
 import 'package:mobile/types/offer.dart';
 import 'package:provider/provider.dart';
@@ -258,9 +259,18 @@ class _OfferCardState extends State<OfferCard> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  '@${offer.user.username}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ProfilePage(userId: offer.user.id),
+                    ));
+                  },
+                  child: Text(
+                    '@${offer.user.username}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
                 const Spacer(),
                 if (offer.negotiation)

@@ -192,6 +192,8 @@
   "validation_review_edited_successfully": "Recenzja została pomyślnie edytowana.",
   "validation_review_deleted_successfully": "Recenzja została pomyślnie usunięta.",
   "admin": "Admin",
+  "reviews": "Recenzje",
+  "send_message": "Wyślij wiadomość",
   "options": "Opcje",
   "integrity_check": "Sprawdzenie integralności S3/DB",
   "logs_will_appear_here": "Logi pojawią się tutaj...",

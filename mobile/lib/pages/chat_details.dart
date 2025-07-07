@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/stores/client.dart';
 import 'package:mobile/stores/pusher.dart';
 import 'package:mobile/types/chat.dart';
@@ -16,8 +17,8 @@ import '../schemas/chat.dart';
 import '../types/messages.dart';
 
 class ChatDetailsPage extends StatefulWidget {
-  final Person user;
-  const ChatDetailsPage({super.key, required this.user});
+  final int userId;
+  const ChatDetailsPage({super.key, required this.userId});
 
   @override
   State<ChatDetailsPage> createState() => _ChatDetailsPageState();
@@ -28,18 +29,15 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   bool isLoading = true;
   String? errorMessage;
   String? errorFormMessage;
-  String? _currentName;
-  String? _currentUsername;
   int? _currentId;
   Channel? _pusherChannel;
-  Timer? _timer;
 
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   Future<void> getChatResponse() async {
     try {
-      final response = await useApi().get('/chat/${widget.user.id}');
+      final response = await useApi().get('/chat/${widget.userId}');
       setState(() {
         chat = Chat.fromJson(response.data);
         isLoading = false;
@@ -86,9 +84,9 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       return;
     }
 
-    try {
+    // try {
       final response = await useApi().post(
-        '/chat/${widget.user.id}',
+        '/chat/${widget.userId}',
         data: value,
       );
 
@@ -97,18 +95,19 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       final message = Message.fromJson(response.data);
       if (mounted) {
         Provider.of<MessagesProvider>(context, listen: false).upsertLastMessage(
-          widget.user.id,
-          _currentName!,
-          _currentUsername!,
+          widget.userId,
+          chat!.person.name,
+          chat!.person.username,
           message.createdAt,
           message.content,
         );
       }
-    } catch (e) {
-      setState(() {
-        errorMessage = 'Failed to send message: $e';
-      });
-    }
+    // } catch (e) {
+    //   print(e.stackTrace);
+    //   setState(() {
+    //     errorMessage = 'Failed to send message: $e';
+    //   });
+    // }
   }
 
   @override
@@ -116,15 +115,11 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     super.initState();
     getChatResponse();
     _initialize();
-    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (mounted) setState(() {});
-    });
   }
 
   @override
   void dispose() {
     _messageController.dispose();
-    _timer?.cancel();
     _pusherChannel?.unsubscribe();
     super.dispose();
   }
@@ -137,7 +132,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     if (_currentId == null) return;
 
     _pusherChannel = usePusher().subscribe(
-      'private-user-$_currentId-chat-${widget.user.id}',
+      'private-user-$_currentId-chat-${widget.userId}',
     );
     _pusherChannel?.bind('new-message', (event) {
       final message = Message.fromJson(event);
@@ -146,9 +141,9 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         chat?.messages.add(message);
         scrollToBottom();
         Provider.of<MessagesProvider>(context, listen: false).upsertLastMessage(
-          widget.user.id,
-          _currentName ?? '',
-          _currentUsername ?? '',
+          widget.userId,
+          chat!.person.name,
+          chat!.person.username,
           message.createdAt,
           message.content,
         );
@@ -167,6 +162,16 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final provider = Provider.of<UserProvider>(context);
+    if (provider.current == null || provider.current!.id == widget.userId) {
+      if (mounted) {
+        Future.microtask(() => Navigator.pop(context));
+      }
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -175,17 +180,17 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  CircleAvatar(radius: 24, child: Text(widget.user.name[0])),
+                  CircleAvatar(radius: 24, child: Text(chat!.person.name[0])),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.user.name,
+                        chat!.person.name,
                         style: const TextStyle(fontSize: 18),
                       ),
                       Text(
-                        '@${widget.user.username}',
+                        '@${chat!.person.username}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -207,7 +212,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                       itemCount: chat!.messages.length,
                       itemBuilder: (context, index) {
                         final msg = chat!.messages[index];
-                        final isMe = msg.senderId != widget.user.id;
+                        final isMe = msg.senderId != widget.userId;
 
                         return Align(
                           alignment: isMe

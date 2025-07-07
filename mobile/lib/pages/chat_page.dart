@@ -113,7 +113,7 @@ class _ChatPageState extends State<ChatPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      ChatDetailsPage(user: message.person),
+                                      ChatDetailsPage(userId: message.person.id),
                                 ),
                               );
                             }

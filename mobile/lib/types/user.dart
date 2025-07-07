@@ -53,3 +53,43 @@ class UserSession {
     );
   }
 }
+class ProfileData {
+  final String name;
+  final String username;
+  final List<RequestData> requests;
+
+  ProfileData({required this.name, required this.username, required this.requests});
+
+  factory ProfileData.fromJson(Map<String, dynamic> json) {
+    return ProfileData(
+      name: json['name'],
+      username: json['username'],
+      requests: List<RequestData>.from(json['requests'].map((request) => RequestData.fromJson(request))),
+    );
+  }
+}
+class RequestData {
+  final int id;
+  final String content;
+  final int budget;
+  final Currency currency;
+  final DateTime createdAt;
+
+  RequestData({
+    required this.id,
+    required this.content,
+    required this.budget,
+    required this.currency,
+    required this.createdAt,
+  });
+
+  factory RequestData.fromJson(Map<String, dynamic> json) {
+    return RequestData(
+      id: json['id'],
+      content: json['content'],
+      budget: (json['budget'] as num).toInt(),
+      currency: Currency.values.byName(json['currency']),
+      createdAt: DateTime.parse(json['createdAt']),
+    );
+  }
+}

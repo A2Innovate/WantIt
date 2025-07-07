@@ -82,7 +82,7 @@ class _UserMenuButtonState extends State<UserMenuButton> {
         if (value == 0) {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const ProfilePage()),
+            MaterialPageRoute(builder: (_) => ProfilePage(userId: user.id)),
           );
         } else if (value == 1) {
           await Navigator.push(

@@ -67,7 +67,9 @@
     <UiCard v-else-if="error" class="m-4">
       <p class="text-red-500 text-center">
         <span v-if="error.statusCode === 404"
-          >{{ t('validation_user_not_found_key', { userId: route.params.userId }) }}
+          >{{
+            t('validation_user_not_found_key', { userId: route.params.userId })
+          }}
         </span>
         <span v-else> {{ error.message }}</span>
       </p>

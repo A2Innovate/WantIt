@@ -54,7 +54,7 @@ String formatCurrency(
 }) {
   try {
     final format = NumberFormat.simpleCurrency(
-      locale: 'en_US',
+      locale: locale,
       name: currency.symbol,
       decimalDigits: 2,
     );

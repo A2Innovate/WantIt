@@ -44,7 +44,7 @@ class ConvertedBudgetText extends StatelessWidget {
                 ),
                 TextSpan(
                   text:
-                      ' (≈ ${formatCurrency(convertedAmount, convertedCurrency)})',
+                      ' (≈ ${formatCurrency(convertedAmount, convertedCurrency, locale: locale.languageCode)})',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],

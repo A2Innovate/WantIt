@@ -21,9 +21,7 @@ Future main() async {
   // useApi().interceptors.add(
   //   DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
   // );
-  useApi().interceptors.add(
-    CookieManager(cookieJar!),
-  );
+  useApi().interceptors.add(CookieManager(cookieJar!));
   final messagesProvider = MessagesProvider();
   final userProvider = UserProvider();
   await userProvider.fetchUser();

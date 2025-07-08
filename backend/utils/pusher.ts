@@ -10,6 +10,6 @@ export const pusher = new Pusher({
   appId: PUSHER_APP_ID,
   key: PUSHER_KEY,
   secret: PUSHER_SECRET,
-  useTLS: false,
+  useTLS: true,
   host: PUSHER_HOST,
 });

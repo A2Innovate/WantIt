@@ -34,9 +34,7 @@ Future<bool> initPusher(int userId, MessagesProvider messagesProvider) async {
   final pusherOptions = PusherOptions(
     key: ApiConfig.pusherAppKey,
     host: ApiConfig.pusherHost,
-    wsPort: ApiConfig.pusherPort,
-    wssPort: ApiConfig.pusherPort,
-    encrypted: false,
+    encrypted: true,
     authOptions: PusherAuthOptions(
       '${ApiConfig.baseUrl}/api/auth/pusher',
       headers: {'Cookie': cookieHeader},

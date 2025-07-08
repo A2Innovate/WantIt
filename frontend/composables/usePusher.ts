@@ -36,9 +36,9 @@ export function usePusher() {
     wsHost: config.pusherWsHost,
     disableStats: true,
     cluster: config.pusherCluster,
-    forceTLS: false,
-    wsPort: 6001,
-    wssPort: 6001,
+    forceTLS: config.pusherTls,
+    // wsPort: 6001,
+    // wssPort: 6001,
     enabledTransports: ['ws', 'wss'],
     channelAuthorization: {
       customHandler: authHandler,

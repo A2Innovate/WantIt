@@ -2,20 +2,16 @@ class ApiConfig {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     // defaultValue: 'http://10.0.2.2:8000',
-    defaultValue: 'http://three-ghosts-pay.loca.lt',
+    defaultValue: 'https://api.atmudia.xyz',
   );
   static const String pusherHost = String.fromEnvironment(
     'PUSHER_HOST',
-    defaultValue: '10.0.2.2',
+    defaultValue: 'soketi.atmudia.xyz',
     // defaultValue: '192.168.1.135',
-  );
-  static const int pusherPort = int.fromEnvironment(
-    'PUSHER_PORT',
-    defaultValue: 6001,
   );
   static const String pusherAppKey = String.fromEnvironment(
     'PUSHER_APP_KEY',
-    defaultValue: 'app-key',
+    defaultValue: 'wantit-key',
   );
   static const String s3Bucket = String.fromEnvironment(
     'S3_BUCKET',

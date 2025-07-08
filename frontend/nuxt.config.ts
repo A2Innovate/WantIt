@@ -21,7 +21,8 @@ export default defineNuxtConfig({
       s3Bucket: '',
       pusherKey: '',
       pusherCluster: '',
-      pusherWsHost: ''
+      pusherWsHost: '',
+      pusherTls: true
     }
   },
   i18n: {

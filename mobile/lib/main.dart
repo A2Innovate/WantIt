@@ -1,3 +1,4 @@
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
@@ -17,8 +18,11 @@ import 'stores/pusher.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initCookieJar();
+  // useApi().interceptors.add(
+  //   DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
+  // );
   useApi().interceptors.add(
-    DomainRewriteInterceptor('three-ghosts-pay.loca.lt'),
+    CookieManager(cookieJar!),
   );
   final messagesProvider = MessagesProvider();
   final userProvider = UserProvider();

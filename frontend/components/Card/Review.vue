@@ -47,15 +47,15 @@
         "
         @click="handleEdit"
       >
-        <span v-if="!isEditing" class="hidden sm:block">Edit</span>
-        <span v-else class="hidden sm:block">Save</span>
+        <span v-if="!isEditing" class="hidden sm:block">{{ t('edit') }}</span>
+        <span v-else class="hidden sm:block">{{ t('save') }}</span>
       </UiButton>
       <UiButton
         icon="material-symbols:delete-rounded"
         variant="outline"
         @click="isDeleteModalOpen = true"
       >
-        <span class="hidden sm:block">Delete</span>
+        <span class="hidden sm:block">{{ t('delete') }}</span>
       </UiButton>
     </div>
     <Teleport to="body">
@@ -65,7 +65,7 @@
         @cancel="isDeleteModalOpen = false"
         @confirm="deleteReview()"
       >
-        Are you sure you want to delete this review?
+        {{ t('deletion_confirmation_review') }}
       </ModalConfirm>
     </Teleport>
   </div>
@@ -75,6 +75,8 @@
 import type { Review } from '@/types/review';
 import { AxiosError } from 'axios';
 import { addEditReviewSchema } from '~/schema/services/user';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   review: Review;

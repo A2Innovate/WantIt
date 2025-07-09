@@ -2,8 +2,7 @@
   <UiCard>
     <div class="flex items-center justify-between mb-2">
       <h2 class="sm:text-xl">
-        {{ props.type.charAt(0).toUpperCase() + props.type.slice(1) }} created
-        in the last <span class="font-semibold">30</span> days
+        {{ t('created_in_last_days', { type: t(props.type), count: 30 }) }}
       </h2>
       <UiButton
         icon="material-symbols:refresh"
@@ -24,6 +23,7 @@
 
 <script setup lang="ts">
 import type { Stats } from '~/types/stats';
+const { t } = useI18n();
 
 const props = defineProps<{
   type: 'users' | 'offers' | 'requests';

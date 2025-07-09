@@ -17,7 +17,7 @@ export const authRequired = createMiddleware<{
 
   if (!sessionToken) {
     return c.json({
-      message: "Session token missing.",
+      message: "validation_session_token_missing",
     }, 401);
   }
 
@@ -31,13 +31,13 @@ export const authRequired = createMiddleware<{
   if (!session || session.expiresAt < new Date()) {
     deleteCookie(c, "wantit_session");
     return c.json({
-      message: "Incorrect session token.",
+      message: "validation_session_token_invalid",
     }, 401);
   }
 
   if (session.user.isBlocked) {
     return c.json({
-      message: "You are blocked.",
+      message: "validation_user_is_blocked",
     }, 401);
   }
 
@@ -50,7 +50,7 @@ export const authRequired = createMiddleware<{
       );
     } catch {
       return c.json({
-        message: "Invalid pretend user ID.",
+        message: "validation_pretend_user_id_invalid",
       }, 400);
     }
 
@@ -60,19 +60,19 @@ export const authRequired = createMiddleware<{
 
     if (!pretendUser) {
       return c.json({
-        message: "Pretend user not found.",
+        message: "validation_pretend_user_not_found",
       }, 404);
     }
 
     if (pretendUser.id === session.user.id) {
       return c.json({
-        message: "You cannot pretend to be yourself.",
+        message: "validation_pretend_user_cannot_be_yourself",
       }, 400);
     }
 
     if (pretendUser.isAdmin) {
       return c.json({
-        message: "You cannot pretend to be another admin.",
+        message: "validation_pretend_user_cannot_be_another_admin",
       }, 400);
     }
 
@@ -89,7 +89,7 @@ export const adminRequired = createMiddleware(async (c, next) => {
 
   if (!session.user.isAdmin) {
     return c.json({
-      message: "You do not have permission to perform this action.",
+      message: "validation_admin_required",
     }, 403);
   }
 

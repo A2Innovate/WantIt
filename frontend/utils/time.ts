@@ -2,7 +2,8 @@ export function formatTime(date: Date) {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const { locale } = useI18n();
+  const rtf = new Intl.RelativeTimeFormat(locale.value, { numeric: 'auto' });
 
   if (Math.abs(diffInSeconds) < 60) {
     return rtf.format(-diffInSeconds, 'second');
@@ -17,5 +18,8 @@ export function formatTime(date: Date) {
     return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
   }
 
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(locale.value, {
+    month: 'short',
+    day: 'numeric'
+  });
 }

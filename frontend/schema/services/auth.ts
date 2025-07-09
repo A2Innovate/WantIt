@@ -3,47 +3,47 @@ import { z } from 'zod';
 export const signUpSchema = z.object({
   name: z
     .string()
-    .min(2, 'Name must be at least 2 characters long')
-    .max(256, 'Name must be at most 256 characters long'),
+    .min(2, 'validation_name_min_length')
+    .max(256, 'validation_name_max_length'),
   username: z
     .string()
-    .min(2, 'Username must be at least 2 characters long')
-    .max(32, 'Username must be at most 32 characters long')
-    .regex(/^[a-zA-Z0-9]+$/, 'Username must only contain letters and numbers'),
-  email: z.string().email('Invalid email'),
+    .min(2, 'validation_username_min_length')
+    .max(32, 'validation_username_max_length')
+    .regex(/^[a-zA-Z0-9]+$/, 'validation_username_regex'),
+  email: z.string().email('validation_email'),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters long')
-    .max(256, 'Password must be at most 256 characters long')
+    .min(8, 'validation_password_min_length')
+    .max(256, 'validation_password_max_length')
 });
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email'),
+  email: z.string().email('validation_email'),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters long')
-    .max(256, 'Password must be at most 256 characters long')
+    .min(8, 'validation_password_min_length')
+    .max(256, 'validation_password_max_length')
 });
 
 export const requestPasswordResetSchema = z.object({
-  email: z.string().email('Invalid email')
+  email: z.string().email('validation_email')
 });
 
 export const resetPasswordSchema = z.object({
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters long')
-    .max(256, 'Password must be at most 256 characters long'),
+    .min(8, 'validation_password_min_length')
+    .max(256, 'validation_password_max_length'),
   token: z.string()
 });
 
 export const changePasswordSchema = z.object({
   oldPassword: z
     .string()
-    .min(8, 'Password must be at least 8 characters long')
-    .max(256, 'Password must be at most 256 characters long'),
+    .min(8, 'validation_password_min_length')
+    .max(256, 'validation_password_max_length'),
   newPassword: z
     .string()
-    .min(8, 'Password must be at least 8 characters long')
-    .max(256, 'Password must be at most 256 characters long')
+    .min(8, 'validation_password_min_length')
+    .max(256, 'validation_password_max_length')
 });

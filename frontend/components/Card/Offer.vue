@@ -14,7 +14,7 @@
             <div>
               <span
                 class="text-sm text-gray-400 group-hover:text-gray-500 transition-colors"
-                >Offered by</span
+                >{{ t('offered_by') }}</span
               >
               <span
                 class="ml-1 font-medium group-hover:text-neutral-300 transition-colors"
@@ -29,7 +29,7 @@
             <span
               v-if="isAccepted"
               class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full text-xs font-medium tracking-wide"
-              >ACCEPTED</span
+              >{{ t('accepted') }}</span
             >
           </Transition>
 
@@ -40,7 +40,7 @@
               'bg-neutral-800 text-gray-400': !offer.negotiation
             }"
           >
-            {{ offer.negotiation ? 'NEGOTIABLE' : 'FIXED' }}
+            {{ offer.negotiation ? t('negotiation') : t('no_negotiation') }}
           </span>
         </div>
       </div>
@@ -70,7 +70,7 @@
           @click="changeAcceptation(!isAccepted)"
         >
           <span class="hidden sm:block">{{
-            isAccepted ? 'Revert acceptance' : 'Accept'
+            isAccepted ? t('revert_acceptance') : t('accept')
           }}</span>
         </UiButton>
         <UiButton
@@ -78,14 +78,14 @@
           icon="material-symbols:edit-rounded"
           @click="isEditModalOpen = true"
         >
-          <span class="hidden sm:block">Edit</span>
+          <span class="hidden sm:block">{{ t('edit') }}</span>
         </UiButton>
         <UiButton
           v-if="isOfferCreatorOrAdmin"
           icon="material-symbols:delete-rounded"
           @click="isDeleteModalOpen = true"
         >
-          <span class="hidden sm:block">Delete</span>
+          <span class="hidden sm:block">{{ t('delete') }}</span>
         </UiButton>
       </div>
 
@@ -104,7 +104,9 @@
         v-if="offer.comments.length > 0"
         class="pt-4 border-t border-neutral-800/80 mt-4"
       >
-        <h4 class="text-md font-semibold mb-2 text-neutral-200">Comments</h4>
+        <h4 class="text-md font-semibold mb-2 text-neutral-200">
+          {{ t('comments') }}
+        </h4>
         <div class="flex flex-col gap-2">
           <CardComment
             v-for="comment in offer.comments"
@@ -122,7 +124,7 @@
         @cancel="isDeleteModalOpen = false"
         @confirm="deleteOffer()"
       >
-        Are you sure you want to delete this offer?
+        {{ t('deletion_confirmation_offer') }}
       </ModalConfirm>
     </Teleport>
     <Teleport to="body">
@@ -139,6 +141,7 @@
 <script setup lang="ts">
 import type { Offer } from '@/types/offer';
 
+const { t } = useI18n();
 const userStore = useUserStore();
 const props = defineProps<{
   offer: Offer;

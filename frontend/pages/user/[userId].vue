@@ -22,7 +22,7 @@
       <div class="flex gap-2">
         <UiButton v-if="user" class="w-full" @click="isReviewsModalOpen = true">
           <Icon name="material-symbols:star" />
-          Reviews
+          {{ t('reviews') }}
         </UiButton>
         <UiButton
           v-if="
@@ -35,7 +35,7 @@
           :to="`/user/chat/${route.params.userId}`"
         >
           <Icon name="material-symbols:chat" />
-          Send message
+          {{ t('send_message') }}
         </UiButton>
         <UiSkeleton v-else-if="!user" class="h-8 w-full" />
       </div>
@@ -43,7 +43,7 @@
         v-if="user?.requests.length"
         class="text-xl font-semibold mt-6 mb-4 mx-4"
       >
-        Requests
+        {{ t('requests') }}
       </h2>
       <UiSkeleton v-else-if="!user" class="h-4 w-24 mt-6 mb-4 mx-4" />
       <div v-if="user" class="flex flex-col gap-2">
@@ -67,7 +67,9 @@
     <UiCard v-else-if="error" class="m-4">
       <p class="text-red-500 text-center">
         <span v-if="error.statusCode === 404"
-          >User {{ route.params.userId }} not found
+          >{{
+            t('validation_user_not_found_key', { userId: route.params.userId })
+          }}
         </span>
         <span v-else> {{ error.message }}</span>
       </p>
@@ -86,6 +88,7 @@
 import type { User } from '~/types/user';
 import type { Request } from '~/types/request';
 import { NuxtLink } from '#components';
+const { t } = useI18n();
 
 const isReviewsModalOpen = ref(false);
 const userStore = useUserStore();

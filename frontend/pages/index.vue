@@ -27,7 +27,7 @@
             v-if="requestStore.requests?.length"
             class="text-center text-neutral-500"
           >
-            {{ requestStore.requests?.length }} loaded
+            {{ t('loaded_requests', { count: requestStore.requests?.length }) }}
           </p>
           <p
             v-if="
@@ -36,7 +36,7 @@
             "
             class="text-center text-neutral-500"
           >
-            No requests found
+            {{ t('no_requests_found') }}
           </p>
         </div>
       </div>
@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 const requestStore = useRequestStore();
+const { t } = useI18n();
 
 if (!requestStore.requests?.length) {
   requestStore.refresh();

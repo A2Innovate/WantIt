@@ -341,11 +341,11 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "User not found" }, 404);
+      return c.json({ message: "validation_user_not_found" }, 404);
     }
 
     if (user.isAdmin) {
-      return c.json({ message: "You cannot block an admin" }, 400);
+      return c.json({ message: "validation_user_is_admin_block" }, 400);
     }
 
     await db.update(usersTable).set({
@@ -358,7 +358,7 @@ app.post(
     });
 
     return c.json({
-      message: "User blocked",
+      message: "user_blocked",
     });
   },
 );

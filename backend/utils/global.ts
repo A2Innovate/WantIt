@@ -81,6 +81,16 @@ export const PUSHER_KEY = Deno.env.get("PUSHER_KEY")!;
 export const PUSHER_SECRET = Deno.env.get("PUSHER_SECRET")!;
 export const PUSHER_APP_ID = Deno.env.get("PUSHER_APP_ID")!;
 export const PUSHER_HOST = Deno.env.get("PUSHER_HOST")!;
+export const AI_NSFW_CHECK = (() => {
+  const nsfwCheck = Deno.env.get("AI_NSFW_CHECK");
+  if (nsfwCheck == undefined) return true;
+  if (nsfwCheck !== "true" && nsfwCheck !== "false") {
+    throw new Error(
+      `AI_NSFW_CHECK must be "true" or "false", got: ${nsfwCheck}`,
+    );
+  }
+  return nsfwCheck === "true";
+})();
 export const CURRENCIES = [
   "USD",
   "PLN",

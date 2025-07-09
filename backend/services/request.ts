@@ -28,6 +28,7 @@ import sharp from "sharp";
 import { pipeline } from "@huggingface/transformers";
 import { isRequestMatchingAlertBudget } from "../utils/filter.ts";
 import { createLog } from "@/utils/log.ts";
+import { AI_NSFW_CHECK } from "@/utils/global.ts";
 
 const app = new Hono();
 
@@ -209,7 +210,7 @@ app.post(
       });
 
       if (!request) {
-        return c.json({ message: "Request not found" }, 404);
+        return c.json({ message: "validation_request_not_found" }, 404);
       }
 
       const [offer] = await db.insert(offersTable).values({
@@ -286,7 +287,7 @@ app.post(
       console.error("Error creating offer: ", e);
 
       return c.json(
-        { message: "Something went wrong while creating offer" },
+        { message: "validation_something_went_wrong_while_creating_offer" },
         500,
       );
     }
@@ -351,7 +352,7 @@ app.delete(
     });
 
     return c.json({
-      message: "Offer deleted successfully",
+      message: "validation_offer_deleted_successfully",
     });
   },
 );
@@ -389,19 +390,19 @@ app.post(
         z.instanceof(File)
           .refine(
             (file) => file.size > 0,
-            "Uploaded image cannot be empty.",
+            "validation_image_cannot_be_empty",
           )
           .refine(
             (file) => file.size < 1024 * 1024 * 5,
-            "Image must be smaller than 5MB.",
+            "validation_image_too_large",
           )
           .refine(
             (file) => file.type.startsWith("image/"),
-            "File must be an image (e.g., image/jpeg, image/png).",
+            "validation_image_must_be_an_image",
           ),
       )
-        .min(1, "You must upload at least one image.")
-        .max(10, "You can upload up to 10 images."),
+        .min(1, "validation_you_must_upload_at_least_one_image")
+        .max(10, "validation_you_can_upload_up_to_10_images"),
     }),
   ),
   async (c) => {
@@ -421,11 +422,14 @@ app.post(
     });
 
     if (!offer) {
-      return c.json({ message: "Offer not found" }, 404);
+      return c.json({ message: "validation_offer_not_found" }, 404);
     }
 
     if (offer.images.length + images.length > 10) {
-      return c.json({ message: "One offer can have up to 10 images." }, 400);
+      return c.json(
+        { message: "validation_offer_can_have_up_to_10_images" },
+        400,
+      );
     }
     const imageNames: string[] = [];
     let offerImages;
@@ -434,14 +438,16 @@ app.post(
         const imageBuffer = await image.arrayBuffer();
         const sharpImage = sharp(imageBuffer);
 
-        const pipe = await getPipe();
-        const prediction = await pipe(image);
-        for (const result of prediction) {
-          if (
-            result.score > NSFW_THRESHOLD &&
-            NSFW_CATEGORIES.includes(result.label)
-          ) {
-            throw new Error("Image contains NSFW content");
+        if (AI_NSFW_CHECK) {
+          const pipe = await getPipe();
+          const prediction = await pipe(image);
+          for (const result of prediction) {
+            if (
+              result.score > NSFW_THRESHOLD &&
+              NSFW_CATEGORIES.includes(result.label)
+            ) {
+              throw new Error("validation_image_contains_nsfw_content");
+            }
           }
         }
 
@@ -467,7 +473,10 @@ app.post(
         );
       }
 
-      if (e instanceof Error && e.message === "Image contains NSFW content") {
+      if (
+        e instanceof Error &&
+        e.message === "validation_image_contains_nsfw_content"
+      ) {
         return c.json(
           { message: e.message },
           400,
@@ -475,7 +484,7 @@ app.post(
       }
 
       return c.json(
-        { message: "Something went wrong while uploading images" },
+        { message: "validation_something_went_wrong_while_uploading_images" },
         500,
       );
     }
@@ -532,8 +541,14 @@ app.delete(
     });
 
     if (!offer) {
-      return c.json({ message: "Offer not found" }, 404);
+      return c.json({ message: "validation_offer_not_found" }, 404);
     }
+
+    for (const imageName of images) {
+      console.log(imageName);
+    }
+
+    console.log(offer.images);
 
     if (
       !images.every((imageName) =>
@@ -541,7 +556,7 @@ app.delete(
       )
     ) {
       return c.json(
-        { message: "Some images do not belong to this offer" },
+        { message: "validation_some_images_do_not_belong_to_this_offer" },
         400,
       );
     }
@@ -570,7 +585,7 @@ app.delete(
     });
 
     return c.json({
-      message: "Images deleted successfully",
+      message: "validation_images_deleted_successfully",
     });
   },
 );
@@ -612,7 +627,7 @@ app.put(
       .returning();
 
     if (!offer[0]) {
-      return c.json({ message: "Offer not found" }, 404);
+      return c.json({ message: "validation_offer_not_found" }, 404);
     }
 
     pusher.trigger(
@@ -671,15 +686,17 @@ app.post(
     });
 
     if (!request) {
-      return c.json({ message: "Request not found" }, 404);
+      return c.json({ message: "validation_request_not_found" }, 404);
     }
 
     if (!offer) {
-      return c.json({ message: "Offer not found" }, 404);
+      return c.json({ message: "validation_offer_not_found" }, 404);
     }
 
     if (request.userId !== session.user.id) {
-      return c.json({ message: "You are not the owner of this request" }, 403);
+      return c.json({
+        message: "validation_you_are_not_the_owner_of_this_request",
+      }, 403);
     }
 
     const offerAcceptation = await db.query.acceptedOffersTable.findFirst({
@@ -690,7 +707,7 @@ app.post(
     });
 
     if (offerAcceptation && accepted) {
-      return c.json({ message: "Offer already accepted" }, 400);
+      return c.json({ message: "validation_offer_already_accepted" }, 400);
     }
 
     if (accepted) {
@@ -739,7 +756,7 @@ app.post(
       });
 
       return c.json({
-        message: "Offer accepted successfully",
+        message: "validation_offer_accepted_successfully",
       });
     } else if (!accepted) {
       await db.delete(acceptedOffersTable)
@@ -759,7 +776,7 @@ app.post(
       });
 
       return c.json({
-        message: "Cancelled offer acceptance successfully",
+        message: "validation_offer_acceptance_cancelled_successfully",
       });
     }
   },
@@ -892,7 +909,7 @@ app.put(
       .returning();
 
     if (!request[0]) {
-      return c.json({ message: "Request not found" }, 404);
+      return c.json({ message: "validation_request_not_found" }, 404);
     }
 
     pusher.trigger(
@@ -936,7 +953,7 @@ app.delete(
     });
 
     if (!request) {
-      return c.json({ message: "Request not found" }, 404);
+      return c.json({ message: "validation_request_not_found" }, 404);
     }
 
     await deleteRecursive(`request/${requestId}`);
@@ -966,7 +983,7 @@ app.delete(
     });
 
     return c.json({
-      message: "Request deleted successfully",
+      message: "validation_request_deleted_successfully",
     });
   },
 );

@@ -75,7 +75,7 @@ app.get(
     });
 
     if (!person) {
-      return c.json({ message: "Person not found" }, 404);
+      return c.json({ message: "validation_person_not_found" }, 404);
     }
 
     const messages = await db.query.messagesTable.findMany({
@@ -127,7 +127,10 @@ app.post(
     const { content } = c.req.valid("json");
 
     if (personId === session.user.id) {
-      return c.json({ message: "You cannot send a message to yourself" }, 400);
+      return c.json(
+        { message: "validation_cannot_send_message_to_yourself" },
+        400,
+      );
     }
 
     const person = await db.query.usersTable.findFirst({
@@ -135,7 +138,7 @@ app.post(
     });
 
     if (!person) {
-      return c.json({ message: "Person not found" }, 404);
+      return c.json({ message: "validation_person_not_found" }, 404);
     }
 
     const message = await db.insert(messagesTable).values({
@@ -202,11 +205,11 @@ app.put(
     });
 
     if (!message) {
-      return c.json({ message: "Message not found" }, 404);
+      return c.json({ message: "validation_message_not_found" }, 404);
     }
 
     if (message.senderId !== session.user.id) {
-      return c.json({ message: "You cannot edit this message" }, 400);
+      return c.json({ message: "validation_cannot_edit_message" }, 400);
     }
 
     await db.update(messagesTable).set({
@@ -236,7 +239,7 @@ app.put(
       console.error(`Async Pusher trigger error: ${e}`);
     });
 
-    return c.json({ message: "Message edited" }, 200);
+    return c.json({ message: "validation_message_edited_successfully" }, 200);
   },
 );
 export default app;

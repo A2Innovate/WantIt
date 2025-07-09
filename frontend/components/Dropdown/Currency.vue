@@ -22,7 +22,7 @@
         "
       >
         <p>{{ currency.currency }}</p>
-        <small class="text-neutral-400 text-xs">{{ currency.name }}</small>
+        <small class="text-neutral-400 text-xs">{{ t(currency.name) }}</small>
       </DropdownBaseElement>
     </DropdownBasePopup>
   </div>
@@ -34,6 +34,8 @@ const props = defineProps<{
   readonly?: boolean;
   triggerClass?: string;
 }>();
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue']);
 const isOpen = ref(false);

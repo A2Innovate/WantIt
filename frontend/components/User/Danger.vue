@@ -1,13 +1,13 @@
 <template>
   <UiCard>
-    <h2 class="text-2xl font-semibold mb-2">Danger zone</h2>
+    <h2 class="text-2xl font-semibold mb-2">{{ t('danger_zone') }}</h2>
     <UiButton
       class="w-full"
       variant="danger"
       icon="material-symbols:delete"
       @click="deleteModalOpen = true"
     >
-      Delete account
+      {{ t('delete_account') }}
     </UiButton>
     <p v-if="message" class="mt-2 text-center">{{ message }}</p>
     <Teleport to="body">
@@ -18,7 +18,7 @@
         @cancel="deleteModalOpen = false"
       >
         <p class="text-center">
-          Are you sure you want to request the deletion of your account?
+          {{ t('delete_account_confirmation') }}
         </p>
         <p v-if="error" class="text-red-500 text-sm mt-2 text-center">
           {{ error }}
@@ -30,6 +30,7 @@
 
 <script setup lang="ts">
 import { AxiosError } from 'axios';
+const { t } = useI18n();
 
 const api = useApi();
 const isLoading = ref(false);
@@ -46,9 +47,9 @@ async function deleteAccount() {
     deleteModalOpen.value = false;
   } catch (e) {
     if (e instanceof AxiosError) {
-      error.value = e.response?.data.message;
+      error.value = t(e.response?.data.message);
     } else {
-      error.value = 'Something went wrong';
+      error.value = t('unknown_error');
     }
   } finally {
     isLoading.value = false;

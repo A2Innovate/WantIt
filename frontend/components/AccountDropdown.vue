@@ -22,35 +22,37 @@
             <NuxtLink
               :to="`/user/${userStore.current?.id}`"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:account-circle" /> Profile
+              ><Icon name="material-symbols:account-circle" />
+              {{ t('profile') }}
             </NuxtLink>
           </li>
           <li>
             <NuxtLink
               to="/user/chat"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:chat" /> Chat
+              ><Icon name="material-symbols:chat" /> {{ t('chat') }}
             </NuxtLink>
           </li>
           <li>
             <NuxtLink
               to="/user/alerts"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:release-alert-rounded" /> Alerts
+              ><Icon name="material-symbols:release-alert-rounded" />
+              {{ t('alerts') }}
             </NuxtLink>
           </li>
           <li v-if="userStore.current?.isAdmin">
             <NuxtLink
               to="/admin"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:tools-wrench" /> Admin
+              ><Icon name="material-symbols:tools-wrench" /> {{ t('admin') }}
             </NuxtLink>
           </li>
           <li>
             <NuxtLink
               to="/user/settings"
               class="flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
-              ><Icon name="material-symbols:settings" /> Settings
+              ><Icon name="material-symbols:settings" /> {{ t('settings') }}
             </NuxtLink>
           </li>
           <li>
@@ -58,7 +60,7 @@
               class="w-full text-left flex items-center gap-2 px-4 py-2 hover:bg-neutral-800 transition"
               @click="signOut"
             >
-              <Icon name="material-symbols:logout" /> Sign out
+              <Icon name="material-symbols:logout" /> {{ t('sign_out') }}
             </button>
           </li>
         </ul>
@@ -70,6 +72,8 @@
 <script setup lang="ts">
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+
+const { t } = useI18n();
 
 function toggleDropdown() {
   isOpen.value = !isOpen.value;

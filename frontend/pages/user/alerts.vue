@@ -2,7 +2,7 @@
   <div class="max-w-2xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
       <div class="flex items-center justify-between">
-        <h1 class="text-xl font-semibold">Alerts</h1>
+        <h1 class="text-xl font-semibold">{{ t('alerts') }}</h1>
         <UiButton class="h-7" @click="isOpen = true">
           <Icon name="material-symbols:add" />
         </UiButton>
@@ -31,7 +31,7 @@
           {{ error.message }}
         </p>
         <p v-else-if="data?.length === 0" class="text-center text-neutral-400">
-          No alerts found
+          {{ t('no_alerts_found') }}
         </p>
       </UiCard>
     </div>
@@ -45,6 +45,7 @@
 import { NuxtLink } from '#components';
 import type { Alert } from '~/types/alert';
 import type { Channel } from 'pusher-js';
+const { t } = useI18n();
 
 definePageMeta({
   middleware: 'auth'

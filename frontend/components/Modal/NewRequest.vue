@@ -1,6 +1,6 @@
 <template>
   <UiModal card-class="sm:min-w-md" :is-open="isOpen" @close="emit('close')">
-    <h2 class="text-2xl font-semibold">New request</h2>
+    <h2 class="text-2xl font-semibold">{{ t('new_request') }}</h2>
     <form class="flex flex-col gap-2 mt-2" @submit.prevent="addRequest">
       <div class="flex items-center gap-2 self-center">
         <div
@@ -8,7 +8,7 @@
           :class="locationGlobal ? 'text-neutral-400' : 'text-sky-400'"
         >
           <Icon name="material-symbols:location-on" />
-          <span class="font-medium text-sm">Local</span>
+          <span class="font-medium text-sm">{{ t('location_local') }}</span>
         </div>
         <UiToggle
           id="locationGlobal"
@@ -19,19 +19,19 @@
           class="flex items-center gap-1 transition-colors"
           :class="locationGlobal ? 'text-sky-400' : 'text-neutral-400'"
         >
-          <span class="font-medium text-sm">Global</span>
+          <span class="font-medium text-sm">{{ t('location_global') }}</span>
           <Icon name="material-symbols:globe" />
         </div>
       </div>
       <UiMapRadiusPicker v-if="!locationGlobal" v-model="location" />
-      <UiLabel for="content">What do you want?</UiLabel>
+      <UiLabel for="content">{{ t('what_do_you_want') }}</UiLabel>
       <UiInput
         id="content"
         v-model="content"
         placeholder="An iPhone..."
         :disabled="isLoading"
       />
-      <UiLabel for="budget">Budget</UiLabel>
+      <UiLabel for="budget">{{ t('budget') }}</UiLabel>
       <div class="flex">
         <DropdownCurrency v-model="selectedCurrency" :readonly="isLoading" />
         <UiInput
@@ -42,7 +42,9 @@
           type="number"
         />
       </div>
-      <UiButton type="submit" class="mt-2" :loading="isLoading">Add</UiButton>
+      <UiButton type="submit" class="mt-2" :loading="isLoading">{{
+        t('add')
+      }}</UiButton>
     </form>
     <p v-if="error" class="text-red-500 mt-2 text-center">{{ error }}</p>
   </UiModal>
@@ -51,6 +53,8 @@
 <script setup lang="ts">
 import { createRequestSchema } from '@/schema/services/request';
 import { AxiosError } from 'axios';
+
+const { t } = useI18n();
 
 defineProps<{
   isOpen: boolean;
@@ -91,7 +95,7 @@ async function addRequest() {
     const validation = validate(createRequestSchema, payload);
 
     if (validation) {
-      error.value = validation;
+      error.value = t(validation);
       return;
     }
 
@@ -110,7 +114,7 @@ async function addRequest() {
     locationGlobal.value = false;
   } catch (e) {
     if (e instanceof AxiosError && e.response?.data.message) {
-      error.value = e.response.data.message;
+      error.value = t(e.response.data.message);
     } else {
       error.value = 'Something went wrong';
     }

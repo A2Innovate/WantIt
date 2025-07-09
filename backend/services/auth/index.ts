@@ -21,6 +21,7 @@ import {
 } from "@/schema/services/auth.ts";
 import oauth from "./oauth.ts";
 import { rateLimit } from "@/middleware/ratelimit.ts";
+import { or } from "@/middleware/or.ts";
 import { COOKIE_DOMAIN, COOKIE_SECURE, FRONTEND_URL } from "@/utils/global.ts";
 import { pusher } from "@/utils/pusher.ts";
 import { z } from "zod";
@@ -108,6 +109,11 @@ app.delete(
   },
 );
 
+const socketObject = z.object({
+  socket_id: z.string(),
+  channel_name: z.string(),
+});
+
 app.post(
   "/pusher",
   authRequired,
@@ -115,16 +121,44 @@ app.post(
     windowMs: 60 * 1000, // 1 minute
     limit: 50,
   }),
-  zValidator(
-    "json",
-    z.object({
-      socket_id: z.string(),
-      channel_name: z.string(),
-    }),
+  or(
+    zValidator("json", socketObject),
+    zValidator("form", socketObject),
   ),
   (c) => {
     const session = c.get("session");
-    const { socket_id, channel_name } = c.req.valid("json");
+
+    const getData = (): { socket_id: string; channel_name: string } | null => {
+      // @ts-expect-error `or` does not support infer `json`
+      const jsonData = c.req.valid("json") as {
+        socket_id: string;
+        channel_name: string;
+      } | undefined;
+      if (jsonData) {
+        return jsonData;
+      }
+
+      // @ts-expect-error `or` does not support infer `form`
+      const formData = c.req.valid("form") as {
+        socket_id: string;
+        channel_name: string;
+      } | undefined;
+      if (formData) {
+        return formData;
+      }
+
+      return null;
+    };
+
+    const data = getData();
+    if (!data) {
+      return c.json(
+        { message: "socket_id and channel_name are required" },
+        400,
+      );
+    }
+
+    const { socket_id, channel_name } = data;
     const channel_parts = channel_name.split("-");
 
     const isValidChatChannel = channel_parts.length === 5 &&
@@ -260,13 +294,12 @@ app.post(
 
     if (!user) {
       // Intentional, user should not know which one is wrong
-      return c.json({ message: "Incorrect email or password" }, 401);
+      return c.json({ message: "validation_incorrect_email_or_password" }, 401);
     }
 
     if (!user.password) {
       return c.json({
-        message:
-          "This account has no password, it was likely created with OAuth, please use OAuth to login or reset your password.",
+        message: "validation_no_password",
       }, 400);
     }
 
@@ -277,15 +310,15 @@ app.post(
         content: email,
       });
 
-      return c.json({ message: "Incorrect email or password" }, 401);
+      return c.json({ message: "validation_incorrect_email_or_password" }, 401);
     }
 
     if (!user.isEmailVerified) {
-      return c.json({ message: "Email is not verified" }, 401);
+      return c.json({ message: "validation_email_not_verified" }, 401);
     }
 
     if (user.isBlocked) {
-      return c.json({ message: "You are blocked" }, 401);
+      return c.json({ message: "validation_user_is_blocked" }, 401);
     }
 
     const sessionToken = await generateSessionToken();
@@ -338,7 +371,7 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "Invalid token" }, 400);
+      return c.json({ message: "validation_invalid_token" }, 400);
     }
 
     await db.update(usersTable).set({
@@ -346,7 +379,7 @@ app.post(
       emailVerificationToken: null,
     }).where(eq(usersTable.id, user.id));
 
-    return c.json({ message: "Email verified successfully" }, 200);
+    return c.json({ message: "validation_email_verified_successfully" }, 200);
   },
 );
 
@@ -364,7 +397,7 @@ app.post("/logout", authRequired, async (c) => {
     userId: session.user.id,
   });
 
-  return c.json({ message: "Logged out successfully" }, 200);
+  return c.json({ message: "validation_logged_out_successfully" }, 200);
 });
 
 app.post(
@@ -382,7 +415,7 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "User not found" }, 404);
+      return c.json({ message: "validation_user_not_found" }, 404);
     }
 
     const resetPasswordToken = await generateResetPasswordToken();
@@ -405,7 +438,9 @@ app.post(
       passwordResetToken: resetPasswordToken,
     }).where(eq(usersTable.id, user.id));
 
-    return c.json({ message: "Reset password email sent successfully" }, 200);
+    return c.json({
+      message: "validation_password_reset_email_sent_successfully",
+    }, 200);
   },
 );
 
@@ -424,7 +459,7 @@ app.post(
     });
 
     if (!user) {
-      return c.json({ message: "Invalid token" }, 400);
+      return c.json({ message: "validation_invalid_token" }, 400);
     }
 
     await db.update(usersTable).set({
@@ -437,7 +472,7 @@ app.post(
       eq(userSessionsTable.userId, user.id),
     );
 
-    return c.json({ message: "Password reset successfully" }, 200);
+    return c.json({ message: "validation_password_reset_successfully" }, 200);
   },
 );
 app.post(
@@ -455,20 +490,19 @@ app.post(
 
     if (!session.user.password) {
       return c.json({
-        message:
-          "This account has no password, it was likely created using OAuth, please reset your password.",
+        message: "validation_no_password",
       }, 400);
     }
 
     if (!(await argon2.verify(session.user.password, oldPassword))) {
-      return c.json({ message: "Incorrect old password" }, 401);
+      return c.json({ message: "validation_incorrect_old_password" }, 401);
     }
 
     await db.update(usersTable).set({
       password: await argon2.hash(newPassword),
     }).where(eq(usersTable.id, session.user.id));
 
-    return c.json({ message: "Password changed successfully" }, 200);
+    return c.json({ message: "validation_password_changed_successfully" }, 200);
   },
 );
 

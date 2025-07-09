@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="max-w-3xl mx-auto min-h-[calc(100vh-8.5rem)]">
-      <h1 v-if="request" class="text-xl font-semibold my-4 px-4">Request</h1>
+      <h1 v-if="request" class="text-xl font-semibold my-4 px-4">
+        {{ t('request') }}
+      </h1>
       <UiSkeleton v-else class="h-6 w-20 my-4 mx-4" />
       <UiCard v-if="!error" class="m-4">
         <div
@@ -53,11 +55,11 @@
           >
             <UiButton @click="isEditRequestModalOpen = true">
               <Icon name="material-symbols:edit-rounded" />
-              <span class="hidden sm:block">Edit</span>
+              <span class="hidden sm:block">{{ t('edit') }}</span>
             </UiButton>
             <UiButton @click="isDeleteRequestModalOpen = true">
               <Icon name="material-symbols:delete-rounded" />
-              <span class="hidden sm:block">Delete</span>
+              <span class="hidden sm:block">{{ t('delete') }}</span>
             </UiButton>
           </div>
 
@@ -77,7 +79,7 @@
       <UiCard v-else-if="error" class="m-4">
         <p class="text-red-500 text-center">
           <span v-if="error.statusCode === 404"
-            >Request {{ route.params.requestId }} not found
+            >{{ t('request_not_found', { requestId: route.params.requestId }) }}
           </span>
           <span v-else> {{ error.message }}</span>
         </p>
@@ -87,7 +89,7 @@
         v-if="request?.offers.length"
         class="text-xl font-semibold mt-6 mb-4 px-4"
       >
-        Offers
+        {{ t('offers') }}
       </h2>
 
       <div class="flex justify-between m-4">
@@ -98,12 +100,16 @@
           :options="offerSortingModes"
           @update:model-value="offerSortingMode = $event"
         />
+        <UiButton @click="openInMobileApp">
+          <Icon name="material-symbols:open-in-new" />
+          <span class="hidden sm:block">{{ t('open_in_mobile_app') }}</span>
+        </UiButton>
         <UiButton
           v-if="request && userStore.current"
           @click="isAddOfferModalOpen = true"
         >
           <Icon name="material-symbols:add-rounded" />
-          <span>New offer</span>
+          <span>{{ t('new_offer') }}</span>
         </UiButton>
         <UiSkeleton v-else-if="!request" class="h-8 w-24" />
       </div>
@@ -143,12 +149,11 @@
       @confirm="deleteRequest()"
     >
       <p class="text-center">
-        Are you sure you want to delete this request?
+        {{ t('deletion_confirmation_request') }}
         <br />
-        <span class="text-red-500 text-xs"
-          >This action will also delete all offers associated with this
-          request.</span
-        >
+        <span class="text-red-500 text-xs">{{
+          t('deletion_confirmation_request_desc')
+        }}</span>
       </p>
     </ModalConfirm>
   </div>
@@ -159,6 +164,8 @@ import type { Request } from '~/types/request';
 import type { Channel } from 'pusher-js';
 import type { Offer } from '~/types/offer';
 import type { Comment } from '~/types/comment';
+
+const { t } = useI18n();
 
 const route = useRoute();
 const api = useApi();
@@ -173,19 +180,19 @@ const isDeletingRequest = ref(false);
 const offerSortingModes = [
   {
     value: 'newest_first',
-    label: 'Newest first'
+    label: t('newest_first')
   },
   {
     value: 'oldest_first',
-    label: 'Oldest first'
+    label: t('oldest_first')
   },
   {
     value: 'cheapest_first',
-    label: 'Cheapest first'
+    label: t('cheapest_first')
   },
   {
     value: 'expensive_first',
-    label: 'Expensive first'
+    label: t('expensive_first')
   }
 ];
 const offerSortingMode = ref<
@@ -263,6 +270,10 @@ function canAccept(offerId: number) {
     return false;
   }
   return true;
+}
+
+function openInMobileApp() {
+  window.location.href = `wantit://request/${route.params.requestId}`;
 }
 
 onMounted(() => {

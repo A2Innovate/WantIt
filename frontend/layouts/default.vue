@@ -29,8 +29,12 @@
           </AccountDropdown>
         </div>
         <div v-else class="flex items-center gap-2">
-          <NuxtLink class="text-sm" to="/auth/sign-in">Sign in</NuxtLink>
-          <NuxtLink class="text-sm" to="/auth/sign-up">Sign up</NuxtLink>
+          <NuxtLink class="text-sm" to="/auth/sign-in">{{
+            t('sign_in')
+          }}</NuxtLink>
+          <NuxtLink class="text-sm" to="/auth/sign-up">{{
+            t('sign_up')
+          }}</NuxtLink>
         </div>
       </div>
     </div>
@@ -57,4 +61,5 @@
 <script setup lang="ts">
 const userStore = useUserStore();
 const isAddRequestModalOpen = ref(false);
+const { t } = useI18n();
 </script>

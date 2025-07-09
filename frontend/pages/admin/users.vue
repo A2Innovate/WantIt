@@ -1,7 +1,9 @@
 <template>
   <div class="max-w-6xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
-      <h1 class="text-xl font-semibold">Admin / Users</h1>
+      <h1 class="text-xl font-semibold">
+        {{ $t('admin') + '/' + $t('users') }}
+      </h1>
       <UiCard class="flex flex-col gap-2">
         <UiInput
           v-model="query"
@@ -23,7 +25,7 @@
           v-else-if="users?.length === 0 && !isFetching"
           class="text-center text-neutral-400"
         >
-          No users found
+          {{ $t('no_users_found') }}
         </p>
       </UiCard>
     </div>

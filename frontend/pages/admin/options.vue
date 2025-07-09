@@ -1,18 +1,20 @@
 <template>
   <div class="max-w-6xl mx-auto min-h-[calc(100vh-8.5rem)]">
     <div class="m-4 flex flex-col gap-4">
-      <h1 class="text-xl font-semibold">Admin / Options</h1>
+      <h1 class="text-xl font-semibold">
+        {{ t('admin') + '/' + t('options') }}
+      </h1>
       <UiCard class="flex flex-col gap-2">
         <UiButton
           class="w-full"
           :loading="integrityCheckLoading"
           @click="integrityCheck"
         >
-          S3/DB Integrity check
+          {{ t('integrity_check') }}
         </UiButton>
         <UiTextArea
           v-model="log"
-          placeholder="Logs will appear here..."
+          :placeholder="t('logs_will_appear_here')"
           class="resize-none h-64 w-full"
           readonly
         />
@@ -23,6 +25,7 @@
 
 <script setup lang="ts">
 import type { Channel } from 'pusher-js';
+const { t } = useI18n();
 
 definePageMeta({
   middleware: ['auth', 'admin']

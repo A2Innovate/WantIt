@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h1 class="text-xl font-semibold mb-4">Sign in</h1>
+    <h1 class="text-xl font-semibold mb-4">{{ $t('sign_in') }}</h1>
     <form class="flex flex-col gap-2" @submit.prevent="signIn">
       <div>
-        <UiLabel for="email">Email</UiLabel>
+        <UiLabel for="email">{{ t('email') }}</UiLabel>
         <UiInput
           id="email"
           v-model="email"
@@ -13,33 +13,33 @@
         />
       </div>
       <div>
-        <UiLabel for="password">Password</UiLabel>
+        <UiLabel for="password">{{ t('password') }}</UiLabel>
         <UiInput
           id="password"
           v-model="password"
-          placeholder="Password..."
+          :placeholder="t('password') + '...'"
           autocomplete="current-password"
           type="password"
           class="w-full"
         />
       </div>
-      <UiButton class="mt-2">Sign in</UiButton>
+      <UiButton class="mt-2">{{ t('sign_in') }}</UiButton>
       <UiButton
         class="mt-2 flex gap-2 items-center justify-center"
         type="button"
         @click="signInWithGoogle"
-        ><Icon name="devicon:google" /> Sign in with Google</UiButton
+        ><Icon name="devicon:google" /> {{ t('sign_in_with_google') }}</UiButton
       >
       <div class="flex justify-between sm:flex-row flex-col">
-        <NuxtLink to="/auth/sign-up" class="sm:text-left text-center"
-          >Don't have an account?</NuxtLink
-        >
-        <NuxtLink to="/auth/reset-password" class="sm:text-right text-center"
-          >Forgot password?</NuxtLink
-        >
+        <NuxtLink to="/auth/sign-up" class="sm:text-left text-center">{{
+          t('dont_have_an_account')
+        }}</NuxtLink>
+        <NuxtLink to="/auth/reset-password" class="sm:text-right text-center">{{
+          t('forgot_password')
+        }}</NuxtLink>
       </div>
       <p v-if="error" class="text-red-500 text-sm mt-2 text-center">
-        {{ error }}
+        {{ t(error) }}
       </p>
     </form>
   </div>
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import { loginSchema } from '@/schema/services/auth';
 import { AxiosError } from 'axios';
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'auth'

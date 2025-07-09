@@ -28,6 +28,7 @@ import sharp from "sharp";
 import { pipeline } from "@huggingface/transformers";
 import { isRequestMatchingAlertBudget } from "../utils/filter.ts";
 import { createLog } from "@/utils/log.ts";
+import { AI_NSFW_CHECK } from "@/utils/global.ts";
 
 const app = new Hono();
 
@@ -437,16 +438,18 @@ app.post(
         const imageBuffer = await image.arrayBuffer();
         const sharpImage = sharp(imageBuffer);
 
-        const pipe = await getPipe();
-        const prediction = await pipe(image);
-        for (const result of prediction) {
-          if (
-            result.score > NSFW_THRESHOLD &&
+        if (AI_NSFW_CHECK) {
+          const pipe = await getPipe();
+          const prediction = await pipe(image);
+          for (const result of prediction) {
+            if (
+              result.score > NSFW_THRESHOLD &&
             NSFW_CATEGORIES.includes(result.label)
           ) {
             throw new Error("validation_image_contains_nsfw_content");
           }
         }
+      }
 
         const imageName = await generateUniqueOfferImageUUID(offerId) + ".webp";
 

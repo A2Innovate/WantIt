@@ -85,7 +85,9 @@ export const AI_NSFW_CHECK = (() => {
   const nsfwCheck = Deno.env.get("AI_NSFW_CHECK");
   if (nsfwCheck == undefined) return true;
   if (nsfwCheck !== "true" && nsfwCheck !== "false") {
-    throw new Error(`AI_NSFW_CHECK must be "true" or "false", got: ${nsfwCheck}`);
+    throw new Error(
+      `AI_NSFW_CHECK must be "true" or "false", got: ${nsfwCheck}`,
+    );
   }
   return nsfwCheck === "true";
 })();

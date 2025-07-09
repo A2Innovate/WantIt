@@ -444,12 +444,12 @@ app.post(
           for (const result of prediction) {
             if (
               result.score > NSFW_THRESHOLD &&
-            NSFW_CATEGORIES.includes(result.label)
-          ) {
-            throw new Error("validation_image_contains_nsfw_content");
+              NSFW_CATEGORIES.includes(result.label)
+            ) {
+              throw new Error("validation_image_contains_nsfw_content");
+            }
           }
         }
-      }
 
         const imageName = await generateUniqueOfferImageUUID(offerId) + ".webp";
 
